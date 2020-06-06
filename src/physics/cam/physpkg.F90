@@ -905,7 +905,7 @@ contains
     call qbo_init
 
     call lunar_tides_init()
-    
+
     call iondrag_init(pref_mid)
     ! Geomagnetic module -- after iondrag_init
     if (epp_ionization_active) then
@@ -979,6 +979,16 @@ contains
 #if ( defined OFFLINE_DYN )
      use metdata,       only: get_met_srf1
 #endif
+!!XXgoldyXX: v debug only
+use shr_sys_mod, only: shr_sys_flush
+use phys_grid,   only: get_gcol_p
+use spmd_utils,  only: iam, npes
+integer, parameter :: ntest = 5
+integer, parameter :: of = 193
+integer            :: gcol_ind(ntest) = -1
+integer            :: gcol, test_ind, pind
+character(len=128) :: tst_msgs(ntest) = ''
+!!XXgoldyXX: ^ debug only
     !
     ! Input arguments
     !
@@ -1084,6 +1094,34 @@ contains
 
     call t_adj_detailf(-1)
     call t_stopf ('bc_physics')
+!!XXgoldyXX: v debug only
+tst_msgs(:) = ''
+do c = begchunk, endchunk
+   do ncol = 1, get_ncols_p(c)
+      gcol = get_gcol_p(c, ncol)
+      test_ind = (gcol / 1000) + 1
+      if ((MOD(gcol, 1000) == 1) .and. (test_ind <= ntest)) then
+         gcol_ind(test_ind) = gcol
+         write(tst_msgs(test_ind), '(a,i2,a,i6,5("  ", e19.13e1))') 'XXGpa ', &
+              iam, ') ', gcol, phys_state(c)%pmid(ncol,pver),                 &
+              phys_state(c)%t(ncol,pver), phys_state(c)%u(ncol,pver),         &
+              phys_state(c)%v(ncol,pver), phys_state(c)%q(ncol,pver,1)
+      end if
+   end do
+end do
+call MPI_barrier(mpicom, c)
+do test_ind = 1, ntest
+   do pind = 0, npes - 1
+      if ((iam == pind) .and. (gcol_ind(test_ind) > 0)) then
+         write(of, *) trim(tst_msgs(test_ind))
+         call shr_sys_flush(6)
+      end if
+      call MPI_barrier(mpicom, c)
+   end do
+   call MPI_barrier(mpicom, c)
+end do
+gcol_ind(:) = -1
+!!XXgoldyXX: ^ debug only
 
     ! Don't call the rest in CRM mode
     if(single_column.and.scm_crm_mode) return
