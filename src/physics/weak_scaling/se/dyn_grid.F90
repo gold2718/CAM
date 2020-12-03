@@ -70,7 +70,7 @@ type(element_t),   pointer :: elem(:) => null()  ! local GLL elements for this t
 type(fvm_struct),  pointer :: fvm(:) => null()   ! local FVM elements for this task
 
 public :: dyn_decomp
-public :: init_grid_name
+public :: ini_grid_name
 public :: ptimelevels
 public :: TimeLevel
 public :: hvcoord
@@ -648,6 +648,7 @@ end subroutine dyn_grid_get_elem_coords
 !=========================================================================================
 
 subroutine get_hdim_name(fh_ini, ini_grid_hdim_name)
+   use pio, only: pio_inq_dimid, PIO_BCAST_ERROR, PIO_NOERR
 
    ! Determine whether the initial file uses 'ncol' or 'ncol_d' horizontal
    ! dimension in the unstructured grid.  It is also possible when using
