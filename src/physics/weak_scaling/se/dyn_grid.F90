@@ -227,6 +227,9 @@ subroutine dyn_grid_init()
    ! initial SE (subcycled) nstep
    TimeLevel%nstep0 = 0
 
+   ! determine whether initial file uses 'ncol' or 'ncol_d'
+   call get_hdim_name(fh_ini, ini_grid_hdim_name)
+
    ! Define the dynamics and physics grids on the dynamics decompostion.
    ! Physics grid on the physics decomposition is defined in phys_grid_init.
    call define_cam_grids()
@@ -648,7 +651,8 @@ end subroutine dyn_grid_get_elem_coords
 !=========================================================================================
 
 subroutine get_hdim_name(fh_ini, ini_grid_hdim_name)
-   use pio, only: pio_inq_dimid, PIO_BCAST_ERROR, PIO_NOERR
+   use pio, only: pio_inq_dimid, pio_seterrorhandling
+   use pio, only: PIO_BCAST_ERROR, PIO_NOERR
 
    ! Determine whether the initial file uses 'ncol' or 'ncol_d' horizontal
    ! dimension in the unstructured grid.  It is also possible when using
