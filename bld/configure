@@ -1235,7 +1235,13 @@ if ($print>=2) { print "Horizontal grid specifier: $hgrid$eol"; }
 # Use Weak Scaling fix for physics grid?
 my $weak_scale_fix_opt = (defined $opts{'weak_scale_fix'}) ? 1 : 0;
 $cfg_ref->set('weak_scale_fix', $weak_scale_fix_opt);
-my $weak_scale_fix = $weak_scale_fix_opt ? 'ON': 'OFF';
+my $weak_scale_fix = 'OFF';
+if ($dyn_pkg eq 'se') {
+    # Force weak scaling on for SE dycore
+    $weak_scale_fix = 'ON';
+} elsif ($weak_scale_fix_opt) {
+    $weak_scale_fix = 'ON';
+}
 
 if ($print>=2) { print "weak_scale_fix: $weak_scale_fix$eol"; }
 
@@ -2117,7 +2123,7 @@ sub write_filepath
 
     # Weak scaling fix. This has to come before physics/cam and before dycores
     # It also has to come before utils (which is already near the end).
-    if ($weak_scale_fix_opt) {
+    if ($weak_scale_fix eq 'ON') {
       print $fh "$camsrcdir/src/physics/weak_scaling\n";
     }
 
@@ -2206,13 +2212,6 @@ sub write_filepath
     print $fh "$camsrcdir/src/physics/cam\n";
 
     # Dynamics package and test utilities
-    if ($weak_scale_fix_opt) {
-        my $wdir = "$camsrcdir/src/physics/weak_scaling/$dyn";
-        if (! -d "$wdir") {
-            die "** No weak scaling directory for dycore = $dyn\n";
-        }
-        print $fh "$wdir\n";
-    }
     print $fh "$camsrcdir/src/dynamics/$dyn\n";
     if($dyn eq 'se') {
        print $fh "$camsrcdir/src/dynamics/se/dycore\n";
