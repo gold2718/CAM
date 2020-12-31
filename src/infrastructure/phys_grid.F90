@@ -306,7 +306,7 @@ CONTAINS
       latmin = 1000.0_r8 ! Out of latitude range
       index = 0
       do ichnk = begchunk, endchunk
-         ncol = get_ncols_p(ichnk)
+         ncol = chunks(ichnk)%ncols ! Too soon to call get_ncols_p
          do icol = 1, pcols
             index = index + 1
             if (icol <= ncol) then
