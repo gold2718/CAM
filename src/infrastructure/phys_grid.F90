@@ -784,6 +784,7 @@ CONTAINS
    !========================================================================
 
    integer function get_ncols_p(lcid, subname_in)
+      use cam_abortutils, only: endrun
       !-----------------------------------------------------------------------
       !
       ! get_ncols_p: Return number of columns in chunk given the local chunk id.
