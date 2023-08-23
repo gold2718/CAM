@@ -62,7 +62,6 @@ module atm_import_export
   integer                :: emis_nflds = -huge(1)   ! number of fire emission fields from lnd-> atm
   integer, public        :: ndep_nflds = -huge(1)   ! number of nitrogen deposition fields from atm->lnd/ocn
   logical                :: atm_provides_lightning = .false. ! cld to grnd lightning flash freq (min-1)
-  logical, public        :: dms_from_ocn = .false.   ! dms is obtained from ocean as atm import data
   character(*),parameter :: F01 = "('(cam_import_export) ',a,i8,2x,i8,2x,d21.14)"
   character(*),parameter :: F02 = "('(cam_import_export) ',a,i8,2x,i8,2x,i8,2x,d21.14)"
   character(*),parameter :: u_FILE_u = __FILE__
@@ -114,7 +113,6 @@ contains
     logical                :: flds_co2a      ! use case
     logical                :: flds_co2b      ! use case
     logical                :: flds_co2c      ! use case
-    logical                :: ispresent, isset
     character(len=128)     :: fldname
     character(len=*), parameter :: subname='(atm_import_export:advertise_fields)'
     !-------------------------------------------------------------------------------
@@ -143,15 +141,6 @@ contains
     read(cvalue,*) flds_co2c
     if (masterproc) write(iulog,'(a)') trim(subname)//'flds_co2c = '// trim(cvalue)
 
-    call NUOPC_CompAttributeGet(gcomp, name='dms_ocn2atm', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (ispresent .and. isset) then
-       read(cvalue,*) dms_from_ocn
-    else
-       dms_from_ocn = .false.
-    end if
-    if (masterproc) write(iulog,'(a,l)') trim(subname)//'dms_from_ocn = ',dms_from_ocn
-
     !--------------------------------
     ! Export fields
     !--------------------------------
@@ -163,8 +152,6 @@ contains
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_z'          )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_u'          )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_v'          )
-    call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_u10m'       )
-    call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_v10m'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_tbot'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_ptem'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_shum'       )
@@ -300,11 +287,6 @@ contains
     if (carma_fields /= ' ') then
        call fldlist_add(fldsToAtm_num, fldsToAtm, 'Sl_soilw') ! optional for carma
        call set_active_Sl_soilw(.true.) ! check for carma
-    end if
-
-    ! DMS source from ocean
-    if (dms_from_ocn) then
-       call fldlist_add(fldsToAtm_num, fldsToAtm, 'Faoo_dms_ocn') ! optional
     end if
 
     ! ------------------------------------------
@@ -938,7 +920,6 @@ contains
     real(r8), pointer :: fldptr_lwdn(:)    , fldptr_swnet(:)
     real(r8), pointer :: fldptr_topo(:)    , fldptr_zbot(:)
     real(r8), pointer :: fldptr_ubot(:)    , fldptr_vbot(:)
-    real(r8), pointer :: fldptr_u10m(:)    , fldptr_v10m(:)
     real(r8), pointer :: fldptr_pbot(:)    , fldptr_tbot(:)
     real(r8), pointer :: fldptr_shum(:)    , fldptr_dens(:)
     real(r8), pointer :: fldptr_ptem(:)    , fldptr_pslv(:)
@@ -962,10 +943,6 @@ contains
     call state_getfldptr(exportState, 'Sa_u'   , fldptr=fldptr_ubot, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getfldptr(exportState, 'Sa_v'   , fldptr=fldptr_vbot, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'Sa_u10m', fldptr=fldptr_u10m, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getfldptr(exportState, 'Sa_v10m', fldptr=fldptr_v10m, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getfldptr(exportState, 'Sa_tbot', fldptr=fldptr_tbot, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -992,8 +969,6 @@ contains
           fldptr_dens(g) = cam_out(c)%rho(i)
           fldptr_ptem(g) = cam_out(c)%thbot(i)
           fldptr_pslv(g) = cam_out(c)%psl(i)
-          fldptr_u10m(g) = cam_out(c)%u10m(i)
-          fldptr_v10m(g) = cam_out(c)%v10m(i)
           g = g + 1
        end do
     end do

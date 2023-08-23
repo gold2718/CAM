@@ -44,8 +44,6 @@ module camsrfexch
      real(r8) :: topo(pcols)         ! surface topographic height (m)
      real(r8) :: ubot(pcols)         ! bot level u wind
      real(r8) :: vbot(pcols)         ! bot level v wind
-     real(r8) :: u10m(pcols)         ! 10m u wind
-     real(r8) :: v10m(pcols)         ! 10m v wind
      real(r8) :: qbot(pcols,pcnst)   ! bot level specific humidity
      real(r8) :: pbot(pcols)         ! bot level pressure
      real(r8) :: rho(pcols)          ! bot level density
@@ -288,8 +286,6 @@ CONTAINS
        cam_out(c)%topo(:)     = 0._r8
        cam_out(c)%ubot(:)     = 0._r8
        cam_out(c)%vbot(:)     = 0._r8
-       cam_out(c)%u10m(:)     = 0._r8
-       cam_out(c)%v10m(:)     = 0._r8
        cam_out(c)%qbot(:,:)   = 0._r8
        cam_out(c)%pbot(:)     = 0._r8
        cam_out(c)%rho(:)      = 0._r8
@@ -430,9 +426,6 @@ subroutine cam_export(state,cam_out,pbuf)
    integer :: prec_dp_idx, snow_dp_idx, prec_sh_idx, snow_sh_idx
    integer :: prec_sed_idx,snow_sed_idx,prec_pcw_idx,snow_pcw_idx
    integer :: srf_ozone_idx, lightning_idx
-   real(r8):: ubot, vbot, zm
-   real(r8):: wnd10m_mag, wnd10m_dir
-   real(r8), parameter :: z0= 0.0001_r8     ! [m] roughness length over ocean
 
    real(r8), pointer :: psl(:)
 
@@ -500,18 +493,7 @@ subroutine cam_export(state,cam_out,pbuf)
       cam_out%pbot(i)  = state%pmid(i,pver)
       cam_out%psl(i)   = psl(i)
       cam_out%rho(i)   = cam_out%pbot(i)/(rair*cam_out%tbot(i))
-
-      ! Assume that the direction of the wind at 10m is the same as
-      ! at the bottom level
-      ubot = state%u(i,pver)
-      vbot = state%v(i,pver)
-      zm   = state%zm(i,pver)
-      wnd10m_mag = sqrt(ubot**2 + vbot**2) * log(10._r8/z0)/log(zm/z0)
-      wnd10m_dir = atan2(vbot,ubot)
-      cam_out%u10m(i) = wnd10m_mag*cos(wnd10m_dir)
-      cam_out%v10m(i) = wnd10m_mag*sin(wnd10m_dir)
    end do
-
    do m = 1, pcnst
      do i = 1, ncol
         cam_out%qbot(i,m) = state%q(i,pver,m)
