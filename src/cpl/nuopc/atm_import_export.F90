@@ -163,6 +163,8 @@ contains
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_z'          )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_u'          )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_v'          )
+    call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_u10m'       )
+    call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_v10m'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_tbot'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_ptem'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_shum'       )
@@ -936,6 +938,7 @@ contains
     real(r8), pointer :: fldptr_lwdn(:)    , fldptr_swnet(:)
     real(r8), pointer :: fldptr_topo(:)    , fldptr_zbot(:)
     real(r8), pointer :: fldptr_ubot(:)    , fldptr_vbot(:)
+    real(r8), pointer :: fldptr_u10m(:)    , fldptr_v10m(:)
     real(r8), pointer :: fldptr_pbot(:)    , fldptr_tbot(:)
     real(r8), pointer :: fldptr_shum(:)    , fldptr_dens(:)
     real(r8), pointer :: fldptr_ptem(:)    , fldptr_pslv(:)
@@ -959,6 +962,10 @@ contains
     call state_getfldptr(exportState, 'Sa_u'   , fldptr=fldptr_ubot, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getfldptr(exportState, 'Sa_v'   , fldptr=fldptr_vbot, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'Sa_u10m', fldptr=fldptr_u10m, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'Sa_v10m', fldptr=fldptr_v10m, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getfldptr(exportState, 'Sa_tbot', fldptr=fldptr_tbot, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -985,6 +992,8 @@ contains
           fldptr_dens(g) = cam_out(c)%rho(i)
           fldptr_ptem(g) = cam_out(c)%thbot(i)
           fldptr_pslv(g) = cam_out(c)%psl(i)
+          fldptr_u10m(g) = cam_out(c)%u10m(i)
+          fldptr_v10m(g) = cam_out(c)%v10m(i)
           g = g + 1
        end do
     end do
