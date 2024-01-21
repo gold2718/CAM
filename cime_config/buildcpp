@@ -41,6 +41,7 @@ def buildcpp(case):
     nthrds_atm = case.get_value("NTHRDS_ATM")
     cam_config_opts = case.get_value("CAM_CONFIG_OPTS")
     comp_interface=case.get_value("COMP_INTERFACE")
+    cam_aerocom = case.get_value("CAM_AEROCOM")
 
     # level information for CAM is part of the atm grid name - and must be stripped out
     nlev = ''
@@ -122,6 +123,10 @@ def buildcpp(case):
 
     if "-cosp" in config_opts:
         config_opts += ["-cosp_libdir", os.path.join(exeroot, "atm", "obj", "cosp")]
+
+    print(f"cam_aerocom is {cam_aerocom}")
+    if cam_aerocom:
+        config_opts += [" -aerocom"]
 
     if cam_dycore == 'mpas':
         config_opts += ["-mpas_libdir", os.path.join(exeroot, "atm", "obj", "mpas")]

@@ -325,5 +325,8 @@ SPCAM horizontal grid spacing, m
 <entry id="spcam_dt" value="1">
 SPCAM time step, s
 </entry>
+<entry id="aerocom" valid_values="0,1" value="0">
+Turns on aerocom
+</entry>
 
 </config_definition>
