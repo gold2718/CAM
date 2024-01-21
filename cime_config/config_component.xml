@@ -131,6 +131,14 @@
     <desc>CAM dynamical core</desc>
   </entry>
 
+  <entry id="CAM_AEROCOM">
+    <type>logical</type>
+    <default_value>FALSE</default_value>
+    <group>build_component_cam</group>
+    <file>env_build.xml</file>
+    <desc>If true, turn on aerocom diagnostics for oslo-aerosol package</desc>
+  </entry>
+
   <entry id="CAM_CONFIG_OPTS">
     <type>char</type>
     <valid_values></valid_values>

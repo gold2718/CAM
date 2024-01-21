@@ -32,9 +32,11 @@
       - lname
       - alias
       - support  (optional description of the support level for this compset)
+
     Each compset node can also have the following attributes
       - grid  (optional regular expression match for grid to work with the compset)
   </help>
+
 
   <!-- ******************************** -->
   <!-- CAM-Nor compsets                 -->
@@ -73,11 +75,11 @@
 
   <compset>
     <alias>NF1850</alias>
-    <lname>1850_CAM60%NORESM_CLM51%FATES-SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+    <lname>1850_CAM%DEV%%NORESM_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>NF1850oslo</alias>
-    <lname>1850_CAM60%NORESM%CAMoslo_CLM51%FATES-SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+    <lname>1850_CAM%DEV%NORESM%CAMoslo_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
 
   <compset>
@@ -100,7 +102,7 @@
   </compset>
 
   <!-- ******************************** -->
-  <!-- CAM "science supported" compsets -->
+  <!-- CAM compsets -->
   <!-- ******************************** -->
 
   <compset>
@@ -458,7 +460,7 @@
   </compset>
 
   <!-- ****************************** -->
-  <!-- WACCM science supported compsets -->
+  <!-- WACCM compsets -->
   <!-- ****************************** -->
 
   <compset>
