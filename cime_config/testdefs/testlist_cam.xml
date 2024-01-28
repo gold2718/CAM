@@ -36,7 +36,7 @@
     </options>
   </test>
 
-  <test compset="NF2000dev" grid="ne3pg3_ne3pg3_mg37" name="SMS_D_Ln9_P36" testmods="cam/outfrq9s">
+  <test compset="NF2000" grid="ne3pg3_ne3pg3_mg37" name="SMS_D_Ln9_P36" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
@@ -53,8 +53,6 @@
     </options>
   </test>
 
-<!-- NorESM-CAM6 combination not supported (yet?)
-
   <test compset="NF1850" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq13m">
     <machines>
       <machine name="betzy" compiler="intel" category="prealpha"/>
@@ -64,7 +62,9 @@
     </options>
   </test>
 
-  <test compset="NF2000climo" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq1d">
+  <!-- NorESM-CAM6 combination not supported (these are NorESM physics with CAM60)
+
+  <test compset="NF2000climoC6" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq1d">
     <machines>
       <machine name="betzy" compiler="intel" category="prealpha"/>
     </machines>
@@ -73,16 +73,7 @@
     </options>
   </test>
 
-  <test compset="NF2000climo" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
-    <machines>
-      <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:20:00</option>
-    </options>
-  </test>
-
-  <test compset="NQPC2000climo" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
+  <test compset="NQPC2000climoC6" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>

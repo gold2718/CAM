@@ -38,12 +38,29 @@
   </help>
 
 
+  <!-- NOTE: the NorESM physics does not work with cam60 - so must use camdev if noresm physics is used  -->
+
   <!-- ******************************** -->
   <!-- CAM-Nor compsets                 -->
   <!-- ******************************** -->
 
+  <!-- CAM60 - the following currently do not work -->
+  <!-- <compset> -->
+  <!--   <alias>NF2000climoC6</alias> -->
+  <!--   <lname>2000_CAM60%NORESM_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname> -->
+  <!-- </compset> -->
+  <!-- <compset> -->
+  <!--   <alias>NQPC6</alias> -->
+  <!--   <lname>2000_CAM60%NORESM_SLND_SICE_DOCN%AQP3_SROF_SGLC_SWAV</lname> -->
+  <!-- </compset> -->
+  <!-- <compset> -->
+  <!--   <alias>NQPC2000climoC6</alias> -->
+  <!--   <lname>2000_CAM60%NORESM%CCTS1_SLND_SICE_DOCN%AQP3_SROF_SGLC_SWAV</lname> -->
+  <!-- </compset> -->
+
+  <!-- CAMDEV -->
   <compset>
-    <alias>NF2000dev</alias>
+    <alias>NF2000</alias>
     <lname>2000_CAM%DEV%LT%NORESM_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
   <compset>
@@ -56,30 +73,12 @@
   </compset>
 
   <compset>
-    <alias>NF2000devL32</alias>
-    <lname>2000_CAM%DEV%NORESM_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
-  </compset>
-  <compset>
-    <alias>NF2000osloL32</alias>
-    <lname>2000_CAM%DEV%NORESM%CAMoslo_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
-  </compset>
-  <compset>
-    <alias>NF2000tropmam4l32</alias>
-    <lname>2000_CAM%DEV%NORESM%TROPMAM4_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
-  </compset>
-
-  <compset>
-    <alias>NF2000climo</alias>
-    <lname>2000_CAM60%NORESM_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
-  </compset>
-
-  <compset>
     <alias>NF1850</alias>
-    <lname>1850_CAM%DEV%%NORESM_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+    <lname>1850_CAM%DEV%LT%NORESM_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>NF1850oslo</alias>
-    <lname>1850_CAM%DEV%NORESM%CAMoslo_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+    <lname>1850_CAM%DEV%LT%NORESM%CAMoslo_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
 
   <compset>
@@ -89,16 +88,6 @@
   <compset>
     <alias>NFLTHISToslo_v0d</alias>
     <lname>HIST_CAM%DEV%LT%NORESM%CAMoslo_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
-  </compset>
-
-  <compset>
-    <alias>NQPC6</alias>
-    <lname>2000_CAM60%NORESM_SLND_SICE_DOCN%AQP3_SROF_SGLC_SWAV</lname>
-  </compset>
-
-  <compset>
-    <alias>NQPC2000climo</alias>
-    <lname>2000_CAM60%NORESM%CCTS1_SLND_SICE_DOCN%AQP3_SROF_SGLC_SWAV</lname>
   </compset>
 
   <!-- ******************************** -->
