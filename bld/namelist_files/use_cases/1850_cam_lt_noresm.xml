@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
-
 <namelist_defaults>
 
 <!-- Solar data from NRL -->
-<solar_irrad_data_file     >   'atm/cam/solar/SolarForcingCMIP6piControl_c160921.nc'   </solar_irrad_data_file>
-<solar_data_ymd      >   18500101                                                </solar_data_ymd>
-<solar_data_type     >    FIXED                                                  </solar_data_type>
+<solar_irrad_data_file>'atm/cam/solar/SolarForcingCMIP6piControl_c160921.nc'</solar_irrad_data_file>
+<solar_data_ymd>18500101</solar_data_ymd>
+<solar_data_type>FIXED</solar_data_type>
 
 <!-- LBC Files : -->
 <flbc_file>atm/waccm/lb/LBC_17500116-20150116_CMIP6_0p5degLat_c180905.nc</flbc_file>
@@ -19,7 +18,7 @@
 <ubc_file_input_type>CYCLICAL</ubc_file_input_type>
 <ubc_file_cycle_yr>1850</ubc_file_cycle_yr>
 
-<!-- 1850 ozone data -->
+<!-- ozone data -->
 <prescribed_ozone_datapath>'atm/cam/ozone_strataero'</prescribed_ozone_datapath>
 <prescribed_ozone_file>'ozone_strataero_cyclical_WACCM6_L70_CMIP6-piControl.001_y21-50avg_zm_5day_c180802.nc'</prescribed_ozone_file>
 <prescribed_ozone_name>'O3'</prescribed_ozone_name>
@@ -27,17 +26,16 @@
 <prescribed_ozone_cycle_yr>1850</prescribed_ozone_cycle_yr>
 
 <!-- Prescribed oxidants for aerosol chemistry -->
-<tracer_cnst_cycle_yr >   1850    </tracer_cnst_cycle_yr>
-<tracer_cnst_datapath >   'atm/cam/tracer_cnst'   </tracer_cnst_datapath>
-<tracer_cnst_file     >   'tracer_cnst_WACCM6_halons_3DmonthlyL70_1850climoCMIP6piControl001_y21-50avg_c180802.nc' </tracer_cnst_file>
-<!-- <tracer_cnst_specifier>   'O3','OH','NO3','HO2','HALONS' </tracer_cnst_specifier> -->
-<tracer_cnst_specifier>   'O3','OH','NO3','HO2'</tracer_cnst_specifier>
-<tracer_cnst_type     >   'CYCLICAL'  </tracer_cnst_type>
-<tracer_cnst_filelist >   ''   </tracer_cnst_filelist>
+<tracer_cnst_cycle_yr>1850</tracer_cnst_cycle_yr>
+<tracer_cnst_datapath>'atm/cam/tracer_cnst'</tracer_cnst_datapath>
+<tracer_cnst_file>'tracer_cnst_WACCM6_halons_3DmonthlyL70_1850climoCMIP6piControl001_y21-50avg_c180802.nc'</tracer_cnst_file>
+<tracer_cnst_specifier>'O3','OH','NO3','HO2'</tracer_cnst_specifier>
+<tracer_cnst_type>'CYCLICAL'</tracer_cnst_type>
+<tracer_cnst_filelist>''</tracer_cnst_filelist>
 
 <!-- External forcing for MAMOslo -->
-<ext_frc_type>      CYCLICAL   </ext_frc_type>
-<ext_frc_cycle_yr>  1850       </ext_frc_cycle_yr>
+<ext_frc_type>CYCLICAL</ext_frc_type>
+<ext_frc_cycle_yr>1850</ext_frc_cycle_yr>
 <ext_frc_specifier>
   'H2O    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/elev/H2O_emission_CH4_oxidationx2_elev_3DmonthlyL70_1850climoCMIP6piControl001_y21-50avg_c180802.nc',
   'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_BC_AX_airALL_vertical_1850_0.9x1.25_version20180512.nc',
@@ -78,8 +76,8 @@
 </ext_frc_specifier>
 
 <!-- surface emissions for MAMoslo-->
-<srf_emis_type>     CYCLICAL   </srf_emis_type>
-<srf_emis_cycle_yr> 1850       </srf_emis_cycle_yr>
+<srf_emis_type>CYCLICAL</srf_emis_type>
+<srf_emis_cycle_yr>1850</srf_emis_cycle_yr>
 <srf_emis_specifier>
   'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_BC_AX_anthrosurfAGRTRADOMSOLWSTSHP_surface_1850_0.9x1.25_version20180512.nc',
   'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_BC_N_anthrosurfAGRTRADOMSOLWSTSHP_surface_1850_0.9x1.25_version20180512.nc',
@@ -107,7 +105,7 @@
 <megan_specifier>'isoprene = isoprene','monoterp = myrcene + sabinene + limonene+ carene_3 + ocimene_t_b + pinene_b + pinene_a'</megan_specifier>
 
 <!--set SOA emissions since reading emissions from MEGAN -->
-<isoprene_oslo_emis_file>noresm-only/atm/cam/chem/trop_mozart_aero/emis/soanucl/bvocgcmFV19_isopr_1850_2000_zero.nc </isoprene_oslo_emis_file>
-<monoterp_oslo_emis_file>noresm-only/atm/cam/chem/trop_mozart_aero/emis/soanucl/bvocgcmFV19_monoterp_1850_2000_zero.nc </monoterp_oslo_emis_file>
+<isoprene_oslo_emis_file>noresm-only/atm/cam/chem/trop_mozart_aero/emis/soanucl/bvocgcmFV19_isopr_1850_2000_zero.nc</isoprene_oslo_emis_file>
+<monoterp_oslo_emis_file>noresm-only/atm/cam/chem/trop_mozart_aero/emis/soanucl/bvocgcmFV19_monoterp_1850_2000_zero.nc</monoterp_oslo_emis_file>
 
 </namelist_defaults>
