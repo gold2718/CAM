@@ -61,7 +61,7 @@
   <!-- CAMDEV -->
   <compset>
     <alias>NF2000</alias>
-    <lname>2000_CAM%DEV%LT%NORESM_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+    <lname>2000_CAM%DEV%LT%NORESM%TROPMAM4_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>NF2000oslo</alias>
