@@ -44,20 +44,6 @@
   <!-- CAM-Nor compsets                 -->
   <!-- ******************************** -->
 
-  <!-- CAM60 - the following currently do not work -->
-  <!-- <compset> -->
-  <!--   <alias>NF2000climoC6</alias> -->
-  <!--   <lname>2000_CAM60%NORESM_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname> -->
-  <!-- </compset> -->
-  <!-- <compset> -->
-  <!--   <alias>NQPC6</alias> -->
-  <!--   <lname>2000_CAM60%NORESM_SLND_SICE_DOCN%AQP3_SROF_SGLC_SWAV</lname> -->
-  <!-- </compset> -->
-  <!-- <compset> -->
-  <!--   <alias>NQPC2000climoC6</alias> -->
-  <!--   <lname>2000_CAM60%NORESM%CCTS1_SLND_SICE_DOCN%AQP3_SROF_SGLC_SWAV</lname> -->
-  <!-- </compset> -->
-
   <!-- CAMDEV -->
   <compset>
     <alias>NF2000</alias>
