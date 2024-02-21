@@ -2097,7 +2097,10 @@ sub write_filepath
     my $CASEROOT = "$ENV{'CASEROOT'}";
     print $fh "$CASEROOT/SourceMods/src.cam\n";
 
-    # CAM chemistry for oslo-aero must be at the top of Filepath
+    # CAM chemistry for oslo-aero must be at the top of Filepath since it
+    # needs to take precedence over everything. This is because several shadow files
+    # for oslo_aero routines are now in camnor_physics and contain stub interfaces
+    # needed for use statements. These replace the previous use of #ifdef OSLO_AERO queries.
     if ($chem =~/_oslo/) {
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
