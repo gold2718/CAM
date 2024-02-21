@@ -2097,8 +2097,14 @@ sub write_filepath
     my $CASEROOT = "$ENV{'CASEROOT'}";
     print $fh "$CASEROOT/SourceMods/src.cam\n";
 
-    # CAM-Nor has precedence over everything except SourceMods
-    #   Only active in NF or NB compsets
+    # CAM chemistry for oslo-aero must be at the top of Filepath
+    if ($chem =~/_oslo/) {
+        print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
+        print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
+    }
+
+    # CAM-Nor has precedence over everything except SourceMods and oslo-aero
+    #  Only active in NF or NB compsets
     if ($camnor) {
       if ($phys_pkg eq 'cam_dev') {
         print $fh "$camsrcdir/src/physics/camnor_phys/physics\n";
@@ -2110,10 +2116,6 @@ sub write_filepath
       if ($dyn eq 'fv') {
         print $fh "$camsrcdir/src/physics/camnor_phys/fv\n";
       }
-    }
-
-    if ($chem =~/_oslo/) {
-	print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
     }
 
     # offline unit driver (defaults to stub)
@@ -2152,14 +2154,12 @@ sub write_filepath
     if ($chem_src_dir) {
         print $fh "$chem_src_dir\n";
     }
-    if ($chem =~/_oslo/) {
-        # print $fh "$camsrcdir/src/chemistry/oslo_aero/object\n"; BUG: this does not compile
-        print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
-        print $fh "$camsrcdir/src/chemistry/oslo_aero/cam_intr\n";
-    } elsif ($chem =~ /_mam/) {
-        print $fh "$camsrcdir/src/chemistry/modal_aero\n";
-    } else {
-        print $fh "$camsrcdir/src/chemistry/bulk_aero\n";
+    if ($chem !~/_oslo/) {
+        if ($chem =~ /_mam/) {
+            print $fh "$camsrcdir/src/chemistry/modal_aero\n";
+        } else {
+            print $fh "$camsrcdir/src/chemistry/bulk_aero\n";
+        }
     }
     print $fh "$camsrcdir/src/chemistry/aerosol\n";
 
@@ -2171,9 +2171,9 @@ sub write_filepath
     }
     if ($waccm_phys) {
         print $fh "$camsrcdir/src/physics/waccm\n";
-	print $fh "$camsrcdir/src/physics/ali_arms\n";
-	print $fh "$camsrcdir/src/physics/ali_arms/subs\n";
-	print $fh "$camsrcdir/src/physics/ali_arms/include\n";
+        print $fh "$camsrcdir/src/physics/ali_arms\n";
+        print $fh "$camsrcdir/src/physics/ali_arms/subs\n";
+        print $fh "$camsrcdir/src/physics/ali_arms/include\n";
     }
     print $fh "$camsrcdir/src/ionosphere\n";
 
