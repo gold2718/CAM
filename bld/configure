@@ -52,6 +52,7 @@ OPTIONS
   Options used to determine the CAM model configuration.  These options will have an
   effect whether running CAM from CESM scripts or running via CAM standalone scripts:
 
+     -aerocom           Enable AEROCOM cpp-def for OSLO_AERO
      -[no]age_of_air_trcs Switch on [off] age of air tracers. Default: on for waccm_phys, otherwise off.
      -analytic_ic       Enables the (namelist controlled) dycore testing infrastructure
      -aquaplanet        Switch on aqua-planet mode.
@@ -232,6 +233,7 @@ my %opts = (
             cache       => "config_cache.xml",
             );
 GetOptions(
+    "aerocom!"                  => \$opts{'aerocom'},
     "age_of_air_trcs!"          => \$opts{'age_of_air_trcs'},
     "analytic_ic"               => \$opts{'analytic_ic'},
     "aquaplanet"                => \$opts{'aquaplanet'},
@@ -1940,6 +1942,14 @@ if ($silhs == 1) {
 # Simple Models
 if ($simple_phys) { $cfg_cppdefs .= ' -DSIMPLE'; }
 
+# Turn on aerocom
+my $aerocom_opt = (defined $opts{'aerocom'}) ? 1 : 0;
+$cfg_ref->set('aerocom', $aerocom_opt);
+my $aerocom = $cfg_ref->get('aerocom');
+if ($aerocom eq 1) {
+    $cfg_cppdefs .= ' -DAEROCOM';
+}
+
 # UNICON
 if ($unicon) { $cfg_cppdefs .= ' -DUSE_UNICON'; }
 
@@ -2087,8 +2097,17 @@ sub write_filepath
     my $CASEROOT = "$ENV{'CASEROOT'}";
     print $fh "$CASEROOT/SourceMods/src.cam\n";
 
-    # CAM-Nor has precedence over everything except SourceMods
-    #   Only active in NF or NB compsets
+    # CAM chemistry for oslo-aero must be at the top of Filepath since it
+    # needs to take precedence over everything. This is because several shadow files
+    # for oslo_aero routines are now in camnor_physics and contain stub interfaces
+    # needed for use statements. These replace the previous use of #ifdef OSLO_AERO queries.
+    if ($chem =~/_oslo/) {
+        print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
+        print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
+    }
+
+    # CAM-Nor-physics has precedence over everything except SourceMods and oslo-aero
+    # Only active in NF or NB compsets
     if ($camnor) {
       if ($phys_pkg eq 'cam_dev') {
         print $fh "$camsrcdir/src/physics/camnor_phys/physics\n";
@@ -2100,10 +2119,6 @@ sub write_filepath
       if ($dyn eq 'fv') {
         print $fh "$camsrcdir/src/physics/camnor_phys/fv\n";
       }
-    }
-
-    if ($chem =~/_oslo/) {
-	print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
     }
 
     # offline unit driver (defaults to stub)
@@ -2142,14 +2157,12 @@ sub write_filepath
     if ($chem_src_dir) {
         print $fh "$chem_src_dir\n";
     }
-    if ($chem =~/_oslo/) {
-        # print $fh "$camsrcdir/src/chemistry/oslo_aero/object\n"; BUG: this does not compile
-        print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
-        print $fh "$camsrcdir/src/chemistry/oslo_aero/cam_intr\n";
-    } elsif ($chem =~ /_mam/) {
-        print $fh "$camsrcdir/src/chemistry/modal_aero\n";
-    } else {
-        print $fh "$camsrcdir/src/chemistry/bulk_aero\n";
+    if ($chem !~/_oslo/) {
+        if ($chem =~ /_mam/) {
+            print $fh "$camsrcdir/src/chemistry/modal_aero\n";
+        } else {
+            print $fh "$camsrcdir/src/chemistry/bulk_aero\n";
+        }
     }
     print $fh "$camsrcdir/src/chemistry/aerosol\n";
 
@@ -2161,9 +2174,9 @@ sub write_filepath
     }
     if ($waccm_phys) {
         print $fh "$camsrcdir/src/physics/waccm\n";
-	print $fh "$camsrcdir/src/physics/ali_arms\n";
-	print $fh "$camsrcdir/src/physics/ali_arms/subs\n";
-	print $fh "$camsrcdir/src/physics/ali_arms/include\n";
+        print $fh "$camsrcdir/src/physics/ali_arms\n";
+        print $fh "$camsrcdir/src/physics/ali_arms/subs\n";
+        print $fh "$camsrcdir/src/physics/ali_arms/include\n";
     }
     print $fh "$camsrcdir/src/ionosphere\n";
 

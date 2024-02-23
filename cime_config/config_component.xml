@@ -131,6 +131,14 @@
     <desc>CAM dynamical core</desc>
   </entry>
 
+  <entry id="CAM_AEROCOM">
+    <type>logical</type>
+    <default_value>FALSE</default_value>
+    <group>build_component_cam</group>
+    <file>env_build.xml</file>
+    <desc>If true, turn on aerocom diagnostics for oslo-aerosol package</desc>
+  </entry>
+
   <entry id="CAM_CONFIG_OPTS">
     <type>char</type>
     <valid_values></valid_values>
@@ -226,6 +234,7 @@
       <value compset="1850_CAM60%WCSC"   >waccm_sc_1850_cam6</value>
       <value compset="1850_CAM%DEV%LT"   >1850_cam_lt</value>
       <value compset="1850_CAM%DEV%MT"   >1850_cam_mt</value>
+      <value compset="1850_CAM%DEV%LT%NORESM%CAMoslo">1850_cam_lt_noresm</value>
 
       <value compset="2000_CAM40%TMOZ"   >2000_cam4_trop_chem</value>
       <value compset="2000_CAM40%WXIE"   >waccmxie_ma_2000_cam4</value>
@@ -240,9 +249,9 @@
       <value compset="2000_CAM60%WXIE"   >waccmx_ma_2000_cam6</value>
 
       <value compset="2000_CAM%DEV%NORESM%TROPMAM4">2000_cam6</value>
-      <value compset="2000_CAM%DEV%LT%NORESM%TROPMAM4">2000_cam6</value>
-
       <value compset="2000_CAM%DEV%NORESM%CAMoslo">2000_cam6_noresm</value>
+
+      <value compset="2000_CAM%DEV%LT%NORESM%TROPMAM4">2000_cam6</value>
       <value compset="2000_CAM%DEV%LT%NORESM%CAMoslo">2000_cam6_noresm</value>
 
       <value compset="2000_CAM30_SLND_SICE_DOCN%AQP"   >aquaplanet_cam3</value>
@@ -270,7 +279,6 @@
       <value compset="HIST_CAM60"        >hist_cam6</value>
       <value compset="HIST_CAM%DEV%LT"   >hist_cam_lt</value>
       <value compset="HIST_CAM%DEV%MT"   >hist_cam_mt</value>
-
       <value compset="HIST_CAM%DEV%LT%NORESM%CAMoslo">hist_cam6_noresm</value>
 
       <value compset="HIST_CAM60%WCTS"   >waccm_tsmlt_hist_cam6</value>

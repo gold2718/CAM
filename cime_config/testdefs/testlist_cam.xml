@@ -10,7 +10,7 @@
 <!--              CAM-Nor test-supported COMPSETS             -->
 <!--              @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@             -->
 
-  <test compset="NFLTHIST_v0d" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
+  <test compset="NFLTHISTghgmam4_v0d" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
@@ -26,24 +26,7 @@
       <option name="wallclock">00:10:00</option>
     </options>
   </test>
-  <test compset="NFLTHISToslo_v0d" grid="ne3pg3_ne3pg3_mg37" name="PEM_D_Ln9_P18" testmods="cam/outfrq9s">
-    <machines>
-      <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
-      <machine name="betzy" compiler="intel" category="cam_bfb"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:10:00</option>
-    </options>
-  </test>
 
-  <test compset="NF2000dev" grid="ne3pg3_ne3pg3_mg37" name="SMS_D_Ln9_P36" testmods="cam/outfrq9s">
-    <machines>
-      <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:10:00</option>
-    </options>
-  </test>
   <test compset="NF2000oslo" grid="ne3pg3_ne3pg3_mg37" name="SMS_D_Ln9_P18" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
@@ -52,37 +35,7 @@
       <option name="wallclock">00:10:00</option>
     </options>
   </test>
-
-<!-- NorESM-CAM6 combination not supported (yet?)
-
-  <test compset="NF1850" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq13m">
-    <machines>
-      <machine name="betzy" compiler="intel" category="prealpha"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:20:00</option>
-    </options>
-  </test>
-
-  <test compset="NF2000climo" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq1d">
-    <machines>
-      <machine name="betzy" compiler="intel" category="prealpha"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:20:00</option>
-    </options>
-  </test>
-
-  <test compset="NF2000climo" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
-    <machines>
-      <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:20:00</option>
-    </options>
-  </test>
-
-  <test compset="NQPC2000climo" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
+  <test compset="NF2000oslo" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
@@ -90,7 +43,31 @@
       <option name="wallclock">00:10:00</option>
     </options>
   </test>
--->
+  <test compset="NF2000tropmam4" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq9s">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:10:00</option>
+    </options>
+  </test>
+
+  <test compset="NF1850oslo" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq9s">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+    </options>
+  </test>
+  <test compset="NF1850tropmam4" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq9s">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+    </options>
+  </test>
 
 <!--              @@@@@@@@@@@@@@@@@@@@@@@@@@@                 -->
 <!--              CAM test-supported COMPSETS                 -->
@@ -99,7 +76,7 @@
   <test compset="F1850" grid="f19_f19_mtn14" name="ERP_D_Ln9_P256" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
-      <machine name="betzy" compiler="intel" category="prealpha"/>
+      <machine name="betzy" compiler="intel" category="prealpha_noresm"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -109,7 +86,7 @@
   <test compset="F2000climo" grid="f19_f19_mtn14" name="SMS_D_Ln9_P256" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
-      <machine name="betzy" compiler="intel" category="prealpha"/>
+      <machine name="betzy" compiler="intel" category="prealpha_noresm"/>
     </machines>
     <options>
       <option name="wallclock">00:10:00</option>
