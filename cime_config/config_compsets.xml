@@ -46,10 +46,6 @@
 
   <!-- CAMDEV -->
   <compset>
-    <alias>NF2000</alias>
-    <lname>2000_CAM%DEV%LT%NORESM%TROPMAM4_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
-  </compset>
-  <compset>
     <alias>NF2000oslo</alias>
     <lname>2000_CAM%DEV%LT%NORESM%CAMoslo_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
@@ -59,16 +55,16 @@
   </compset>
 
   <compset>
-    <alias>NF1850</alias>
-    <lname>1850_CAM%DEV%LT%NORESM_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
-  </compset>
-  <compset>
     <alias>NF1850oslo</alias>
     <lname>1850_CAM%DEV%LT%NORESM%CAMoslo_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
+  <compset>
+    <alias>NF1850tropmam4</alias>
+    <lname>1850_CAM%DEV%LT%NORESM%TROPMAM4_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+  </compset>
 
   <compset>
-    <alias>NFLTHIST_v0d</alias>
+    <alias>NFLTHISTghgmam4_v0d</alias>
     <lname>HIST_CAM%DEV%LT%NORESM%GHGMAM4_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
   <compset>
