@@ -2115,7 +2115,6 @@ sub write_filepath
         print $fh "$camsrcdir/src/physics/camnor_phys/physics_cam6\n";
         die "CAM6 not currently supported for NorESM configurations.\n";
       }
-      print $fh "$camsrcdir/src/physics/camnor_phys/control\n";
       if ($dyn eq 'fv') {
         print $fh "$camsrcdir/src/physics/camnor_phys/fv\n";
       }
