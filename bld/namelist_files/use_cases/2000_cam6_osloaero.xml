@@ -20,7 +20,6 @@
 <prescribed_ozone_name>       'O3'                                                           </prescribed_ozone_name>
 <prescribed_ozone_type>       'CYCLICAL'                                                     </prescribed_ozone_type>
 
-<!-- Solar constant -->
 <solar_irrad_data_file>   'atm/cam/solar/SolarForcing1995-2005avg_c160929.nc'  </solar_irrad_data_file>
 <solar_data_ymd      >    20000101                                             </solar_data_ymd>
 <solar_data_type     >    FIXED                                                </solar_data_type>
@@ -79,20 +78,17 @@
 <!-- ================================================= -->
 
 <dme_energy_adjust>.true.</dme_energy_adjust>
-<zmconv_c0_lnd>0.0200D0</zmconv_c0_lnd>
-<zmconv_c0_ocn>0.0200D0</zmconv_c0_ocn>
-<zmconv_ke>8.0E-6</zmconv_ke>
-<zmconv_ke_lnd>8.0E-6</zmconv_ke_lnd>
+<zmconv_c0_lnd>0.0200D0</zmconv_c0_lnd>                     <!--zmconv_nl-->
+<zmconv_c0_ocn>0.0200D0</zmconv_c0_ocn>                     <!--zmconv_nl-->
+<zmconv_ke    >8.0E-6</zmconv_ke>                           <!--zmconv_nl-->
+<zmconv_ke_lnd>8.0E-6</zmconv_ke_lnd>                       <!--zmconv_nl-->
 <tau_0_ubc>.true.</tau_0_ubc>                               <!--gw_drag_nl-->
 <clubb_gamma_coef hgrid="0.9x1.25">0.286</clubb_gamma_coef>
 <clubb_gamma_coef hgrid="1.9x2.5" >0.264</clubb_gamma_coef>
 <micro_mg_dcs     hgrid="0.9x1.25">5.5e-4</micro_mg_dcs>    <!--micro_mg_nl-->
 <micro_mg_dcs     hgrid="1.9x2.5" >5.0e-4</micro_mg_dcs>    <!--micro_mg_nl-->
-<cldfrc_iceopt    hgrid="1.9x2.5">4</cldfrc_iceopt>         <!--cldfrc_nl-->
 <cldfrc2m_rhmini  hgrid="0.9x1.25">0.90D0</cldfrc2m_rhmini> <!--cldfrc2m_nl-->
+<cldfrc_iceopt    hgrid="1.9x2.5">4</cldfrc_iceopt>         <!--cldfrc_nl-->
 <do_circulation_diags>.true.</do_circulation_diags>         <!-- only used in fv -->
-
-<!-- for usecase for cam_dev with trop_mam4 and noresm_physics use 2000_cam6.xml but add the noresm-physics section above  -->
-<!-- and call it 2000_cam6_noresm.xml -->
 
 </namelist_defaults>

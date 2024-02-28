@@ -33,7 +33,7 @@
 <tracer_cnst_type     >   'CYCLICAL'  </tracer_cnst_type>
 <tracer_cnst_filelist >   ''   </tracer_cnst_filelist>
 
-<!-- External forcing for MAMOslo -->
+<!-- External forcing -->
 <ext_frc_type>CYCLICAL</ext_frc_type>
 <ext_frc_cycle_yr>1850</ext_frc_cycle_yr>
 <ext_frc_specifier>
@@ -56,7 +56,7 @@
   'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO4_PR_volcCONTEXPL_vertical_1850_0.9x1.25_version20180512.nc'
 </ext_frc_specifier>
 
-<!-- surface emissions for MAMoslo-->
+<!-- Surface emissions -->
 <srf_emis_type>CYCLICAL</srf_emis_type>
 <srf_emis_cycle_yr>1850</srf_emis_cycle_yr>
 <srf_emis_specifier>
