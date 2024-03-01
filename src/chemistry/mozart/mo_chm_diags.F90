@@ -484,6 +484,22 @@ contains
     call addfld( 'MASS', (/ 'lev' /), 'A', 'kg', 'mass of grid box' )
     call addfld( 'AREA', horiz_only,  'A', 'm2', 'area of grid box' )
 
+    call addfld('sum_SO4'  , (/ 'lev' /), 'A', 'kg/kg ', 'sum of SO4 concentrations')
+    call addfld('sum_BC'   , (/ 'lev' /), 'A', 'kg/kg ', 'sum of BC concentrations')
+    call addfld('sum_OM'   , (/ 'lev' /), 'A', 'kg/kg ', 'sum of OM concentrations')
+    call addfld('sum_DST'  , (/ 'lev' /), 'A', 'kg/kg ', 'sum of DST concentrations')
+    call addfld('sum_SS'   , (/ 'lev' /), 'A', 'kg/kg ', 'sum of SS concentrations')
+    call addfld('sum_SOA'  , (/ 'lev' /), 'A', 'kg/kg ', 'sum of SOA concentrations')
+    call addfld('sum_num'  , (/ 'lev' /), 'A', 'kg/kg ', 'sum of num ')
+
+    call add_default('sum_SO4'  , 1, ' ')
+    call add_default('sum_BC'   , 1, ' ')
+    call add_default('sum_OM'   , 1, ' ')
+    call add_default('sum_DST'  , 1, ' ')
+    call add_default('sum_SS'   , 1, ' ')
+    call add_default('sum_SOA'  , 1, ' ')
+    call add_default('sum_num'  , 1, ' ')
+
     call addfld( 'dry_deposition_NOy_as_N', horiz_only, 'I', 'kg/m2/s', 'NOy dry deposition flux ' )
     call addfld( 'DF_SOX', horiz_only, 'I', 'kg/m2/s', 'SOx dry deposition flux ' )
     call addfld( 'dry_deposition_NHx_as_N', horiz_only, 'I', 'kg/m2/s', 'NHx dry deposition flux ' )
@@ -554,6 +570,16 @@ contains
     real(r8), dimension(ncol)      :: df_noy, df_sox, df_nhx, do3chm_trp, do3chm_lms
     real(r8), dimension(ncol)      :: wd_noy, wd_nhx
     real(r8), dimension(ncol,pver) :: vmr_hox
+
+    character(len=16) :: jname, spc_name, attr
+
+    real(r8) :: sum_so4(ncol,pver)
+    real(r8) :: sum_bc(ncol,pver)
+    real(r8) :: sum_om(ncol,pver)
+    real(r8) :: sum_dst(ncol,pver)
+    real(r8) :: sum_ss(ncol,pver)
+    real(r8) :: sum_soa(ncol,pver)
+    real(r8) :: sum_num(ncol,pver)
 
     real(r8) :: area(ncol), mass(ncol,pver)
     real(r8) :: wgt
@@ -748,8 +774,50 @@ contains
           call outfld('DO3CHM_LMS',do3chm_lms(:ncol), ncol, lchnk )
        end if
 !
-    enddo
+    enddo ! end loop from m=1,gas_pcnst
 
+    ! Generate compund sum
+
+    ! so4_a1,so4_a2,so4_a3
+    ! bc_a1,bc_a4
+    ! pom_a1,pom_a4
+    ! ncl_a1,ncl_a2,ncl_a3
+    ! soa_a1,soa_a2
+    ! num_a1,num_a2,num_a3,num_a4
+
+    sum_so4(:,:) = 0._r8
+    sum_bc(:,:) = 0._r8
+    sum_om(:,:) = 0._r8
+    sum_dst(:,:) = 0._r8
+    sum_ss(:,:) = 0._r8
+    sum_soa(:,:) = 0._r8
+    sum_num(:,:) = 0._r8
+
+    do m = 1,gas_pcnst
+       spc_name = trim(solsym(m))
+       if (spc_name(1:4) == 'so4_') then
+          sum_so4(:ncol,:) = sum_so4(:ncol,:) + mmr(:ncol,:,m)
+       else if (spc_name(1:3) == 'bc_') then
+          sum_bc(:ncol,:) = sum_bc(:ncol,:) + mmr(:ncol,:,m)
+       else if (spc_name(1:4) == 'pom_') then
+          sum_om(:ncol,:) = sum_om(:ncol,:) + mmr(:ncol,:,m)
+       else if (spc_name(1:4) == 'dst_') then
+          sum_dst(:ncol,:) = sum_dst(:ncol,:) + mmr(:ncol,:,m)
+       else if (spc_name(1:3) == 'ncl_') then
+          sum_ss(:ncol,:) = sum_ss(:ncol,:) + mmr(:ncol,:,m)
+       else if (spc_name(1:4) == 'soa_') then
+          sum_soa(:ncol,:) = sum_soa(:ncol,:) + mmr(:ncol,:,m)
+       else if (spc_name(1:4) == 'num_') then
+          sum_num(:ncol,:) = sum_num(:ncol,:) + mmr(:ncol,:,m)
+       end if
+    end do
+    call outfld( 'sum_SO4', sum_so4(:ncol,:), ncol ,lchnk )
+    call outfld( 'sum_BC' , sum_bc(:ncol,:) , ncol ,lchnk )
+    call outfld( 'sum_OM' , sum_om(:ncol,:) , ncol ,lchnk )
+    call outfld( 'sum_DST', sum_dst(:ncol,:), ncol ,lchnk )
+    call outfld( 'sum_SS' , sum_ss(:ncol,:) , ncol ,lchnk )
+    call outfld( 'sum_SOA', sum_soa(:ncol,:), ncol ,lchnk )
+    call outfld( 'sum_num', sum_num(:ncol,:), ncol ,lchnk )
 
     call outfld( 'NOX',  vmr_nox  (:ncol,:), ncol, lchnk )
     call outfld( 'NOY',  vmr_noy  (:ncol,:), ncol, lchnk )
