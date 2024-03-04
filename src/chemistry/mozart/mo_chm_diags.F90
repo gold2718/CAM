@@ -803,7 +803,7 @@ contains
           sum_om(:ncol,:) = sum_om(:ncol,:) + mmr(:ncol,:,m)
        else if (spc_name(1:4) == 'dst_') then
           sum_dst(:ncol,:) = sum_dst(:ncol,:) + mmr(:ncol,:,m)
-       else if (spc_name(1:3) == 'ncl_') then
+       else if (spc_name(1:4) == 'ncl_') then
           sum_ss(:ncol,:) = sum_ss(:ncol,:) + mmr(:ncol,:,m)
        else if (spc_name(1:4) == 'soa_') then
           sum_soa(:ncol,:) = sum_soa(:ncol,:) + mmr(:ncol,:,m)
