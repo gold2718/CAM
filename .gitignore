@@ -18,3 +18,6 @@ buildcppc
 .#*
 \#*#
 *.swp
+
+# To avoid *.pyc files
+cime_config/__pycache__
