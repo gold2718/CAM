@@ -666,7 +666,7 @@ my $rad_prog_bcarb = (($prog_species =~ "BC"   or $aero_chem) and !($chem_rad_pa
 my $rad_prog_sulf  = (($prog_species =~ "SO4"  or $aero_chem) and !($chem_rad_passive));
 my $rad_prog_dust  = (($prog_species =~ "DST"  or $aero_chem) and !($chem_rad_passive));
 my $rad_prog_sslt  = (($prog_species =~ "SSLT" or $aero_chem) and !($chem_rad_passive));
-my $rad_prog_ozone = (($chem =~ "mozart" or $chem =~ "waccm_ma" or $chem =~ "tsmlt" or $chem =~ "trop_strat") and !($chem_rad_passive));
+my $rad_prog_ozone = (($chem =~ "mozart" or $chem =~ "waccm_ma" or $chem =~ "tsmlt" or $chem =~ "trop_strat" or $chem =~"tropstrat_mam_oslo") and !($chem_rad_passive));
 
 # Check for eruptive volcano emissions.  These will be radiatively active by default, but
 # only if using BAM and the camrt radiation package
@@ -1658,7 +1658,7 @@ elsif ($carma eq 'tholin') {
 # turn on stratospheric aerosol forcings in CAM6 configurations
 my $chem_has_ocs = chem_has_species($cfg, 'OCS');
 # djlo
-if ($phys =~ /cam6/ and $chem ne 'trop_mam_oslo') {
+if ($phys =~ /cam6/ and $chem ne 'trop_mam_oslo' and $chem ne 'tropstrat_mam_oslo') {
   # turn on volc forcings in cam6 -- prognostic or prescribed
   if ( $chem_has_ocs ) {
       # turn on prognostic stratospheric aerosols
@@ -2232,7 +2232,7 @@ if ($chem eq 'trop_mam3') {
     }
 }
 
-if ($chem eq 'trop_mam_oslo' ) {
+if ($chem eq 'trop_mam_oslo' or $chem eq 'tropstrat_mam_oslo') {
 
     my %species;
 
@@ -2296,26 +2296,41 @@ if ($chem eq 'trop_mam_oslo' ) {
     }
 
     # Prescribed species
-    add_default($nl, 'tracer_cnst_specifier', 'val'=>"'O3','OH','NO3','HO2'");
-    unless (defined $nl->get_value('tracer_cnst_type')) {
-	 add_default($nl, 'tracer_cnst_type',    'ver'=>'fixed_ox');
-	 add_default($nl, 'tracer_cnst_cycle_yr','ver'=>'fixed_ox');
+    if ($chem eq 'trop_mam_oslo') {
+        add_default($nl, 'tracer_cnst_specifier', 'val'=>"'O3','OH','NO3','HO2'");
+        unless (defined $nl->get_value('tracer_cnst_type')) {
+	    add_default($nl, 'tracer_cnst_type',    'ver'=>'fixed_ox');
+	    add_default($nl, 'tracer_cnst_cycle_yr','ver'=>'fixed_ox');
+        }
+
+        my @files = ('tracer_cnst_datapath', 'tracer_cnst_file', 'tracer_cnst_filelist');
+        foreach my $file (@files) {
+            add_default($nl, $file, 'ver'=>'fixed_ox');
+        }
     }
 
-    my @files = ('tracer_cnst_datapath', 'tracer_cnst_file', 'tracer_cnst_filelist');
-    foreach my $file (@files) {
-        add_default($nl, $file, 'ver'=>'fixed_ox');
-    }
-
-    add_default($nl, 'fstrat_list', 'val'=>"' '");
+    if ($chem eq 'trop_mam_oslo') {add_default($nl, 'fstrat_list', 'val'=>"' '")};
     add_default($nl, 'flbc_list', 'val'=>"' '");
-    add_default($nl, 'xactive_prates', 'val'=>'.false.');
+    if ($chem eq 'trop_mam_oslo') {add_default($nl, 'xactive_prates', 'val'=>'.false.')};
 
     # Datasets
-    my @files = ('soil_erod_file',
-                 'xs_long_file', 'rsf_file', 'exo_coldens_file' );
-    foreach my $file (@files) {
-        add_default($nl, $file);
+    if ($chem eq 'trop_mam_oslo') {
+
+        my @files = ('soil_erod_file',
+                     'xs_long_file', 'rsf_file', 'exo_coldens_file' );
+        foreach my $file (@files) {
+            add_default($nl, $file);
+        }
+    }
+    if ($chem eq 'tropstrat_mam_oslo') {
+    
+        my @files = ('soil_erod_file',
+#                    'xs_long_file', 'rsf_file', 'exo_coldens_file' );
+#                    'xs_long_file', 'xs_short_file', 'xs_coef_file', 'rsf_file', 'exo_coldens_file' );
+                     'xs_long_file', 'xs_short_file', 'xs_coef_file', 'rsf_file' );
+        foreach my $file (@files) {
+            add_default($nl, $file);
+        }
     }
 }
 
@@ -3283,6 +3298,11 @@ if ( length($nl->get_value('soil_erod_file'))>0 ) {
     else {
         if ($chem =~ /trop_strat/ or $chem =~ /waccm_ma/ or $chem =~ /waccm_tsmlt/ or $chem =~ /trop_mozart/) {
             add_default($nl, 'dust_emis_fact', 'ver'=>'chem');
+            # set scaling of lightning NOx production
+	    add_default($nl, 'lght_no_prd_factor' );
+        }
+        elsif ($chem =~ /tropstrat/) {
+            add_default($nl, 'dust_emis_fact');
             # set scaling of lightning NOx production
 	    add_default($nl, 'lght_no_prd_factor' );
         }

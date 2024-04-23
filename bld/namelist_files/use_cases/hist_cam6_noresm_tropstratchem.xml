@@ -1,0 +1,294 @@
+<?xml version="1.0"?>
+
+<namelist_defaults>
+
+<!--micro_do_sb_physics>   .true.   </micro_do_sb_physics-->
+<!--do_tms>                .false.  </do_tms-->
+<!--do_beljaars>           .true.   </do_beljaars-->
+
+<history_aerosol>.true.</history_aerosol>
+<modal_strat_sulfate>.true.</modal_strat_sulfate>
+
+<!-- Solar constant -->
+<solar_irrad_data_file>atm/cam/solar/SolarForcingCMIP6_18491230-22991231_c171031.nc</solar_irrad_data_file>
+
+<!-- 1850 GHG values Taken from Meinshausen et al., 2017 -->
+<flbc_type>SERIAL</flbc_type>
+<flbc_file>atm/waccm/lb/LBC_17500116-20150116_CMIP6_0p5degLat_c180227.nc</flbc_file>
+<flbc_list>
+ 'CCL4', 'CF2CLBR', 'CF3BR', 'CFC11', 'CFC113', 'CFC12', 'CH3BR', 'CH3CCL3', 'CH3CL', 'CH4', 'CO2', 'H2',
+ 'HCFC22', 'N2O', 'CFC114', 'CFC115', 'HCFC141B', 'HCFC142B', 'CH2BR2', 'CHBR3', 'H2402', 'OCS', 'SF6'
+</flbc_list>
+
+<!-- Surface emissions for MAMOslo -->
+<srf_emis_type            >    INTERP_MISSING_MONTHS  </srf_emis_type>
+
+<!-- External forcing for MAMOslo -->
+<ext_frc_type             >    INTERP_MISSING_MONTHS  </ext_frc_type>
+
+<!-- surface emissions -->
+<srf_emis_specifier hgrid="0.9x1.25">
+  'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_AX_anthrosurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_N_anthrosurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_anthrosurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_anthrosurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_anthrosurfALL_surface_1849-2015_0.9x1.25_version20211124.nc'
+  'BENZENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BENZENE_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'BENZENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BENZENE_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'BIGALK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGALK_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'BIGALK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGALK_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'BIGENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGENE_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'BIGENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGENE_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H2 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H2_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H2 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H2_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H4 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H4_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H4 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H4_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H5OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H5OH_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H5OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H5OH_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H6_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C2H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H6_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C3H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H6_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C3H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H6_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C3H8 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H8_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'C3H8 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H8_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH2O -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH2O_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH2O -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH2O_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3CHO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CHO_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3CHO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CHO_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3CN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CN_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3CN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CN_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3COCH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COCH3_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3COCH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COCH3_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3COCHO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COCHO_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3COOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COOH_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3COOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COOH_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3OH_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CH3OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3OH_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CO_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'CO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CO_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'DMS -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_DMS_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'GLYALD -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_GLYALD_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'HCN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCN_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'HCN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCN_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'HCOOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCOOH_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'HCOOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCOOH_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'ISOP -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_ISOP_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'MEK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_MEK_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'MEK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_MEK_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'MTERP -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_MTERP_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'NH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NH3_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'NH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NH3_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'NO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NO_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'NO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NO_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'TOLUENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_TOLUENE_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'TOLUENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_TOLUENE_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'XYLENES -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_XYLENES_anthrosurfgasALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'XYLENES -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_XYLENES_bbsurfALL_surface_1849-2015_0.9x1.25_version20211124.nc',
+  'E90 ->  $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions_E90global_surface_1750-2100_0.9x1.25_c20170322.nc',
+  'C2H4 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions-cmip6_C2H4_other_surface_1750-2015_0.9x1.25_c20170322.nc',
+  'C2H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions-cmip6_C2H6_other_surface_1750-2015_0.9x1.25_c20170322.nc',
+  'C3H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions-cmip6_C3H6_other_surface_1750-2015_0.9x1.25_c20170322.nc',
+  'C3H8 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions-cmip6_C3H8_other_surface_1750-2015_0.9x1.25_c20170322.nc',
+  'CO -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions-cmip6_CO_other_surface_1750-2015_0.9x1.25_c20170322.nc',
+  'NH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions-cmip6_NH3_other_surface_1750-2015_0.9x1.25_c20170322.nc',
+  'NO -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions-cmip6_NO_other_surface_1750-2015_0.9x1.25_c20170322.nc'
+</srf_emis_specifier>
+<srf_emis_specifier hgrid="1.9x2.5">
+  'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_AX_anthrosurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_N_anthrosurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_anthrosurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_anthrosurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_anthrosurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'BENZENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BENZENE_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'BENZENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BENZENE_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'BIGALK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGALK_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'BIGALK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGALK_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'BIGENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGENE_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'BIGENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BIGENE_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H2 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H2_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H2 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H2_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H4 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H4_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H4 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H4_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H5OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H5OH_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H5OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H5OH_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H6_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C2H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C2H6_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C3H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H6_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C3H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H6_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C3H8 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H8_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'C3H8 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_C3H8_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH2O -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH2O_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH2O -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH2O_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3CHO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CHO_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3CHO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CHO_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3CN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CN_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3CN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3CN_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3COCH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COCH3_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3COCH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COCH3_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3COCHO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COCHO_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3COOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COOH_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3COOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3COOH_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3OH_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CH3OH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CH3OH_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CO_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'CO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CO_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'DMS -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_DMS_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'GLYALD -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_GLYALD_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'HCN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCN_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'HCN -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCN_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'HCOOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCOOH_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'HCOOH -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_HCOOH_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'ISOP -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_ISOP_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'MEK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_MEK_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'MEK -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_MEK_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'MTERP -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_MTERP_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'NH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NH3_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'NH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NH3_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'NO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NO_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'NO -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NO_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'TOLUENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_TOLUENE_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'TOLUENE -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_TOLUENE_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'XYLENES -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_XYLENES_anthrosurfgasALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'XYLENES -> $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_XYLENES_bbsurfALL_surface_1849-2015_1.9x2.5_version20211124.nc',
+  'E90 ->  $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015/emissions_E90global_surface_1750-2100_0.9x1.25_c20170322.nc',
+  'C2H4 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015_2deg/emissions-cmip6_C2H4_other_surface_1750-2015_1.9x2.5_c20170322.nc',
+  'C2H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015_2deg/emissions-cmip6_C2H6_other_surface_1750-2015_1.9x2.5_c20170322.nc',
+  'C3H6 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015_2deg/emissions-cmip6_C3H6_other_surface_1750-2015_1.9x2.5_c20170322.nc',
+  'C3H8 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015_2deg/emissions-cmip6_C3H8_other_surface_1750-2015_1.9x2.5_c20170322.nc',
+  'CO -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015_2deg/emissions-cmip6_CO_other_surface_1750-2015_1.9x2.5_c20170322.nc',
+  'NH3 -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015_2deg/emissions-cmip6_NH3_other_surface_1750-2015_1.9x2.5_c20170322.nc',
+  'NO -> $INPUTDATA_ROOT/atm/cam/chem/emis/CMIP6_emissions_1750_2015_2deg/emissions-cmip6_NO_other_surface_1750-2015_1.9x2.5_c20170322.nc'
+</srf_emis_specifier>
+
+<!-- 3D emissions -->
+<ext_frc_specifier hgrid="0.9x1.25">
+  'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_AX_airALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_AX_anthroprofALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_N_airALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_N_anthroprofALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'BC_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_NI_bbALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_airALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_anthroprofALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_bbALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_airALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_anthroprofALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_bbALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_volcALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO2    ->  0.9*$INPUTDATA_ROOT/atm/cam/chem/stratvolc/VolcanEESMv3.11_SO2_850-2016_Mscale_Zreduc_1deg_c180812.nc',
+  'SO4_PR ->  0.1*$INPUTDATA_ROOT/atm/cam/chem/stratvolc/VolcanEESMv3.11_SO2_850-2016_Mscale_Zreduc_1deg_c180812.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_airALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_anthroprofALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_bbALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_volcALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'CO     ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CO_airALL_vertical_1849-2015_0.9x1.25_version20211124.nc',
+  'NO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NO2_airALL_vertical_1849-2015_0.9x1.25_version20211124.nc'
+</ext_frc_specifier>
+<ext_frc_specifier hgrid="1.9x2.5">
+  'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_AX_airALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_AX_anthroprofALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_N_airALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_N_anthroprofALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'BC_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_BC_NI_bbALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_airALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_anthroprofALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'OM_NI  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_OM_NI_bbALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_airALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_anthroprofALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_bbALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO2_volcALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO2    ->  0.9*$INPUTDATA_ROOT/atm/cam/chem/stratvolc/VolcanEESMv3.11_SO2_850-2016_Mscale_Zreduc_2deg_c180812.nc',
+  'SO2    ->  0.1*$INPUTDATA_ROOT/atm/cam/chem/stratvolc/VolcanEESMv3.11_SO2_850-2016_Mscale_Zreduc_2deg_c180812.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_airALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_anthroprofALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_bbALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'SO4_PR ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_SO4_PR_volcALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'CO     ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_CO_airALL_vertical_1849-2015_1.9x2.5_version20211124.nc',
+  'NO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20211124/emissions_cmip6_noresm2_NO2_airALL_vertical_1849-2015_1.9x2.5_version20211124.nc'
+</ext_frc_specifier>
+
+<!--use_gw_oro               >   .false.   </use_gw_oro-->
+<!--use_gw_rdg_beta          >   .true.    </use_gw_rdg_beta-->
+<!--zmconv_num_cin           >   1         </zmconv_num_cin-->
+
+<!--prescribed_strataero_cycle_yr>  1850          </prescribed_strataero_cycle_yr-->
+
+<clubb_gamma_coef hgrid="0.9x1.25">0.286</clubb_gamma_coef>
+<clubb_gamma_coef hgrid="1.9x2.5" >0.264</clubb_gamma_coef>
+
+<!-- dyn_fv-->
+<fv_high_order_top> .false. </fv_high_order_top>
+<fv_am_geom_crrct> .true. </fv_am_geom_crrct>
+<fv_am_correction> .true. </fv_am_correction>
+<fv_am_fixer>      .true. </fv_am_fixer>
+<fv_am_fix_lbl>    .true. </fv_am_fix_lbl>
+<fv_am_diag>       .true. </fv_am_diag>
+
+<!--diagnostics-->
+<do_circulation_diags> .true. </do_circulation_diags>
+
+<!--phys_ctl_nl-->
+<dme_energy_adjust> .true. </dme_energy_adjust>
+  
+<!--zmconv_nl-->
+<zmconv_c0_lnd> 0.0200D0 </zmconv_c0_lnd>
+<zmconv_c0_ocn> 0.0200D0 </zmconv_c0_ocn>
+
+<zmconv_ke>     8.0E-6 </zmconv_ke>
+<zmconv_ke_lnd> 8.0E-6 </zmconv_ke_lnd>
+
+
+<!--micro_mg_nl-->
+<micro_mg_dcs hgrid="0.9x1.25">5.5e-4</micro_mg_dcs>
+<micro_mg_dcs hgrid="1.9x2.5" >5.0e-4</micro_mg_dcs>
+
+<!--gw_drag_nl-->
+<tau_0_ubc>  .true.   </tau_0_ubc>
+
+<!--cldfrc_nl-->
+<cldfrc_iceopt hgrid="1.9x2.5"> 4 </cldfrc_iceopt>
+
+<!--cldfrc2m_nl-->
+<cldfrc2m_rhmini hgrid="0.9x1.25">0.90D0</cldfrc2m_rhmini>
+
+<!--Options for megan -->
+<!--megan_specifier>'isoprene = isoprene','monoterp = myrcene + sabinene + limonene+ carene_3 + ocimene_t_b + pinene_b + pinene_a'</megan_specifier-->
+<megan_specifier>'ISOP = isoprene',
+                 'MTERP = pinene_a + carene_3 + thujene_a + 2met_styrene + cymene_p + cymene_o + terpinolene + bornene + fenchene_a + ocimene_al + pinene_b + sabinene + camphene + limonene + phellandrene_a + terpinene_g + terpinene_a + phellandrene_b +  myrcene + ocimene_t_b + ocimene_c_b',
+                 'BCARY = caryophyllene_b + bergamotene_a + bisabolene_b + farnescene_b + humulene_a',
+                 'CH3OH = methanol', 'C2H5OH = ethanol', 'CH2O = formaldehyde',
+                 'CH3CHO = acetaldehyde', 'CH3COOH = acetic_acid', 'CH3COCH3 = acetone',
+                 'HCOOH = formic_acid', 'HCN = hydrogen_cyanide', 'CO = carbon_monoxide',
+                 'C2H6 = ethane', 'C2H4 = ethene', 'C3H8 = propane', 'C3H6 = propene',
+                 'BIGALK = pentane + hexane + heptane + tricyclene', 'BIGENE = butene',
+                 'TOLUENE = toluene'</megan_specifier>
+
+<!--set SOA emissions since reading emissions from MEGAN -->
+<!--isoprene_oslo_emis_file>noresm-only/atm/cam/chem/trop_mozart_aero/emis/soanucl/bvocgcmFV19_isopr_1850_2000_zero.nc </isoprene_oslo_emis_file-->
+<!--monoterp_oslo_emis_file>noresm-only/atm/cam/chem/trop_mozart_aero/emis/soanucl/bvocgcmFV19_monoterp_1850_2000_zero.nc </monoterp_oslo_emis_file-->
+
+<!-- sim_year used for CLM datasets and SSTs forcings -->
+<sim_year>1850</sim_year>
+
+<!-- CMIP6 climatological volcanic background forcing -->
+<!--prescribed_strataero_file>' '</prescribed_strataero_file-->
+<!--prescribed_volcaero_datapath>atm/cam/volc</prescribed_volcaero_datapath-->
+<!--prescribed_volcaero_file>CMIP_CAM6_radiation_average_v3_reformatted.nc</prescribed_volcaero_file-->
+<!--prescribed_volcaero_cycle_yr>1850</prescribed_volcaero_cycle_yr-->
+<!--prescribed_volcaero_type>CYCLICAL</prescribed_volcaero_type-->
+<!--rad_climate>'A:Q:H2O','N:O2:O2','N:CO2:CO2','N:ozone:O3','N:N2O:N2O','N:CH4:CH4','N:CFC11:CFC11','N:CFC12:CFC12'</rad_climate-->
+<!--rad_climate>'A:Q:H2O','N:O2:O2','A:CO2:CO2','N:ozone:O3','A:N2O:N2O','A:CH4:CH4','N:CFC11STAR:CFC11','A:CFC12:CFC12'</rad_climate-->
+<rad_climate>'A:Q:H2O','N:O2:O2','A:CO2:CO2','A:O3:O3','A:N2O:N2O','A:CH4:CH4','N:CFC11STAR:CFC11','A:CFC12:CFC12'</rad_climate>
+
+<fincl1>
+       'SAD_ICE','SAD_LNAT','SAD_SULFC','SAD_TROP','SAD_AERO',
+       'REFF_AERO', 
+       'RAD_ICE','RAD_LNAT','RAD_SULFC',
+       'H2SO4M_C',
+       'HNO3_GAS','HNO3_STS','HNO3_NAT',
+       'HCL_TOTAL','HCL_GAS','HCL_STS',
+       'LNO_PROD', 'LNO_COL_PROD',
+       'TROP_P', 'TROP_T', 'TROP_Z',
+       'RHW'
+</fincl1>
+
+</namelist_defaults>

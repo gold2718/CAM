@@ -8,7 +8,7 @@
       CAM
     ===============
    -->
-    <desc atm="CAM60[%1PCT][%4xCO2][%2xCO2][%CCTS][%CFIRE][%CVBSX][%PORT][%RCO2][%SCAM][%SDYN][%WCCM][%WCMD][%WCSC][%WCTS][%NORESM][%FRC2][%GHGONLY][%NATONLY][%AEROXIDONLY][%AERONLY][%OXIDONLY][%OZONEONLY][%LUONLY][%PINTCF][%PIAER][%PIAEROXID][%NORBC][%GHG2014][%GHGNOH2O2014][%CO22014][%N2O2014][%CH42014][%CH4NOH2O2014][%BC2014][%OC2014][%SO22014][%AER2014][%AEROXID2014][%SO2OXID2014][%NTCF2014][%ANTHRO2014][%GHGOZONELU2014][%OZONE2014][%H2O2014][%OXID2014][%FSST][%NORPDDMSBC][%NORPIBC][%SSP245][%AERLOW][%FRC2EXT][%COVBASLIN][%COVFOSFUE][%COVMODGRE][%COVSTRGRE][%COVTWOBLI]">CAM cam6 physics:</desc>
+    <desc atm="CAM60[%1PCT][%4xCO2][%2xCO2][%CCTS][%CFIRE][%CVBSX][%PORT][%RCO2][%SCAM][%SDYN][%WCCM][%WCMD][%WCSC][%WCTS][%NORESM][%FRC2][%GHGONLY][%NATONLY][%AEROXIDONLY][%AERONLY][%OXIDONLY][%OZONEONLY][%LUONLY][%PINTCF][%PIAER][%PIAEROXID][%NORBC][%GHG2014][%GHGNOH2O2014][%CO22014][%N2O2014][%CH42014][%CH4NOH2O2014][%BC2014][%OC2014][%SO22014][%AER2014][%AEROXID2014][%SO2OXID2014][%NTCF2014][%ANTHRO2014][%GHGOZONELU2014][%OZONE2014][%H2O2014][%OXID2014][%FSST][%NORPDDMSBC][%NORPIBC][%SSP245][%AERLOW][%FRC2EXT][%COVBASLIN][%COVFOSFUE][%COVMODGRE][%COVSTRGRE][%COVTWOBLI][%TROPSTRATCHEM]">CAM cam6 physics:</desc>
     <desc atm="CAM50[%CCTS][%CLB][%PORT][%RCO2][%SCAM][%SDYN][%WCSC][%WCTS]"   >CAM cam5 physics:</desc>
     <desc atm="CAM40[%PORT][%RCO2][%SCAM][%SDYN][%TMOZ][%WXIE][%WXIED][%WCMD]" >CAM cam4 physics:</desc>
     <desc atm="CAM[%ADIAB][%DABIP04][%TJ16][%HS94][%KESSLER][%RCO2]">CAM simplified and non-versioned physics :</desc>
@@ -128,7 +128,7 @@
       <value compset="_CAM50%CLB">-clubb_sgs</value>
       <value compset="_(CAM40|CAM50|CAM60)%SCAM">-dyn eul -scam</value>
       <value compset="_CAM40%TMOZ">-chem trop_mozart</value>
-      <value compset="_CAM.*_BGC%B">-co2_cycle</value>
+      <!--value compset="_CAM.*_BGC%B">-co2_cycle</value-->
 
       <!-- Match against "%WC" to set defaults for all WACCM cases. -->
       <!-- Later settings of "-chem" take precedence over earlier ones. -->
@@ -171,7 +171,8 @@
       <value compset="_CAM60%NORESM%FSST"       >-chem trop_mam_oslo -camnor -cosp</value>
       <value compset="_CAM60%NORESM%NORPDDMSBC" >-chem trop_mam_oslo -camnor -cosp</value>
       <value compset="_CAM60%NORESM%NORPIBC"    >-chem trop_mam_oslo -camnor -cosp</value>
-      <value compset="_CAM60%NORESM%NUDGE"      >-chem trop_mam_oslo -camnor-offline_dyn</value>
+      <value compset="_CAM60%NORESM%NUDGE"      >-chem trop_mam_oslo -camnor -offline_dyn</value>
+      <value compset="_CAM60%NORESM%TROPSTRATCHEM" >-chem tropstrat_mam_oslo -camnor </value>
 
     </values>
     <group>build_component_cam</group>
@@ -269,6 +270,8 @@
       <value compset="2000_CAM60%NORESM"            >2000_cam6_noresm</value>
       <value compset="2000_CAM60%NORESM%FRC2"       >2000_cam6_noresm_frc2</value>
       <value compset="1850_CAM60%NORESM"            >1850_cam6_noresm</value>
+      <value compset="1850_CAM60%NORESM%NORBC%TROPSTRATCHEM">1850_cam6_noresm_tropstratchem</value>
+      <value compset="1850_CAM60%NORESM%TROPSTRATCHEM">1850_cam6_noresm_tropstratchem</value>
       <value compset="1850_CAM60%NORESM%FRC2"       >1850_cam6_noresm_frc2</value>
       <value compset="1850_CAM60%NORESM%NORBC%FRC2" >1850_cam6_noresm_frc2</value>
 
@@ -316,6 +319,7 @@
       <value compset="HIST_CAM60%NORESM%FRC2"            >hist_cam6_noresm_frc2</value>
       <value compset="HIST_CAM60%NORESM%FSST%FRC2"       >hist_cam6_noresm_frc2</value>
       <value compset="HIST_CAM60%NORESM%NORPDDMSBC%FRC2" >hist_cam6_noresm_frc2</value>
+      <value compset="HIST_CAM60%NORESM%TROPSTRATCHEM">hist_cam6_noresm_tropstratchem</value>
 
       <!-- NorESM emissions driven compsets -->
       <value compset="1850_CAM60%NORESM.*_BGC%BPRPDMS"     >1850esm_cam6_noresm</value>
@@ -348,6 +352,8 @@
 
       <value compset="SSP370_CAM60%NORESM%NORBC%FRC2"        >ssp370_cam6_noresm_frc2</value>
       <value compset="SSP370_CAM60%NORESM%NORBC%AERLOW%FRC2" >ssp370_cam6_noresm_aerlow_frc2</value>
+      <value compset="SSP585_CAM60%NORESM%TROPSTRATCHEM">ssp585_cam6_noresm_tropstratchem</value>
+      <value compset="SSP370_CAM60%NORESM%NORPDDMSBC%TROPSTRATCHEM">ssp370_cam6_noresm_tropstratchem</value>
 
       <value compset="SSP245_CAM60%NORESM%COVBASLIN%FRC2"  >ssp245_cam6_noresm_covbaslin_frc2</value>
       <value compset="SSP245_CAM60%NORESM%COVFOSFUE%FRC2"  >ssp245_cam6_noresm_covfosfue_frc2</value>
