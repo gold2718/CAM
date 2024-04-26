@@ -10,10 +10,10 @@ module phys_control
 !                             Add vars to indicate physics version and chemistry type.
 !-----------------------------------------------------------------------
 
-use spmd_utils,        only: masterproc
-use cam_logfile,       only: iulog
-use cam_abortutils,    only: endrun
-use shr_kind_mod,      only: r8 => shr_kind_r8, cl=>shr_kind_cl
+use spmd_utils,     only: masterproc
+use cam_logfile,    only: iulog
+use cam_abortutils, only: endrun
+use shr_kind_mod,   only: r8 => shr_kind_r8, cl=>shr_kind_cl
 
 implicit none
 private
@@ -56,7 +56,7 @@ logical           :: history_vdiag        = .false.    ! output the variables us
 logical           :: history_aerosol      = .false.    ! output the MAM aerosol variables and tendencies
 logical           :: history_aero_optics  = .false.    ! output the aerosol
 logical           :: history_eddy         = .false.    ! output the eddy variables
-logical           :: history_budget       = .false.    ! output tendencies and state variables for T, water vapor,
+logical           :: history_budget       = .false.    ! output tendencies and state variables for T, water vapor, 
                                                        ! cloud ice and cloud liquid budgets
 logical           :: convproc_do_aer      = .false.    ! switch for new convective scavenging treatment for modal aerosols
 
