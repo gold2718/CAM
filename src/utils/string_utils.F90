@@ -6,28 +6,32 @@ module string_utils
 
 ! Public interface methods
 
-   public ::&
-      to_upper, &   ! Convert character string to upper case
-      to_lower, &   ! Convert character string to lower case
-      INCSTR, &     ! increments a string
-      GLC           ! Position of last significant character in string
+   public ::    &
+      to_upper, & ! Convert character string to upper case
+      to_lower, & ! Convert character string to lower case
+      INCSTR,   & ! increments a string
+      GLC,      & ! Position of last significant character in string
+      int2str
 
+   private :: LASTND
+
+!=============================================================================
 contains
+!=============================================================================
 
 function to_upper(str)
 
-!----------------------------------------------------------------------- 
-! Purpose: 
+!-----------------------------------------------------------------------
+! Purpose:
 ! Convert character string to upper case.
-! 
-! Method: 
+!
+! Method:
 ! Use achar and iachar intrinsics to ensure use of ascii collating sequence.
 !
 ! Author:  B. Eaton, July 2001
-!     
+!
 ! $Id$
-!----------------------------------------------------------------------- 
-   implicit none
+!-----------------------------------------------------------------------
 
    character(len=*), intent(in) :: str      ! String to convert to upper case
    character(len=len(str))      :: to_upper
@@ -51,20 +55,21 @@ function to_upper(str)
 
 end function to_upper
 
+!=============================================================================
+
 function to_lower(str)
 
-!----------------------------------------------------------------------- 
-! Purpose: 
+!-----------------------------------------------------------------------
+! Purpose:
 ! Convert character string to lower case.
-! 
-! Method: 
+!
+! Method:
 ! Use achar and iachar intrinsics to ensure use of ascii collating sequence.
 !
 ! Author:  B. Eaton, July 2001
-!     
+!
 ! $Id$
-!----------------------------------------------------------------------- 
-   implicit none
+!-----------------------------------------------------------------------
 
    character(len=*), intent(in) :: str      ! String to convert to lower case
    character(len=len(str))      :: to_lower
@@ -88,6 +93,8 @@ function to_lower(str)
 
 end function to_lower
 
+!=============================================================================
+
 integer function INCSTR( s, inc )
   !-----------------------------------------------------------------------
   ! 	... Increment a string whose ending characters are digits.
@@ -99,8 +106,6 @@ integer function INCSTR( s, inc )
   !           -1 error: no trailing digits in string
   !           -2 error: incremented integer is out of range
   !-----------------------------------------------------------------------
-
-  implicit none
 
   !-----------------------------------------------------------------------
   ! 	... Dummy variables
@@ -166,6 +171,8 @@ integer function INCSTR( s, inc )
 
 end function INCSTR
 
+!=============================================================================
+
 integer function LASTND( cs )
   !-----------------------------------------------------------------------
   ! 	... Position of last non-digit in the first input token.
@@ -174,10 +181,8 @@ integer function LASTND( cs )
   !     	    = 0  => token is all digits (or empty)
   !-----------------------------------------------------------------------
 
-  implicit none
-
   !-----------------------------------------------------------------------
-  ! 	... Dummy arguments
+  ! 	... Dummy argument
   !-----------------------------------------------------------------------
   character(len=*), intent(in) :: cs       !  Input character string
 
@@ -204,16 +209,16 @@ integer function LASTND( cs )
 
 end function LASTND
 
+!=============================================================================
+
 integer function GLC( cs )
   !-----------------------------------------------------------------------
-  ! 	... Position of last significant character in string. 
+  ! 	... Position of last significant character in string.
   !           Here significant means non-blank or non-null.
   !           Return values:
   !               > 0  => position of last significant character
   !               = 0  => no significant characters in string
   !-----------------------------------------------------------------------
-
-  implicit none
 
   !-----------------------------------------------------------------------
   ! 	... Dummy arguments
@@ -239,5 +244,21 @@ integer function GLC( cs )
   GLC = n
 
 end function GLC
+
+!=============================================================================
+
+character(len=10) function int2str(n)
+
+   ! return default integer as a left justified string
+
+   ! arguments
+   integer, intent(in) :: n
+   !----------------------------------------------------------------------------
+
+   write(int2str,'(i0)') n
+
+end function int2str
+
+!=============================================================================
 
 end module string_utils

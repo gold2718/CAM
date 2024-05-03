@@ -2266,7 +2266,7 @@ if ($chem eq 'trop_mam_oslo' or $chem eq 'tropstrat_mam_oslo') {
     unless (defined $nl->get_value('srf_emis_type')) {
         add_default($nl, 'srf_emis_type',      'val'=>'CYCLICAL');
         add_default($nl, 'srf_emis_cycle_yr',  'val'=>'2000');
-    } 
+    }
 
     # Vertical emission datasets:
     %species = ();
@@ -2365,7 +2365,7 @@ if ($chem =~ /_mam4/ and $phys =~ /cam6/) {
                 'pom_a4_an_srf_file'  => 'pom_a4',
                 'pom_a4_bb_srf_file'  => 'pom_a4' );
     }
-	    
+
     # for mechanism missing full tropospheric chemistry
     if ($chem =~ /trop_mam/ or $chem =~ /waccm_ma/ or $chem =~ /waccm_sc/) {
         %species = (%species,
@@ -2920,7 +2920,9 @@ unless (defined $nl->get_value('dms_source_type')) {
 #add_default($nl, 'opom_cycle_year');
 #--djlo--
 
-if ($chem =~ /_mam_oslo/) {$nl->set_variable_value('phys_ctl_nl','use_hetfrz_classnuc','.true.');}
+if ($chem =~ /_mam_oslo/) {
+  add_default($nl, 'hetfrz_aer_scalfac');
+}
 
 if ($waccmx) {
   my $wmx_opt = $nl->get_value('waccmx_opt');
@@ -2959,8 +2961,8 @@ if ($waccmx) {
     add_default($nl,'wei05_coefs_file');
     add_default($nl,'solar_wind_data_file');
   }
-  add_default($nl,'ionos_xport_nsplit');  
-  add_default($nl,'steady_state_ion_elec_temp', 'val'=>'.false.');  
+  add_default($nl,'ionos_xport_nsplit');
+  add_default($nl,'steady_state_ion_elec_temp', 'val'=>'.false.');
 }
 
 # Chemistry options
@@ -3150,6 +3152,10 @@ if ($clubb_sgs  =~ /$TRUE/io) {
    add_default($nl, 'clubb_l_lscale_plume_centered');
    add_default($nl, 'clubb_l_use_ice_latent');
    add_default($nl, 'clubb_do_liqsupersat');
+   add_default($nl, "clubb_meltpt_temp");
+
+   add_default($nl, "clubb_meltpt_temp");
+   add_default($nl, "clubb_dt_low");
 }
 
 # Tuning for wet scavenging of modal aerosols

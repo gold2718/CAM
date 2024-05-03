@@ -1,9 +1,9 @@
 
 history_aerosol=.true.
 
-nhtfrq = 0, -24, -6, -6, -3,  -3 , -1,   1, -24 
+nhtfrq = 0, -24, -6, -6, -3,  -3 , -1,   1, -24
 
-mfilt  = 1,   73, 292, 292, 584, 584, 584, 240, 365 
+mfilt  = 1,   73, 292, 292, 584, 584, 584, 240, 365
 
 ndens  = 2,   2,  2,  2,   2, 2,   2,   1, 1
 
@@ -30,6 +30,9 @@ fincl6='UBOT:I','VBOT:I','TREFHT:I','QREFHT:I','TS:I','SST:I','PS:I','ICEFRAC:I'
 fincl7='PS:A','TREFHT:A','MMRPM2P5_SRF:A'
 
 
-do_circulation_diags           = .true. 
+do_circulation_diags           = .true.
 
-
+! CMIP6 settings for NorESM physics
+hetfrz_aer_scalfac = 1.0D0
+clubb_meltpt_temp = 268.15D0
+clubb_dt_low      = 238.15D0

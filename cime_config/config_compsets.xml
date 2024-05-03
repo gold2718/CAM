@@ -60,9 +60,8 @@
 
   <!-- comment on the naming of NorESM compsets
 
-(1) CAM60%NORESM versus CAM60%PTAERO :
+(1) CAM60%NORESM
 CAM60%NORESM : the compsets used and created for CMIP6 use "NORESM" to activate typically NorESM2 settings
-CAM60%PTAERO : older compsets use "PTAERO" to activate typically NorESM2 settings
 
 (2) presence of frc2 (FRC2) in the compset name :
 WITHOUT "frc2" in name : uses multiple emission files per species (leads on fram HPC to irreprudicibility for fully-coupled compsets)

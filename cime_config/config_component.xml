@@ -8,7 +8,7 @@
       CAM
     ===============
    -->
-    <desc atm="CAM60[%1PCT][%4xCO2][%2xCO2][%CCTS][%CFIRE][%CVBSX][%PORT][%RCO2][%SCAM][%SDYN][%WCCM][%WCMD][%WCSC][%WCTS][%NORESM][%FRC2][%GHGONLY][%NATONLY][%AEROXIDONLY][%AERONLY][%OXIDONLY][%OZONEONLY][%LUONLY][%PINTCF][%PIAER][%PIAEROXID][%NORBC][%GHG2014][%GHGNOH2O2014][%CO22014][%N2O2014][%CH42014][%CH4NOH2O2014][%BC2014][%OC2014][%SO22014][%AER2014][%AEROXID2014][%SO2OXID2014][%NTCF2014][%ANTHRO2014][%GHGOZONELU2014][%OZONE2014][%H2O2014][%OXID2014][%FSST][%NORPDDMSBC][%NORPIBC][%SSP245][%AERLOW][%FRC2EXT][%COVBASLIN][%COVFOSFUE][%COVMODGRE][%COVSTRGRE][%COVTWOBLI][%TROPSTRATCHEM]">CAM cam6 physics:</desc>
+    <desc atm="CAM60[%1PCT][%4xCO2][%2xCO2][%CCTS][%CFIRE][%CVBSX][%PORT][%RCO2][%SCAM][%SDYN][%WCCM][%WCMD][%WCSC][%WCTS][%NORESM][%FRC2][%CLOUD2][%GHGONLY][%NATONLY][%AEROXIDONLY][%AERONLY][%OXIDONLY][%OZONEONLY][%LUONLY][%PINTCF][%PIAER][%PIAEROXID][%NORBC][%GHG2014][%GHGNOH2O2014][%CO22014][%N2O2014][%CH42014][%CH4NOH2O2014][%BC2014][%OC2014][%SO22014][%AER2014][%AEROXID2014][%SO2OXID2014][%NTCF2014][%ANTHRO2014][%GHGOZONELU2014][%OZONE2014][%H2O2014][%OXID2014][%FSST][%NORPDDMSBC][%NORPIBC][%SSP245][%AERLOW][%FRC2EXT][%COVBASLIN][%COVFOSFUE][%COVMODGRE][%COVSTRGRE][%COVTWOBLI][%TROPSTRATCHEM]">CAM cam6 physics:</desc>
     <desc atm="CAM50[%CCTS][%CLB][%PORT][%RCO2][%SCAM][%SDYN][%WCSC][%WCTS]"   >CAM cam5 physics:</desc>
     <desc atm="CAM40[%PORT][%RCO2][%SCAM][%SDYN][%TMOZ][%WXIE][%WXIED][%WCMD]" >CAM cam4 physics:</desc>
     <desc atm="CAM[%ADIAB][%DABIP04][%TJ16][%HS94][%KESSLER][%RCO2]">CAM simplified and non-versioned physics :</desc>
@@ -22,7 +22,7 @@
     <desc option="2xCO2" >abrupt doubling of CO2 with other forcings maintained at 1850 piControl levels :</desc>
     <desc option="1PCT"  >ramped CO2 increasing by 1% per year with other forcings maintained at 1850 piControl levels (CMIP6 DECK 1pctCO2 experiment) :</desc>
 
-    <desc atm="CAM60%NORESM" >cam 6 and general NorESM  changes + Production tagged aerosols (OSLO_AERO)</desc>
+    <desc atm="CAM60%NORESM" >CAM 6, general NorESM changes, and production tagged aerosols (OSLO_AERO)</desc>
 
   <!--
     ===============
@@ -42,6 +42,13 @@
     <desc option="CVBSX" >CAM-Chem troposphere/stratosphere chem with extended volatility basis set SOA scheme and modal aersols :</desc>
     <desc option="RCO2"  >CAM CO2 ramp: </desc>
     <desc option="TMOZ"  >CAM tropospheric chemistry with bulk aerosols:</desc>
+
+  <!--
+    ================
+     CAM-Nor Options
+    ================
+  -->
+  <desc option="CLOUD2">Runtime settings for the keyClim Cloud2 experiment"</desc>
 
   <!--
     ===============
@@ -538,6 +545,7 @@
     <value compset="DOCN%SOMAQP">$SRCROOT/components/cam/cime_config/usermods_dirs/aquap</value>
     <value compset="_CAM40%WX.*_CLM40" grid="a%1.9x2.5_l%1.9x2.5">$SRCROOT/components/cam/cime_config/usermods_dirs/waccmx</value>
     <value compset="CAM[456]0%SCAM" >$SRCROOT/components/cam/cime_config/usermods_dirs/scam_mandatory</value>
+    <value compset="CLOUD2">$SRCROOT/components/cam/cime_config/usermods_dirs/cmip6_noresm_keyCLIM_cloud2</value>
     </values>
     <group>run_component_cam</group>
     <file>env_case.xml</file>
