@@ -10,7 +10,7 @@
 <!--              CAM-Nor test-supported COMPSETS             -->
 <!--              @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@             -->
 
-  <test compset="NFLTHISTghgmam4_v0d" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
+  <test compset="NFLTHISTghgmam4" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
@@ -18,7 +18,7 @@
       <option name="wallclock">00:10:00</option>
     </options>
   </test>
-  <test compset="NFLTHISToslo_v0d" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P18" testmods="cam/outfrq9s">
+  <test compset="NFLTHISToslo" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P18" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
@@ -102,7 +102,7 @@
     </options>
   </test>
 
-  <test compset="FLTHIST_v0d" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
+  <test compset="FLTHIST" grid="ne3pg3_ne3pg3_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>

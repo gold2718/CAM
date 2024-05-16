@@ -64,11 +64,11 @@
   </compset>
 
   <compset>
-    <alias>NFLTHISTghgmam4_v0d</alias>
+    <alias>NFLTHISTghgmam4</alias>
     <lname>HIST_CAM%DEV%LT%NORESM%GHGMAM4_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
   <compset>
-    <alias>NFLTHISToslo_v0d</alias>
+    <alias>NFLTHISToslo</alias>
     <lname>HIST_CAM%DEV%LT%NORESM%CAMoslo_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
 
@@ -87,12 +87,12 @@
   </compset>
 
   <compset>
-    <alias>FLTHIST_v0d</alias>
+    <alias>FLTHIST</alias>
     <lname>HIST_CAM%DEV%LT%GHGMAM4_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
 
   <compset>
-    <alias>FMTHIST_v0d</alias>
+    <alias>FMTHIST</alias>
     <lname>HIST_CAM%DEV%MT%GHGMAM4_CLM51%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
 
@@ -560,6 +560,26 @@
     <lname>HIST_CAM60%WXIED%SDYN_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
 
+  <compset>
+    <alias>FC2000climo_GC</alias>
+    <lname>2000_CAM60%GEOSCHEM%HEMCO_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_CISM2%NOEVOLVE_SWAV</lname>
+  </compset>
+
+  <compset>
+    <alias>FC2010climo_GC</alias>
+    <lname>2010_CAM60%GEOSCHEM%HEMCO_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_CISM2%NOEVOLVE_SWAV</lname>
+  </compset>
+
+  <compset>
+    <alias>FCHIST_GC</alias>
+    <lname>HIST_CAM60%GEOSCHEM%HEMCO_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_CISM2%NOEVOLVE_SWAV</lname>
+  </compset>
+
+  <compset>
+    <alias>FCnudged_GC</alias>
+    <lname>HIST_CAM60%GEOSCHEM%HEMCO%NUDG_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+  </compset>
+
   <!-- ENTRIES -->
 
   <entries>
@@ -573,6 +593,7 @@
 	<value  compset="HIST_CAM60%WCMD%SDYN" grid="a%1.9x2.5">1980-01-01</value>
 	<value  compset="HIST_CAM60%WCSC">1850-01-01</value>
 	<value  compset="HIST_CAM60%CCTS[12]">2010-01-01</value>
+	<value  compset="HIST_CAM60%GEOSCHEM">2015-01-01</value>
 	<value  compset="HIST_CAM60%CCTS[12]" grid="a%ne0np4CONUS">2013-01-01</value>
 	<value  compset="HIST_CAM60%CVBSX">1995-01-01</value>
 	<value  compset="HIST_CAM60%CFIRE">1995-01-01</value>
@@ -581,6 +602,8 @@
  	<value  compset="_CAM.*%SDYN" grid="a%0.47x0.63">2010-01-01</value>
 	<value  compset="_CAM60%(WCCM|WCTS|WXIE).*%SDYN">1980-01-01</value>
  	<value  compset="_CAM40%WX.*%SDYN">2000-01-01</value>
+        <value  compset="2000_CAM60%GEOSCHEM">2000-01-01</value>
+        <value  compset="2010_CAM60%GEOSCHEM">2010-01-01</value>
 
 	<value  compset="C2R4_CAM">2004-01-01</value>
 	<value  compset="C2R[68]_CAM">1950-01-01</value>
