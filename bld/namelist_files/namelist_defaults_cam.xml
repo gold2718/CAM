@@ -2776,6 +2776,8 @@
 <cldfrc2m_do_subgrid_growth phys="cam6"   >.true.</cldfrc2m_do_subgrid_growth>
 <cldfrc2m_do_subgrid_growth phys="cam_dev">.true.</cldfrc2m_do_subgrid_growth>
 
+<cldfrc2m_do_avg_aist_algs                >.false.</cldfrc2m_do_avg_aist_algs>
+
 <!-- Cldwat -->
 <rk_strat_icritc                                                        >  5.0e-6  </rk_strat_icritc>
 <rk_strat_icritc  dyn="fv"           unicon="1"                         >  9.5e-6  </rk_strat_icritc>
