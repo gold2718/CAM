@@ -14,6 +14,8 @@ src/physics/silhs
 src/chemistry/geoschem/geoschem_src
 src/physics/pumas
 src/physics/pumas-frozen
+src/physics/rrtmgp/data/
+src/physics/rrtmgp/ext/
 src/dynamics/fv3/atmos_cubed_sphere
 src/hemco
 libraries/FMS
