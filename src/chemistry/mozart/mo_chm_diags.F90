@@ -779,18 +779,24 @@ contains
     ! Generate compund sum
 
     ! so4_a1,so4_a2,so4_a3
-    ! bc_a1,bc_a4
-    ! pom_a1,pom_a4
-    ! ncl_a1,ncl_a2,ncl_a3
-    ! soa_a1,soa_a2
-    ! num_a1,num_a2,num_a3,num_a4
-
     sum_so4(:,:) = 0._r8
+
+    ! bc_a1,bc_a4
     sum_bc(:,:) = 0._r8
+
+    ! pom_a1,pom_a4
     sum_om(:,:) = 0._r8
+
+    ! dst
     sum_dst(:,:) = 0._r8
+
+    ! ncl_a1,ncl_a2,ncl_a3
     sum_ss(:,:) = 0._r8
+
+    ! soa_a1,soa_a2
     sum_soa(:,:) = 0._r8
+
+    ! num_a1,num_a2,num_a3,num_a4
     sum_num(:,:) = 0._r8
 
     do m = 1,gas_pcnst
