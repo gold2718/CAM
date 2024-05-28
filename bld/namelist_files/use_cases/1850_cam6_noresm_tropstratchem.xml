@@ -8,6 +8,8 @@
 
 <history_aerosol>.true.</history_aerosol>
 <modal_strat_sulfate>.true.</modal_strat_sulfate>
+<lght_no_prd_factor hgrid="0.9x1.25"> 1.0 </lght_no_prd_factor>
+<lght_no_prd_factor hgrid="1.9x2.5"> 10.0 </lght_no_prd_factor>
 
 <!-- Solar constant -->
 <solar_irrad_data_file     >   'atm/cam/solar/SolarForcingCMIP6piControl_c160921.nc'   </solar_irrad_data_file>
