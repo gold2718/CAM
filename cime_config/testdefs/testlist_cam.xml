@@ -40,7 +40,7 @@
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
     <options>
-      <option name="wallclock">00:10:00</option>
+      <option name="wallclock">00:30:00</option>
     </options>
   </test>
   <test compset="NF2000tropmam4" grid="ne30pg3_ne30pg3_mtn14" name="ERP_Ln9" testmods="cam/outfrq9s">
@@ -48,7 +48,7 @@
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
     <options>
-      <option name="wallclock">00:10:00</option>
+      <option name="wallclock">00:30:00</option>
     </options>
   </test>
 
@@ -89,7 +89,7 @@
       <machine name="betzy" compiler="intel" category="prealpha_noresm"/>
     </machines>
     <options>
-      <option name="wallclock">00:10:00</option>
+      <option name="wallclock">00:30:00</option>
     </options>
   </test>
 
