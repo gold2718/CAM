@@ -179,7 +179,8 @@
       <value compset="_CAM60%NORESM%NORPDDMSBC" >-chem trop_mam_oslo -camnor -cosp</value>
       <value compset="_CAM60%NORESM%NORPIBC"    >-chem trop_mam_oslo -camnor -cosp</value>
       <value compset="_CAM60%NORESM%NUDGE"      >-chem trop_mam_oslo -camnor -offline_dyn</value>
-      <value compset="_CAM60%NORESM%TROPSTRATCHEM" >-chem tropstrat_mam_oslo -camnor </value>
+      <value compset="_CAM60%NORESM%TROPSTRATCHEM"       >-chem tropstrat_mam_oslo -camnor </value>
+      <value compset="_CAM60%NORESM%NORBC%TROPSTRATCHEM" >-chem tropstrat_mam_oslo -camnor </value>
 
     </values>
     <group>build_component_cam</group>
