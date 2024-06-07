@@ -1,0 +1,207 @@
+[submodule "chem_proc"]
+	path = chem_proc
+	url = https://github.com/ESCOMP/CHEM_PREPROCESSOR.git
+        fxrequired = AlwaysRequired
+        fxtag = chem_proc5_0_06
+	fxDONOTUSEurl = https://github.com/ESCOMP/CHEM_PREPROCESSOR.git
+
+[submodule "carma"]
+	path = src/physics/carma/base
+	url = https://github.com/ESCOMP/CARMA_base.git
+        fxrequired = AlwaysRequired
+        fxtag = carma4_01
+        fxDONOTUSEurl = https://github.com/ESCOMP/CARMA_base.git
+
+[submodule "pumas"]
+	path = src/physics/pumas
+	url = https://github.com/ESCOMP/PUMAS
+        fxrequired = AlwaysRequired
+        fxtag = pumas_cam-release_v1.36
+        fxDONOTUSEurl = https://github.com/ESCOMP/PUMAS
+
+[submodule "pumas-frozen"]
+	path = src/physics/pumas-frozen
+	url = https://github.com/ESCOMP/PUMAS
+        fxrequired = AlwaysRequired
+        fxtag = pumas_cam-release_v1.17_rename
+        fxDONOTUSEurl = https://github.com/ESCOMP/PUMAS
+
+[submodule "ali_arms"]
+	path = src/physics/ali_arms
+	url = https://github.com/ESCOMP/ALI-ARMS
+        fxrequired = AlwaysOptional
+        fxtag = ALI_ARMS_v1.0.1
+        fxDONOTUSEurl = https://github.com/ESCOMP/ALI-ARMS
+
+[submodule "atmos_phys"]
+	path = src/atmos_phys
+	url = https://github.com/ESCOMP/atmospheric_physics
+        fxtag = atmos_phys0_02_006
+        fxrequired = AlwaysRequired
+	fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
+
+[submodule "geoschem"]
+	path = src/chemistry/geoschem/geoschem_src
+	url = https://github.com/geoschem/geos-chem.git
+        fxrequired = AlwaysOptional
+        fxtag = 14.1.2
+        fxDONOTUSEurl = https://github.com/geoschem/geos-chem.git
+
+[submodule "hemco"]
+	path = src/hemco
+	url = https://github.com/ESCOMP/HEMCO_CESM.git
+        fxtag = hemco-cesm1_2_1_hemco3_6_3_cesm_rme
+        fxrequired = AlwaysRequired
+	fxDONOTUSEurl = https://github.com/ESCOMP/HEMCO_CESM.git
+
+[submodule "rte-rrtmgp"]
+	path = src/physics/rrtmgp/ext
+	url = https://github.com/earth-system-radiation/rte-rrtmgp.git
+        fxrequired = AlwaysRequired
+        fxtag = v1.7
+        fxDONOTUSEurl = https://github.com/earth-system-radiation/rte-rrtmgp.git
+
+[submodule "rrtmgp-data"]
+	path = src/physics/rrtmgp/data
+	url = https://github.com/earth-system-radiation/rrtmgp-data.git
+        fxrequired = AlwaysRequired
+        fxtag = v1.8
+        fxDONOTUSEurl = https://github.com/earth-system-radiation/rrtmgp-data.git
+
+[submodule "mpas"]
+	path = src/dynamics/mpas/dycore
+	url = https://github.com/MPAS-Dev/MPAS-Model.git
+        fxrequired = AlwaysOptional
+        fxsparse = ../.mpas_sparse_checkout
+        fxtag = b8c33daa
+	fxDONOTUSEurl = https://github.com/MPAS-Dev/MPAS-Model.git
+
+[submodule "cosp2"]
+	path = src/physics/cosp2/src
+	url = https://github.com/CFMIP/COSPv2.0
+        fxrequired = AlwaysRequired
+        fxsparse = ../.cosp_sparse_checkout
+        fxtag = v2.1.4cesm
+	fxDONOTUSEurl = https://github.com/CFMIP/COSPv2.0
+
+[submodule "clubb"]
+	path = src/physics/clubb
+	url = https://github.com/larson-group/clubb_release
+        fxrequired = AlwaysRequired
+        fxsparse = ../.clubb_sparse_checkout
+        fxtag = clubb_4ncar_20231115_5406350
+        fxDONOTUSEurl = https://github.com/larson-group/clubb_release
+
+[submodule "camnor_phys"]
+	path = src/physics/camnor_phys
+	url = https://github.com/NorESMhub/CAM-Nor-physics
+        fxrequired = AlwaysRequired
+	fxtag = 1f23c7c
+	fxDONOTUSEurl = https://github.com/NorESMhub/CAM-Nor-physics
+
+[submodule "oslo_aero"]
+	path = src/chemistry/oslo_aero
+	url = https://github.com/NorESMhub/OSLO_AERO
+        fxrequired = AlwaysRequired
+	fxtag = 1f23c7c
+	fxDONOTUSEurl = https://github.com/NorESMhub/OSLO_AERO
+
+#-----------------------------
+# Libraries
+#-----------------------------
+
+[submodule "parallelio"]
+path = libraries/parallelio
+url = https://github.com/NCAR/ParallelIO
+fxtag = pio2_6_2
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NCAR/ParallelIO
+
+[submodule "mct"]
+path = libraries/mct
+url = https://github.com/MCSclimate/MCT
+fxtag = MCT_2.11.0
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/MCSclimate/MCT
+
+#-----------------------------
+# Configuration/CCS
+#-----------------------------
+
+[submodule "ccs_config"]
+path = ccs_config
+url = https://github.com/NorESMhub/ccs_config_noresm.git
+fxtag = ccs_config_noresm0.0.35
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NorESMhub/ccs_config_noresm.git
+
+[submodule "cime"]
+path = cime
+url = https://github.com/NorESMhub/cime.git
+fxtag = cime6.1.28_noresm_v0
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NorESMhub/cime.git
+
+#-----------------------------
+# Share
+#-----------------------------
+
+[submodule "share"]
+path = share
+url = https://github.com/NorESMHub/NorESM_share
+fxtag = share1.1.2_noresm_v0
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NorESMHub/NorESM_share
+
+#-----------------------------
+# Components
+#-----------------------------
+
+[submodule "cdeps"]
+path = components/cdeps
+url = https://github.com/ESCOMP/CDEPS.git
+fxtag = cdeps1.0.51
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/ESCOMP/CDEPS.git
+
+[submodule "cice6"]
+path = components/cice
+url = https://github.com/NorESMhub/NorESM_CICE
+fxtag = cesm_cice6_5_0_20240702_noresm_v1
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NorESMhub/NorESM_CICE
+
+[submodule "cism"]
+path = components/cism
+url = https://github.com/ESCOMP/CISM-wrapper
+fxtag = cismwrap_2_2_001
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/ESCOMP/CISM-wrapper
+
+[submodule "clm"]
+path = components/clm
+url = https://github.com/NorESMhub/CTSM
+fxtag = ctsm5.3.0-noresm_v0
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NorESMhub/CTSM
+
+[submodule "cmeps"]
+path = components/cmeps
+url = https://github.com/NorESMhub/CMEPS.git
+fxtag = cmeps1.0.20_noresm_v0
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NorESMhub/CMEPS.git
+
+[submodule "mosart"]
+path = components/mosart
+url = https://github.com/ESCOMP/MOSART
+fxtag = mosart1.1.02
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/ESCOMP/MOSART
+
+[submodule "ww3"]
+	path = components/ww3
+	url = https://github.com/NorESMhub/WW3_interface
+fxtag = ww3_interface_noresm0.0.15
+fxrequired = ToplevelRequired
+fxDONOTUSEurl = https://github.com/NorESMhub/WW3_interface
