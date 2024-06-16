@@ -569,6 +569,11 @@ if ($cfg->get('debug')) {
 my $prescribe_aerosols = $TRUE;
 if ($simple_phys) {$prescribe_aerosols = $FALSE;}
 
+if( $chem =~ /_oslo/){
+    $prescribe_aerosols = $FALSE;
+    print " ==> Using Oslo aerosols: PRESCRIBED AERO = FALSE (not yet implemented) \n"
+}
+
 # Chemistry deposition lists
 if ( ($chem ne 'none') or ( $prog_species ) ){
     my $chem_proc_src = $cfg->get('chem_proc_src');
@@ -952,7 +957,13 @@ else {
 my $aer_model = 'bam';
 if ($prescribed_aero_model eq 'modal' or $chem =~ /_mam/) {$aer_model = 'mam';}
 
-if ($aer_model eq 'mam' ) {
+if ($chem =~ /_mam_oslo/) {$aer_model = 'oslo';}
+
+if ($aer_model eq 'oslo') {
+
+   #do nothing here
+
+} elsif ($aer_model eq 'mam' ) {
 
   my $aero_modes = '3mode';
   if ($chem =~ /_mam7/) {$aero_modes = '7mode';}
@@ -1566,7 +1577,7 @@ elsif ($carma eq 'tholin') {
 
 # turn on stratospheric aerosol forcings in CAM6 configurations
 my $chem_has_ocs = chem_has_species($cfg, 'OCS');
-if (($phys =~ /cam6/ or $phys =~ /cam_dev/) and $chem =~ /_mam/) {
+if (($phys =~ /cam6/ or $phys =~ /cam_dev/) and $chem =~ /_mam/ and $chem ne 'trop_mam_oslo') {
   # turn on volc forcings in cam6 -- prognostic or prescribed
   if ( $chem_has_ocs ) {
       # turn on prognostic stratospheric aerosols
@@ -2693,6 +2704,91 @@ if (($chem eq 'trop_mam4') or ($chem eq 'waccm_sc_mam4') or ($chem eq 'ghg_mam4'
         add_default($nl, $file);
     }
 }
+if ($chem eq 'trop_mam_oslo' ) {
+
+    my %species;
+
+    # Surface emission datasets:
+    %species = ();
+    %species = (%species,
+                 'DMS      -> ' => 'dms_oslo_emis_file',
+                 'SO2      -> ' => 'so2_oslo_emis_file',
+                 'BC_AX    -> ' => 'bc_ax_oslo_emis_file',
+                 'BC_N     -> ' => 'bc_n_oslo_emis_file',
+                 'BC_NI    -> ' => 'bc_ni_oslo_emis_file',
+                 'SO4_PR   -> ' => 'so4_pr_oslo_emis_file',
+                 'OM_NI    -> ' => 'om_ni_oslo_emis_file',
+   	 	           'monoterp -> ' => 'monoterp_oslo_emis_file',
+	  	           'isoprene -> ' => 'isoprene_oslo_emis_file',
+                 );
+
+    my $first = 1;
+    my $pre = "";
+    my $val = "";
+    foreach my $id (sort keys %species) {
+        my $rel_filepath = get_default_value($species{$id} );
+        my $abs_filepath = set_abs_filepath($rel_filepath, $inputdata_rootdir);
+        $val .= $pre . quote_string($id . $abs_filepath);
+        if ($first) {
+            $pre = ",";
+            $first = 0;
+        }
+    }
+    add_default($nl, 'srf_emis_specifier', 'val'=>$val);
+    unless (defined $nl->get_value('srf_emis_type')) {
+        add_default($nl, 'srf_emis_type',      'val'=>'CYCLICAL');
+        add_default($nl, 'srf_emis_cycle_yr',  'val'=>'2000');
+    }
+
+    # Vertical emission datasets:
+    %species = ();
+    %species = ('SO2     -> ' => 'so2_oslo_ext_file',
+                'BC_AX   -> ' => 'bc_ax_oslo_ext_file',
+                'BC_N    -> ' => 'bc_n_oslo_ext_file',
+                'BC_NI   -> ' => 'bc_ni_oslo_ext_file',
+                'OM_NI   -> ' => 'om_ni_oslo_ext_file',
+                'SO4_PR  -> ' => 'so4_pr_oslo_ext_file');
+
+    $first = 1;
+    $pre = "";
+    $val = "";
+    foreach my $id (sort keys %species) {
+        my $rel_filepath = get_default_value($species{$id} );
+        my $abs_filepath = set_abs_filepath($rel_filepath, $inputdata_rootdir);
+        $val .= $pre . quote_string($id . $abs_filepath);
+        if ($first) {
+            $pre = ",";
+            $first = 0;
+        }
+    }
+    add_default($nl, 'ext_frc_specifier', 'val'=>$val);
+    unless (defined $nl->get_value('ext_frc_type')) {
+        add_default($nl, 'ext_frc_type',      'val'=>"'CYCLICAL'");
+	add_default($nl, 'ext_frc_cycle_yr',  'val'=>'2000');
+    }
+
+    # Prescribed species
+    add_default($nl, 'tracer_cnst_specifier', 'val'=>"'O3','OH','NO3','HO2'");
+    unless (defined $nl->get_value('tracer_cnst_type')) {
+	 add_default($nl, 'tracer_cnst_type',    'ver'=>'fixed_ox');
+	 add_default($nl, 'tracer_cnst_cycle_yr','ver'=>'fixed_ox');
+    }
+
+    my @files = ('tracer_cnst_datapath', 'tracer_cnst_file', 'tracer_cnst_filelist');
+    foreach my $file (@files) {
+        add_default($nl, $file, 'ver'=>'fixed_ox');
+    }
+
+    add_default($nl, 'fstrat_list', 'val'=>"' '");
+    add_default($nl, 'flbc_list', 'val'=>"' '");
+
+    # Datasets
+    my @files = ('soil_erod_file',
+                 'xs_long_file', 'rsf_file', 'exo_coldens_file' );
+    foreach my $file (@files) {
+        add_default($nl, $file);
+    }
+}
 if ($chem eq 'trop_mam7') {
 
     my %species;
@@ -3039,6 +3135,24 @@ $use_simple_phys = '.false.';
 if ($simple_phys) {$use_simple_phys = '.true.';}
 $nl->set_variable_value('phys_ctl_nl', 'use_simple_phys', $use_simple_phys);
 
+#Cam-Oslo options
+add_default($nl, 'volc_fraction_coarse');
+add_default($nl, 'aerotab_table_dir');
+add_default($nl, 'ocean_filepath');
+add_default($nl, 'dms_source');
+add_default($nl, 'opom_source');
+unless (defined $nl->get_value('ocean_filename')) {
+    add_default($nl, 'ocean_filename');
+}
+unless (defined $nl->get_value('opom_source_type')) {
+    add_default($nl, 'opom_source_type');
+    add_default($nl, 'opom_cycle_year');
+}
+unless (defined $nl->get_value('dms_source_type')) {
+    add_default($nl, 'dms_source_type');
+    add_default($nl, 'dms_cycle_year');
+}
+
 # WACCM-X runtime options
 add_default($nl, 'waccmx_opt');
 
@@ -3226,7 +3340,7 @@ if ($cfg->get('microphys') =~ /^mg/) {
         my $abs_path = quote_string(set_abs_filepath($rel_path, $cam_dir));
         #overwrite the relative pathname with the absolute pathname
         $nl->set_variable_value('pumas_stochastic_tau_nl', 'pumas_stochastic_tau_kernel_filename', $abs_path);
-      
+
     }else {
     # For CESM2, the decision was made to set micro_do_sb_physics to false
     # This variable is replaced with micro_mg_warm_rain in cam_dev runs

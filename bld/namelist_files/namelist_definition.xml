@@ -5126,13 +5126,14 @@ Default: 'off'
 </entry>
 
 <!--==============================================-->
+<!-- TODO: (mvertens) is this still needed -->
 <!-- Hydrostatic pressure work in mass adjustment -->
-<entry id="dme_energy_adjust" type="logical"  category="NorESM"
-       group="phys_ctl_nl" valid_values="" >
-Switch to use appropriate energy adjustment in dry-mass adjustment at the
-end of tphysac.
-Default: .false.
-</entry>
+<!-- <entry id="dme_energy_adjust" type="logical"  category="NorESM" -->
+<!--        group="phys_ctl_nl" valid_values="" > -->
+<!-- Switch to use appropriate energy adjustment in dry-mass adjustment at the -->
+<!-- end of tphysac. -->
+<!-- Default: .false. -->
+<!-- </entry> -->
 <!--==============================================-->
 
 <entry id="oplus_adiff_limiter" type="real" category="waccmx"

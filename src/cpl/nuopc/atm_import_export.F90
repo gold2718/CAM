@@ -62,6 +62,7 @@ module atm_import_export
   integer                :: emis_nflds = -huge(1)   ! number of fire emission fields from lnd-> atm
   integer, public        :: ndep_nflds = -huge(1)   ! number of nitrogen deposition fields from atm->lnd/ocn
   logical                :: atm_provides_lightning = .false. ! cld to grnd lightning flash freq (min-1)
+  logical, public        :: dms_from_ocn = .false.   ! dms is obtained from ocean as atm import data
   character(*),parameter :: F01 = "('(cam_import_export) ',a,i8,2x,i8,2x,d21.14)"
   character(*),parameter :: F02 = "('(cam_import_export) ',a,i8,2x,i8,2x,i8,2x,d21.14)"
   character(*),parameter :: u_FILE_u = __FILE__
@@ -114,6 +115,8 @@ contains
     logical                :: flds_co2b      ! use case
     logical                :: flds_co2c      ! use case
     character(len=128)     :: fldname
+    logical                :: ispresent
+    logical                :: isset
     character(len=*), parameter :: subname='(atm_import_export:advertise_fields)'
     !-------------------------------------------------------------------------------
 
@@ -140,6 +143,15 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     read(cvalue,*) flds_co2c
     if (masterproc) write(iulog,'(a)') trim(subname)//'flds_co2c = '// trim(cvalue)
+
+    call NUOPC_CompAttributeGet(gcomp, name='dms_ocn2atm', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (ispresent .and. isset) then
+       read(cvalue,*) dms_from_ocn
+    else
+       dms_from_ocn = .false.
+    end if
+    if (masterproc) write(iulog,'(a,l)') trim(subname)//'dms_from_ocn = ',dms_from_ocn
 
     !--------------------------------
     ! Export fields
@@ -290,6 +302,11 @@ contains
     if (carma_fields /= ' ') then
        call fldlist_add(fldsToAtm_num, fldsToAtm, 'Sl_soilw') ! optional for carma
        call set_active_Sl_soilw(.true.) ! check for carma
+    end if
+
+    ! DMS source from ocean
+    if (dms_from_ocn) then
+       call fldlist_add(fldsToAtm_num, fldsToAtm, 'Faoo_dms_ocn') ! optional
     end if
 
     ! ------------------------------------------
