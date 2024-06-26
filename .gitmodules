@@ -92,24 +92,6 @@
         fxtag = clubb_4ncar_20231115_5406350
         fxDONOTUSEurl = https://github.com/larson-group/clubb_release
 
-[submodule "camnor_phys"]
-	path = src/physics/camnor_phys
-	url = https://github.com/NorESMhub/CAM-Nor-physics
-        fxrequired = AlwaysRequired
-	fxtag = 1f23c7c
-	fxDONOTUSEurl = https://github.com/NorESMhub/CAM-Nor-physics
-
-[submodule "oslo_aero"]
-	path = src/chemistry/oslo_aero
-	url = https://github.com/NorESMhub/OSLO_AERO
-        fxrequired = AlwaysRequired
-	fxtag = 1f23c7c
-	fxDONOTUSEurl = https://github.com/NorESMhub/OSLO_AERO
-
-#-----------------------------
-# Libraries
-#-----------------------------
-
 [submodule "parallelio"]
 path = libraries/parallelio
 url = https://github.com/NCAR/ParallelIO
@@ -199,9 +181,3 @@ fxtag = mosart1.1.02
 fxrequired = ToplevelRequired
 fxDONOTUSEurl = https://github.com/ESCOMP/MOSART
 
-[submodule "ww3"]
-	path = components/ww3
-	url = https://github.com/NorESMhub/WW3_interface
-fxtag = ww3_interface_noresm0.0.15
-fxrequired = ToplevelRequired
-fxDONOTUSEurl = https://github.com/NorESMhub/WW3_interface
