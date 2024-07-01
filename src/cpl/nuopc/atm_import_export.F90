@@ -911,7 +911,7 @@ contains
        g = 1
        do c = begchunk,endchunk
           do i = 1,get_ncols_p(c)
-             cam_in(c)%fn2o(i) = -fldptr1d(g) * med2mod_areacor(g)
+             cam_in(c)%fn2o_ocn(i) = -fldptr1d(g) * med2mod_areacor(g)
              g = g + 1
           end do
        end do
@@ -922,7 +922,7 @@ contains
        g = 1
        do c = begchunk,endchunk
           do i = 1,get_ncols_p(c)
-             cam_in(c)%fnh3(i) = -fldptr1d(g) * med2mod_areacor(g)
+             cam_in(c)%fnh3_ocn(i) = -fldptr1d(g) * med2mod_areacor(g)
              g = g + 1
           end do
        end do
