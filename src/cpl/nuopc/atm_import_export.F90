@@ -63,6 +63,9 @@ module atm_import_export
   integer, public        :: ndep_nflds = -huge(1)   ! number of nitrogen deposition fields from atm->lnd/ocn
   logical                :: atm_provides_lightning = .false. ! cld to grnd lightning flash freq (min-1)
   logical, public        :: dms_from_ocn = .false.   ! dms is obtained from ocean as atm import data
+  logical, public        :: brf_from_ocn = .false.   ! brf is obtained from ocean as atm import data
+  logical, public        :: n2o_from_ocn = .false.   ! n2o is obtained from ocean as atm import data
+  logical, public        :: nh3_from_ocn = .false.   ! nh3 is obtained from ocean as atm import data
   character(*),parameter :: F01 = "('(cam_import_export) ',a,i8,2x,i8,2x,d21.14)"
   character(*),parameter :: F02 = "('(cam_import_export) ',a,i8,2x,i8,2x,i8,2x,d21.14)"
   character(*),parameter :: u_FILE_u = __FILE__
@@ -144,7 +147,7 @@ contains
     read(cvalue,*) flds_co2c
     if (masterproc) write(iulog,'(a)') trim(subname)//'flds_co2c = '// trim(cvalue)
 
-    call NUOPC_CompAttributeGet(gcomp, name='dms_ocn2atm', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
+    call NUOPC_CompAttributeGet(gcomp, name='flds_dms', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (ispresent .and. isset) then
        read(cvalue,*) dms_from_ocn
@@ -152,6 +155,33 @@ contains
        dms_from_ocn = .false.
     end if
     if (masterproc) write(iulog,'(a,l)') trim(subname)//'dms_from_ocn = ',dms_from_ocn
+
+    call NUOPC_CompAttributeGet(gcomp, name='flds_brf', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (ispresent .and. isset) then
+       read(cvalue,*) brf_from_ocn
+    else
+       brf_from_ocn = .false.
+    end if
+    if (masterproc) write(iulog,'(a,l)') trim(subname)//'brf_from_ocn = ',brf_from_ocn
+
+    call NUOPC_CompAttributeGet(gcomp, name='flds_n2o', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (ispresent .and. isset) then
+       read(cvalue,*) n2o_from_ocn
+    else
+       n2o_from_ocn = .false.
+    end if
+    if (masterproc) write(iulog,'(a,l)') trim(subname)//'n2o_from_ocn = ',n2o_from_ocn
+
+    call NUOPC_CompAttributeGet(gcomp, name='flds_nh3', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (ispresent .and. isset) then
+       read(cvalue,*) nh3_from_ocn
+    else
+       nh3_from_ocn = .false.
+    end if
+    if (masterproc) write(iulog,'(a,l)') trim(subname)//'nh3_from_ocn = ',nh3_from_ocn
 
     !--------------------------------
     ! Export fields
@@ -306,7 +336,22 @@ contains
 
     ! DMS source from ocean
     if (dms_from_ocn) then
-       call fldlist_add(fldsToAtm_num, fldsToAtm, 'Faoo_dms_ocn') ! optional
+       call fldlist_add(fldsToAtm_num, fldsToAtm, 'Faoo_fdms_ocn') ! optional
+    end if
+
+    ! BRF source from ocean
+    if (brf_from_ocn) then
+       call fldlist_add(fldsToAtm_num, fldsToAtm, 'Faoo_fbrf_ocn') ! optional
+    end if
+
+    ! N2O source from ocean
+    if (n2o_from_ocn) then
+       call fldlist_add(fldsToAtm_num, fldsToAtm, 'Faoo_fn2o_ocn') ! optional
+    end if
+
+    ! NH3 source from ocean
+    if (nh3_from_ocn) then
+       call fldlist_add(fldsToAtm_num, fldsToAtm, 'Faoo_fnh3_ocn') ! optional
     end if
 
     ! ------------------------------------------
@@ -838,12 +883,46 @@ contains
           call shr_sys_abort(subname // ':: co2_readFlux_ocn and x2a_Faoo_fco2_ocn cannot both be active')
        end if
     end if
-    call state_getfldptr(importState,  'Faoo_dms_ocn', fldptr=fldptr1d, exists=exists, rc=rc)
+
+    call state_getfldptr(importState,  'Faoo_fdms_ocn', fldptr=fldptr1d, exists=exists, rc=rc)
     if (exists) then
        g = 1
        do c = begchunk,endchunk
           do i = 1,get_ncols_p(c)
              cam_in(c)%fdms(i) = -fldptr1d(g) * med2mod_areacor(g)
+             g = g + 1
+          end do
+       end do
+    end if
+
+    call state_getfldptr(importState,  'Faoo_fbrf_ocn', fldptr=fldptr1d, exists=exists, rc=rc)
+    if (exists) then
+       g = 1
+       do c = begchunk,endchunk
+          do i = 1,get_ncols_p(c)
+             cam_in(c)%fbrf(i) = -fldptr1d(g) * med2mod_areacor(g)
+             g = g + 1
+          end do
+       end do
+    end if
+
+    call state_getfldptr(importState,  'Faoo_fn2o_ocn', fldptr=fldptr1d, exists=exists, rc=rc)
+    if (exists) then
+       g = 1
+       do c = begchunk,endchunk
+          do i = 1,get_ncols_p(c)
+             cam_in(c)%fn2o(i) = -fldptr1d(g) * med2mod_areacor(g)
+             g = g + 1
+          end do
+       end do
+    end if
+
+    call state_getfldptr(importState,  'Faoo_fnh3_ocn', fldptr=fldptr1d, exists=exists, rc=rc)
+    if (exists) then
+       g = 1
+       do c = begchunk,endchunk
+          do i = 1,get_ncols_p(c)
+             cam_in(c)%fnh3(i) = -fldptr1d(g) * med2mod_areacor(g)
              g = g + 1
           end do
        end do

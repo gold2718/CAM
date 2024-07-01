@@ -100,7 +100,7 @@ module camsrfexch
      real(r8) :: tref(pcols)             ! ref height surface air temp
      real(r8) :: qref(pcols)             ! ref height specific humidity
      real(r8) :: u10(pcols)              ! 10m wind speed
-     real(r8) :: ugustOut(pcols)         ! gustiness added 
+     real(r8) :: ugustOut(pcols)         ! gustiness added
      real(r8) :: u10withGusts(pcols)     ! 10m wind speed with gusts added
      real(r8) :: ts(pcols)               ! merged surface temp
      real(r8) :: sst(pcols)              ! sea surface temp
@@ -108,7 +108,10 @@ module camsrfexch
      real(r8) :: snowhice(pcols)         ! snow depth over ice
      real(r8) :: fco2_lnd(pcols)         ! co2 flux from lnd
      real(r8) :: fco2_ocn(pcols)         ! co2 flux from ocn
-     real(r8) :: fdms(pcols)             ! dms flux
+     real(r8) :: fdms(pcols)             ! dms flux from ocn
+     real(r8) :: fbrf(pcols)             ! bromoform flux from ocn
+     real(r8) :: fn2o_ocn(pcols)         ! n2o flux from ocn
+     real(r8) :: fnh3_ocn(pcols)         ! nh3 flux from ocn
      real(r8) :: landfrac(pcols)         ! land area fraction
      real(r8) :: icefrac(pcols)          ! sea-ice areal fraction
      real(r8) :: ocnfrac(pcols)          ! ocean areal fraction
@@ -229,6 +232,9 @@ CONTAINS
        cam_in(c)%fco2_lnd (:) = 0._r8
        cam_in(c)%fco2_ocn (:) = 0._r8
        cam_in(c)%fdms     (:) = 0._r8
+       cam_in(c)%fbrf     (:) = 0._r8
+       cam_in(c)%fn2o_ocn (:) = 0._r8
+       cam_in(c)%fnh3_ocn (:) = 0._r8
        cam_in(c)%landfrac (:) = posinf
        cam_in(c)%icefrac  (:) = posinf
        cam_in(c)%ocnfrac  (:) = posinf
