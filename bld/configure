@@ -563,8 +563,8 @@ if (defined $opts{'camnor'}) {
     $camnor = $opts{'camnor'};
 }
 # Check supported physics suite
-if ($phys_pkg ne 'cam6' and $phys_pkg ne 'cam_dev') {
-  die "ERROR: CAM-Nor (-camnor) is only available for CAM6 and cam_dev.$eol";
+if ($camnor && $phys_pkg ne 'cam_dev') {
+    die "ERROR: CAM-Nor (-camnor) is only available for CAM6 and cam_dev.$eol";
 }
 
 # Add to the config object.
