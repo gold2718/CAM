@@ -135,7 +135,7 @@
       <value compset="_CAM50%CLB">-clubb_sgs</value>
       <value compset="_(CAM40|CAM50|CAM60)%SCAM">-dyn eul -scam</value>
       <value compset="_CAM40%TMOZ">-chem trop_mozart</value>
-      <!--value compset="_CAM.*_BGC%B">-co2_cycle</value-->
+      <value compset="_CAM.*_BGC%B">-co2_cycle</value>
 
       <!-- Match against "%WC" to set defaults for all WACCM cases. -->
       <!-- Later settings of "-chem" take precedence over earlier ones. -->
