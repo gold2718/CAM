@@ -29,6 +29,7 @@
 <ext_frc_type             >    INTERP_MISSING_MONTHS  </ext_frc_type>
 
 <!-- surface emissions -->
+<!-- currently only emissions files at 1.9x2.5 resolution exist.  Files at 0.9x1.25 resolution can be generated on request -->
 <srf_emis_specifier hgrid="0.9x1.25">
   'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20230630/emissions_cmip6_noresm2_ScenarioMIP_IAMC-AIM-ssp370-1-1_BC_AX_anthrosurfALL_surface_2014-2301_0.9x1.25_version20230630.nc',
   'BC_N   ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20230630/emissions_cmip6_noresm2_ScenarioMIP_IAMC-AIM-ssp370-1-1_BC_N_anthrosurfALL_surface_2014-2301_0.9x1.25_version20230630.nc',
@@ -163,6 +164,7 @@
 </srf_emis_specifier>
 
 <!-- 3D emissions -->
+<!-- currently only emissions files at 1.9x2.5 resolution exist.  Files at 0.9x1.25 resolution can be generated on request -->
 <ext_frc_specifier hgrid="0.9x1.25">
   'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20230630/emissions_cmip6_noresm2_ScenarioMIP_IAMC-AIM-ssp370-1-1_BC_AX_airALL_vertical_2014-2301_0.9x1.25_version20230630.nc',
   'BC_AX  ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20230630/emissions_cmip6_noresm2_ScenarioMIP_IAMC-AIM-ssp370-1-1_BC_AX_anthroprofALL_vertical_2014-2301_0.9x1.25_version20230630.nc',
