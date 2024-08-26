@@ -350,7 +350,7 @@ subroutine micro_mg_init( &
   xxlv_squared=xxlv**2
   xxls_squared=xxls**2
   
-  rafsip_on=.false.
+  rafsip_on=.true.
   if (rafsip_on) then
 !-----------------------------------------------------------------------------------
 ! RaFSIP: INITIALIZE THE RANDOM FOREST PARAMETERS CALLING THE SUBROUTINES THAT
