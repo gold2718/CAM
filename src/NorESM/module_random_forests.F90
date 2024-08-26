@@ -144,10 +144,10 @@ end subroutine sec_ice_readnl
 
    integer :: unitn, ierr, i
 !      unitn = 137
-      open( 137, file=trim(forestfileBRHM), form='formatted',status='old' )
-         !Open the ASCII file
+!      open( 137, file=trim(forestfileBRHM), form='formatted',status='old' )
+!         !Open the ASCII file
 !         OPEN(unit=137,file="forestBRHM.txt",status="old",action="read")
-!         OPEN(unit=137,file=forestfileBRHM,status="old",action="read")
+         OPEN(unit=137,file=forestfileBRHM,status="old",action="read")
          DO jb=1,jbt
             read (137,*) nrnodes1(jb)
             read (137,*) (leftchild1(jb,n),rightchild1(jb,n),out11(jb,n),out12(jb,n),out13(jb,n), &
