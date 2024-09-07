@@ -18,271 +18,320 @@
 !These are the following:                                            +
 !  *runforest                                                        +
 !  *runforestriv                                                     +
-!  *runforestmulti                                                   +     
+!  *runforestmulti                                                   +
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
- MODULE module_random_forests
+module module_random_forests
 
-      use micro_mg_utils, only: r8
-      use spmd_utils,     only: masterproc
-      use phys_control,   only: use_simple_phys
-      use cam_abortutils, only: endrun
+   use micro_mg_utils, only: r8
+   use cam_abortutils, only: endrun
 
-      IMPLICIT NONE
-      
-      PUBLIC :: sec_ice_readnl
+   IMPLICIT NONE
+   PRIVATE
 
-      PUBLIC  :: forestbrhm,forestbr,forestall,forestbrds,forestbrwarm,runforest,runforestriv,runforestmulti
+   PUBLIC :: sec_ice_readnl
+   PUBLIC :: sec_ice_init
 
-      !!MDIM DEFINES THE NUMBER OF FEATURES/INPUTS TO THE RaFSIP PARAMETERIZATION
-      INTEGER, PARAMETER, PUBLIC :: MDIM5=5
-      INTEGER, PARAMETER, PUBLIC :: MDIM6=6
-      INTEGER, PARAMETER, PUBLIC :: JBT=10  !!The number of trees in each random forest regressor
+   PUBLIC :: runforest
+   PUBLIC :: runforestriv
+   PUBLIC :: runforestmulti
 
-      !!The maximum number of nodes across trees
-      INTEGER, PARAMETER, PUBLIC :: MAX_NODES1=7705  !forestBRHM
-      INTEGER, PARAMETER, PUBLIC :: MAX_NODES2=8219  !forestBR
-      INTEGER, PARAMETER, PUBLIC :: MAX_NODES3=7833  !forestALL
-      INTEGER, PARAMETER, PUBLIC :: MAX_NODES4=7093  !forestBRDS
-      INTEGER, PARAMETER, PUBLIC :: MAX_NODES5=8593  !forestBRwarm
+   !!MDIM DEFINES THE NUMBER OF FEATURES/INPUTS TO THE RaFSIP PARAMETERIZATION
+   INTEGER, PARAMETER, PUBLIC :: MDIM5=5
+   INTEGER, PARAMETER, PUBLIC :: MDIM6=6
+   INTEGER, PARAMETER, PUBLIC :: JBT=10  !!The number of trees in each random forest regressor
 
-      !!Thresh = threshold value at each internal node
-      !!Outi = prediction for a given node
-      REAL(r8), DIMENSION(JBT,MAX_NODES1), PUBLIC    :: THRESH1,OUT11,OUT12,OUT13
-      REAL(r8), DIMENSION(JBT,MAX_NODES2), PUBLIC    :: THRESH2,OUT21
-      REAL(r8), DIMENSION(JBT,MAX_NODES3), PUBLIC    :: THRESH3,OUT31,OUT32,OUT33,OUT34,OUT35
-      REAL(r8), DIMENSION(JBT,MAX_NODES4), PUBLIC    :: THRESH4,OUT41,OUT42,OUT43
-      REAL(r8), DIMENSION(JBT,MAX_NODES5), PUBLIC    :: THRESH5,OUT51
+   !!The maximum number of nodes across trees
+   INTEGER, PARAMETER, PUBLIC :: MAX_NODES1=7705  !forestBRHM
+   INTEGER, PARAMETER, PUBLIC :: MAX_NODES2=8219  !forestBR
+   INTEGER, PARAMETER, PUBLIC :: MAX_NODES3=7833  !forestALL
+   INTEGER, PARAMETER, PUBLIC :: MAX_NODES4=7093  !forestBRDS
+   INTEGER, PARAMETER, PUBLIC :: MAX_NODES5=8593  !forestBRwarm
 
-      !!Splitfeat = feature used for splitting the node
-      !!Leftchild = left child of node 
-      !!Rightchild = right child of node
-      INTEGER, DIMENSION(JBT,MAX_NODES1), PUBLIC :: SPLITFEAT1,LEFTCHILD1,RIGHTCHILD1
-      INTEGER, DIMENSION(JBT,MAX_NODES2), PUBLIC :: SPLITFEAT2,LEFTCHILD2,RIGHTCHILD2
-      INTEGER, DIMENSION(JBT,MAX_NODES3), PUBLIC :: SPLITFEAT3,LEFTCHILD3,RIGHTCHILD3
-      INTEGER, DIMENSION(JBT,MAX_NODES4), PUBLIC :: SPLITFEAT4,LEFTCHILD4,RIGHTCHILD4
-      INTEGER, DIMENSION(JBT,MAX_NODES5), PUBLIC :: SPLITFEAT5,LEFTCHILD5,RIGHTCHILD5
+   !!Thresh = threshold value at each internal node
+   !!Outi = prediction for a given node
+   REAL(r8), DIMENSION(JBT,MAX_NODES1), PUBLIC    :: THRESH1,OUT11,OUT12,OUT13
+   REAL(r8), DIMENSION(JBT,MAX_NODES2), PUBLIC    :: THRESH2,OUT21
+   REAL(r8), DIMENSION(JBT,MAX_NODES3), PUBLIC    :: THRESH3,OUT31,OUT32,OUT33,OUT34,OUT35
+   REAL(r8), DIMENSION(JBT,MAX_NODES4), PUBLIC    :: THRESH4,OUT41,OUT42,OUT43
+   REAL(r8), DIMENSION(JBT,MAX_NODES5), PUBLIC    :: THRESH5,OUT51
 
-      !!The exact number of nodes across in consecutive trees of the forest
-      INTEGER, DIMENSION(JBT) :: NRNODES1,NRNODES2,NRNODES3,NRNODES4,NRNODES5
+   !!Splitfeat = feature used for splitting the node
+   !!Leftchild = left child of node
+   !!Rightchild = right child of node
+   INTEGER, DIMENSION(JBT,MAX_NODES1), PUBLIC, PROTECTED :: SPLITFEAT1,LEFTCHILD1,RIGHTCHILD1
+   INTEGER, DIMENSION(JBT,MAX_NODES2), PUBLIC, PROTECTED :: SPLITFEAT2,LEFTCHILD2,RIGHTCHILD2
+   INTEGER, DIMENSION(JBT,MAX_NODES3), PUBLIC, PROTECTED :: SPLITFEAT3,LEFTCHILD3,RIGHTCHILD3
+   INTEGER, DIMENSION(JBT,MAX_NODES4), PUBLIC, PROTECTED :: SPLITFEAT4,LEFTCHILD4,RIGHTCHILD4
+   INTEGER, DIMENSION(JBT,MAX_NODES5), PUBLIC, PROTECTED :: SPLITFEAT5,LEFTCHILD5,RIGHTCHILD5
 
-      LOGICAL, PUBLIC :: FIRST_RAFSIP = .TRUE.
-      
-      character(len=256), public :: forestfileALL,forestfileBRDS
-      character(len=256), public :: forestfileBRHM,forestfileBR
-      character(len=256), public :: forestfileBRwarm
- 
-  CONTAINS
+   !!The exact number of nodes across in consecutive trees of the forest
+   INTEGER, DIMENSION(JBT), PUBLIC, PROTECTED :: NRNODES1,NRNODES2,NRNODES3,NRNODES4,NRNODES5
 
+   !! Namelist variables
+   logical, public, protected :: rafsip_on = .false.
 
-!---------------------------------------------------------------------------------------------------------------
+   character(len=256) :: forestfileALL = 'NONE'
+   character(len=256) :: forestfileBRDS = 'NONE'
+   character(len=256) :: forestfileBRHM = 'NONE'
+   character(len=256) :: forestfileBR = 'NONE'
+   character(len=256) :: forestfileBRwarm = 'NONE'
 
+   !! Make sure init is only called once
+   logical :: rafsip_initialized = .false.
 
- subroutine sec_ice_readnl(nlfile)
-       ! Read files needed for random forest tables of seconary ice formation
-    
-   use namelist_utils,  only: find_group_name
-   use units,           only: getunit, freeunit
-   use mpishorthand
-
-   character(len=*), intent(in) :: nlfile  ! filepath for file containing namelist input
+CONTAINS
 
 
-   ! Local variables
-   integer :: unitn, ierr, i
-   character(len=2) :: suffix
-   character(len=1), pointer   :: ctype(:)
-   character(len=*), parameter :: subname = 'sec_ice_readnl'
+   !---------------------------------------------------------------------------------------------------------------
 
+   subroutine sec_ice_readnl(nlfile)
+      ! Read files needed for random forest tables of seconary ice formation
 
-   namelist /sec_ice_nl/ forestfileALL,    &
-                             forestfileBRDS,   &
-                             forestfileBRHM,   &
-                             forestfileBR,     &
-                             forestfileBRwarm
+      use mpi,            only: mpi_character, mpi_logical
+      use spmd_utils,     only: masterproc, mstrid=>masterprocid, mpicom
+      use namelist_utils, only: find_group_name
+      use cam_logfile,    only: iulog
 
-   if (use_simple_phys) return
+      character(len=*), intent(in) :: nlfile ! path to file containing namelist input
 
+      ! Local variables
+      integer                     :: unitn, ierr
+      character(len=*), parameter :: subname = 'sec_ice_readnl'
 
-   if (masterproc) then
-      unitn = getunit()
-      open( unitn, file=trim(nlfile), status='old' )
-      call find_group_name(unitn, 'sec_ice_nl', status=ierr)
-      if (ierr == 0) then
-         read(unitn, sec_ice_nl, iostat=ierr)
-         if (ierr /= 0) then
-            call endrun(subname // ':: ERROR reading namelist')
+      namelist /sec_ice_nl/ rafsip_on,                                        &
+           forestfileALL,                                                     &
+           forestfileBRDS,                                                    &
+           forestfileBRHM,                                                    &
+           forestfileBR,                                                      &
+           forestfileBRwarm
+
+      ! Initialize all namelist variables
+      rafsip_on = .false.
+      forestfileALL = 'None'
+      forestfileBRDS = 'None'
+      forestfileBRHM = 'None'
+      forestfileBR = 'None'
+      forestfileBRwarm = 'None'
+
+      if (masterproc) then
+         open(newunit=unitn, file=trim(nlfile), status='old' )
+         call find_group_name(unitn, 'sec_ice_nl', status=ierr)
+         if (ierr == 0) then
+            read(unitn, sec_ice_nl, iostat=ierr)
+            if (ierr /= 0) then
+               call endrun(subname//':: ERROR reading namelist')
+            end if
+         end if
+         close(unitn)
+      end if
+
+      call MPI_Bcast(rafsip_on, 1, mpi_logical, mstrid, mpicom, ierr)
+
+      call MPI_Bcast(forestfileALL,   len(forestfileALL),    mpi_character,   &
+           mstrid, mpicom, ierr)
+      call MPI_Bcast(forestfileBRDS,  len(forestfileBRDS),   mpi_character,   &
+           mstrid, mpicom, ierr)
+      call MPI_Bcast(forestfileBRHM,  len(forestfileBRHM),   mpi_character,   &
+           mstrid, mpicom, ierr)
+      call MPI_Bcast(forestfileBR,    len(forestfileBR),     mpi_character,   &
+           mstrid, mpicom, ierr)
+      call MPI_Bcast(forestfileBRwarm,len(forestfileBRwarm), mpi_character,   &
+           mstrid, mpicom, ierr)
+
+      if (masterproc) then
+         write(iulog ,*) 'Microphysics secondary ice namelist:'
+         write(iulog ,*) '  rafsip_on        = ', rafsip_on
+         if (rafsip_on) then
+            write(iulog, *) '  forestfileALL    = ', trim(forestfileALL)
+            write(iulog, *) '  forestfileBRDS   = ', trim(forestfileBRDS)
+            write(iulog, *) '  forestfileBRHM   = ', trim(forestfileBRHM)
+            write(iulog, *) '  forestfileBR     = ', trim(forestfileBR)
+            write(iulog, *) '  forestfileBRwarm = ', trim(forestfileBRwarm)
          end if
       end if
-      close(unitn)
-      call freeunit(unitn)
-   end if
 
-#ifdef SPMD
+   end subroutine sec_ice_readnl
 
-   call mpibcast (forestfileALL,   len(forestfileALL),    mpichar, 0, mpicom)
-   call mpibcast (forestfileBRDS,  len(forestfileBRDS),   mpichar, 0, mpicom)
-   call mpibcast (forestfileBRHM,  len(forestfileBRHM),   mpichar, 0, mpicom)
-   call mpibcast (forestfileBR,    len(forestfileBR),     mpichar, 0, mpicom)
-   call mpibcast (forestfileBRwarm,len(forestfileBRwarm), mpichar, 0, mpicom)
+   !------------------------------------------------------------------------+
 
-#endif
-end subroutine sec_ice_readnl
+   subroutine sec_ice_init()
+      use mpi,        only: mpi_integer, mpi_real8
+      use spmd_utils, only: masterproc, mstrid=>masterprocid, mpicom
 
-      SUBROUTINE forestbrhm(jbt,max_nodes1,leftchild1,rightchild1,splitfeat1, &
-                               nrnodes1,thresh1,out11,out12,out13)
-      use units,           only: getunit, freeunit
-      IMPLICIT NONE
+      integer :: j_ind, n_ind
+      integer :: unitn
+      integer :: ierr
 
-      INTEGER,intent(in) :: jbt, max_nodes1
+      if (.not. rafsip_initialized) then
+         !---------------------------------------------------------------------
+         ! RaFSIP: INITIALIZE THE RANDOM FOREST PARAMETERS
+         !         Initialize on the root processor, then broadcast
+         !---------------------------------------------------------------------
 
-      REAL (r8),DIMENSION(jbt,max_nodes1),intent(inout) :: thresh1,out11,out12,out13
-      INTEGER,DIMENSION(jbt,max_nodes1),intent(inout) :: splitfeat1,leftchild1,rightchild1
-      INTEGER,DIMENSION(jbt),intent(inout) :: nrnodes1
+         if (masterproc) then
+            ! Initialize forestBRHM parameters
+            open(newunit=unitn, file=trim(forestfileBRHM), status="old",      &
+                 action="read")
+            do j_ind = 1, JBT
+               read(unitn, *) nrnodes1(j_ind)
+               read(unitn, *) (leftchild1(j_ind, n_ind),                      &
+                    rightchild1(j_ind, n_ind),                                &
+                    out11(j_ind, n_ind), out12(j_ind, n_ind),                 &
+                    out13(j_ind, n_ind), thresh1(j_ind, n_ind),               &
+                    splitfeat1(j_ind, n_ind), n_ind=1,nrnodes1(j_ind))
+            end do
+            close(unitn)
 
-      INTEGER :: jb,n
+            ! Initialize forestBR parameters
+            open(newunit=unitn, file=trim(forestfileBR), status="old",        &
+                 action="read")
+            do j_ind = 1, JBT
+               read(unitn, *) nrnodes2(j_ind)
+               read(unitn, *) (leftchild2(j_ind, n_ind),                      &
+                    rightchild2(j_ind, n_ind),                                &
+                    out21(j_ind, n_ind), thresh2(j_ind, n_ind),               &
+                    splitfeat2(j_ind, n_ind), n_ind=1,nrnodes2(j_ind))
+            end do
+            close(unitn)
 
-   integer :: unitn, ierr, i
-!      unitn = 137
-!      open( 137, file=trim(forestfileBRHM), form='formatted',status='old' )
-!         !Open the ASCII file
-!         OPEN(unit=137,file="forestBRHM.txt",status="old",action="read")
-         OPEN(unit=137,file=forestfileBRHM,status="old",action="read")
-         DO jb=1,jbt
-            read (137,*) nrnodes1(jb)
-            read (137,*) (leftchild1(jb,n),rightchild1(jb,n),out11(jb,n),out12(jb,n),out13(jb,n), &
-                    & thresh1(jb,n),splitfeat1(jb,n), n=1,nrnodes1(jb))
-         ENDDO
-         CLOSE(137)
-!      call freeunit(unitn)
+            ! Initialize forestALL parameters
+            open(newunit=unitn, file=trim(forestfileALL), status="old",       &
+                 action="read")
+            do j_ind = 1, JBT
+               read(unitn, *) nrnodes3(j_ind)
+               read(unitn, *) (leftchild3(j_ind, n_ind),                      &
+                    rightchild3(j_ind, n_ind),                                &
+                    out31(j_ind, n_ind), out32(j_ind, n_ind),                 &
+                    out33(j_ind, n_ind), out34(j_ind, n_ind),                 &
+                    out35(j_ind, n_ind), thresh3(j_ind, n_ind),               &
+                    splitfeat3(j_ind, n_ind), n_ind=1,nrnodes3(j_ind))
+            end do
+            close(unitn)
 
-      END subroutine forestbrhm
-!---------------------------------------------------------------------------------------------------------------
+            ! Initialize forestBRDS parameters
+            open(newunit=unitn, file=trim(forestfileBRDS), status="old",      &
+                 action="read")
+            do j_ind = 1, JBT
+               read(unitn, *) nrnodes4(j_ind)
+               read(unitn, *) (leftchild4(j_ind, n_ind),                      &
+                    rightchild4(j_ind, n_ind),                                &
+                    out41(j_ind, n_ind), out42(j_ind, n_ind),                 &
+                    out43(j_ind, n_ind), thresh4(j_ind, n_ind),               &
+                    splitfeat4(j_ind, n_ind), n_ind=1,nrnodes4(j_ind))
+            end do
+            close(unitn)
 
+            ! Initialize forestBRwarm parameters
+            open(newunit=unitn, file=trim(forestfileBRwarm), status="old",    &
+                 action="read")
+            do j_ind = 1, JBT
+               read(unitn, *) nrnodes5(j_ind)
+               read(unitn, *) (leftchild5(j_ind, n_ind),                      &
+                    rightchild5(j_ind, n_ind),                                &
+                    out51(j_ind, n_ind), thresh5(j_ind, n_ind),               &
+                    splitfeat5(j_ind, n_ind), n_ind=1,nrnodes5(j_ind))
+            end do
+            close(unitn)
+         end if ! masterproc
 
-!---------------------------------------------------------------------------------------------------------------
-      SUBROUTINE forestbr(jbt,max_nodes2,leftchild2,rightchild2,splitfeat2, &
-                               nrnodes2,thresh2,out21)
+         ! Broadcast all the parameters
+         call MPI_Bcast(nrnodes1, JBT, mpi_integer,                           &
+           mstrid, mpicom, ierr)
+         call MPI_Bcast(leftchild1, JBT*MAX_NODES1, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(rightchild1, JBT*MAX_NODES1, mpi_integer,             &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out11, JBT*MAX_NODES1, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out12, JBT*MAX_NODES1, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out13, JBT*MAX_NODES1, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(thresh1, JBT*MAX_NODES1, mpi_real8,                   &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(splitfeat1, JBT*MAX_NODES1, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(nrnodes2, JBT, mpi_integer,                           &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(leftchild2, JBT*MAX_NODES2, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(rightchild2, JBT*MAX_NODES2, mpi_integer,             &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out21, JBT*MAX_NODES2, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(thresh2, JBT*MAX_NODES2, mpi_real8,                   &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(splitfeat2, JBT*MAX_NODES2, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(nrnodes3, JBT, mpi_integer,                           &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(leftchild3, JBT*MAX_NODES3, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(rightchild3, JBT*MAX_NODES3, mpi_integer,             &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out31, JBT*MAX_NODES3, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out32, JBT*MAX_NODES3, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out33, JBT*MAX_NODES3, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out34, JBT*MAX_NODES3, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out35, JBT*MAX_NODES3, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(thresh3, JBT*MAX_NODES3, mpi_real8,                   &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(splitfeat3, JBT*MAX_NODES3, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(nrnodes4, JBT, mpi_integer,                           &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(leftchild4, JBT*MAX_NODES4, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(rightchild4, JBT*MAX_NODES4, mpi_integer,             &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out41, JBT*MAX_NODES4, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out42, JBT*MAX_NODES4, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out43, JBT*MAX_NODES4, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(thresh4, JBT*MAX_NODES4, mpi_real8,                   &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(splitfeat4, JBT*MAX_NODES4, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(nrnodes5, JBT, mpi_integer,                           &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(leftchild5, JBT*MAX_NODES5, mpi_integer,              &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(rightchild5, JBT*MAX_NODES5, mpi_integer,             &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(out51, JBT*MAX_NODES5, mpi_real8,                     &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(thresh5, JBT*MAX_NODES5, mpi_real8,                   &
+              mstrid, mpicom, ierr)
+         call MPI_Bcast(splitfeat5, JBT*MAX_NODES5, mpi_integer,              &
+              mstrid, mpicom, ierr)
 
-      IMPLICIT NONE
+         rafsip_initialized = .true.
+      end if
 
-      INTEGER,intent(in) :: jbt, max_nodes2
+   end subroutine sec_ice_init
 
-      REAL(r8),DIMENSION(jbt,max_nodes2),intent(inout) :: thresh2,out21
-      INTEGER,DIMENSION(jbt,max_nodes2),intent(inout) :: splitfeat2,leftchild2,rightchild2
-      INTEGER,DIMENSION(jbt),intent(inout) :: nrnodes2
+   !------------------------------------------------------------------------+
 
-      INTEGER :: jb,n
+   !======================================================================+
+   !   THREE SUBROUTINES CALLED BY THE RaFSIP PARAMETERIZATION            !
+   !======================================================================+
 
-!         OPEN(unit=138,file="forestBR.txt",status="old",action="read")
-         OPEN(unit=138,file=forestfileBR,status="old",action="read")
-         DO jb=1,jbt
-            read (138,*) nrnodes2(jb)
-            read (138,*) (leftchild2(jb,n),rightchild2(jb,n),out21(jb,n), &
-                    & thresh2(jb,n),splitfeat2(jb,n), n=1,nrnodes2(jb))
-         ENDDO
-         CLOSE(138)
-
-      END subroutine forestbr
-!---------------------------------------------------------------------------------------------------------------
-
-
-!---------------------------------------------------------------------------------------------------------------
-      SUBROUTINE forestall(jbt,max_nodes3,leftchild3,rightchild3,splitfeat3, &
-                               nrnodes3,thresh3,out31,out32,out33,out34,out35)
-
-      IMPLICIT NONE
-
-      INTEGER,intent(in) :: jbt, max_nodes3
-
-      REAL(r8),DIMENSION(jbt,max_nodes3),intent(inout) :: thresh3,out31,out32,out33,out34,out35
-      INTEGER,DIMENSION(jbt,max_nodes3),intent(inout) :: splitfeat3,leftchild3,rightchild3
-      INTEGER,DIMENSION(jbt),intent(inout) :: nrnodes3
-
-      INTEGER :: jb,n
-
-!         OPEN(unit=139,file="forestALL.txt",status="old",action="read")
-         OPEN(unit=139,file=forestfileALL,status="old",action="read")
-         DO jb=1,jbt
-            read (139,*) nrnodes3(jb)
-            read (139,*) (leftchild3(jb,n),rightchild3(jb,n),out31(jb,n),out32(jb,n),out33(jb,n), &
-                    & out34(jb,n),out35(jb,n),thresh3(jb,n),splitfeat3(jb,n), n=1,nrnodes3(jb))
-         ENDDO
-         CLOSE(139)
-
-      END subroutine forestall
-!---------------------------------------------------------------------------------------------------------------
-
-
-
-!---------------------------------------------------------------------------------------------------------------
-      SUBROUTINE forestbrds(jbt,max_nodes4,leftchild4,rightchild4,splitfeat4, &
-                               nrnodes4,thresh4,out41,out42,out43)
-
-      IMPLICIT NONE
-
-      INTEGER,intent(in) :: jbt, max_nodes4
-
-      REAL(r8),DIMENSION(jbt,max_nodes4),intent(inout) :: thresh4,out41,out42,out43
-      INTEGER,DIMENSION(jbt,max_nodes4),intent(inout) :: splitfeat4,leftchild4,rightchild4
-      INTEGER,DIMENSION(jbt),intent(inout) :: nrnodes4
-
-      INTEGER :: jb,n
-
-!         OPEN(unit=140,file="forestBRDS.txt",status="old",action="read")
-         OPEN(unit=140,file=forestfileBRDS,status="old",action="read")
-         DO jb=1,jbt
-            read (140,*) nrnodes4(jb)
-            read (140,*) (leftchild4(jb,n),rightchild4(jb,n),out41(jb,n),out42(jb,n),out43(jb,n), &
-                    & thresh4(jb,n),splitfeat4(jb,n), n=1,nrnodes4(jb))
-         ENDDO
-         CLOSE(140)
-
-      END subroutine forestbrds
-!---------------------------------------------------------------------------------------------------------------
-
-
-!---------------------------------------------------------------------------------------------------------------
-      SUBROUTINE forestbrwarm(jbt,max_nodes5,leftchild5,rightchild5,splitfeat5, &
-                               nrnodes5,thresh5,out51)
-
-      IMPLICIT NONE
-
-      INTEGER,intent(in) :: jbt, max_nodes5
-
-      REAL(r8),DIMENSION(jbt,max_nodes5),intent(inout) :: thresh5,out51
-      INTEGER,DIMENSION(jbt,max_nodes5),intent(inout) :: splitfeat5,leftchild5,rightchild5
-      INTEGER,DIMENSION(jbt),intent(inout) :: nrnodes5
-
-      INTEGER :: jb,n
-
-!         OPEN(unit=141,file="forestBRwarm.txt",status="old",action="read")
-         OPEN(unit=141,file=forestfileBRwarm,status="old",action="read")
-         DO jb=1,jbt
-            read (141,*) nrnodes5(jb)
-            read (141,*) (leftchild5(jb,n),rightchild5(jb,n),out51(jb,n), &
-                    & thresh5(jb,n),splitfeat5(jb,n), n=1,nrnodes5(jb))
-         ENDDO
-         CLOSE(141)
-
-      END subroutine forestbrwarm
-!---------------------------------------------------------------------------------------------------------------
-
-
-
-!======================================================================+
-!   THREE SUBROUTINES CALLED BY THE RaFSIP PARAMETERIZATION            !
-!======================================================================+
-
-     !This subroutine is called only when the requirements for the
-     !activation of the forestBR model are met (i.e., -25<T<-8 in
-     !the absence of rainwater). In this case only the BR process
-     !can contribute to the ice production, and hence the RF gives
-     !only one prediction: log(IEFBR)
-     SUBROUTINE runforest(mdim,max_nodes,jbt,features,ypred1,leftchild,rightchild, &
+   !This subroutine is called only when the requirements for the
+   !activation of the forestBR model are met (i.e., -25<T<-8 in
+   !the absence of rainwater). In this case only the BR process
+   !can contribute to the ice production, and hence the RF gives
+   !only one prediction: log(IEFBR)
+   SUBROUTINE runforest(mdim,max_nodes,jbt,features,ypred1,leftchild,rightchild, &
         & splitfeat,thresh,out1)
 
-      IMPLICIT NONE
       integer,intent(in) :: jbt,mdim,max_nodes
       integer,dimension(jbt,max_nodes),intent(in) :: splitfeat,leftchild,rightchild
       real(r8),dimension(jbt,max_nodes),intent(in)    :: out1,thresh
@@ -290,31 +339,29 @@ end subroutine sec_ice_readnl
       real(r8), intent(out)   :: ypred1
       integer :: jb,inode,next_node
 
-!      PRINT*, "runforest_feature",features
-
       ! Initialize variables
       ypred1 = 0._r8
 
       ! START DOWN FOREST TO CALCULATE THE PREDICTED VALUES
       ! loop over trees in forest
       DO jb=1,jbt
-         
-         ! set current node to root node         
+
+         ! set current node to root node
          inode = 1
 
          ! loop as long as we reach a leaf node
          do while (leftchild(jb,inode) .ne. rightchild(jb,inode))
-             if (features(splitfeat(jb,inode)).le.thresh(jb,inode)) then
-                next_node = leftchild(jb,inode)
-             else
-                next_node = rightchild(jb,inode)
-             endif
+            if (features(splitfeat(jb,inode)).le.thresh(jb,inode)) then
+               next_node = leftchild(jb,inode)
+            else
+               next_node = rightchild(jb,inode)
+            endif
 
-             inode = next_node
+            inode = next_node
 
-          enddo  !do while
+         enddo  !do while
 
-          YPRED1 = YPRED1 + out1(jb,inode)
+         YPRED1 = YPRED1 + out1(jb,inode)
 
       ENDDO  !tree loop
 
@@ -322,26 +369,23 @@ end subroutine sec_ice_readnl
       YPRED1 = YPRED1/jbt  !YPRED1=log10(IEFBR)
 
 
-      End subroutine runforest
+   end subroutine runforest
 
+   !------------------------------------------------------------------------+
 
-!-------------------------------------------------------------------------------------+
-     !This subroutine is called when the requirements for either the forestBRDS
-     !or the forestBRHM are met (i.e., -25<T<-8 in the presence of raindrops or 
-     !-8<T<-3 without raindrops). In this case the RF gives in total 3
-     !predictions: log(IEFBR), log(IEFDS) or log(IEFHM), log(QIRSIP) or log(QICSIP) 
-      SUBROUTINE runforestriv(mdim,max_nodes,jbt,features,ypred1,ypred2,ypred3, &
-            & leftchild,rightchild,splitfeat,thresh,out1,out2,out3)
+   !This subroutine is called when the requirements for either the forestBRDS
+   !or the forestBRHM are met (i.e., -25<T<-8 in the presence of raindrops or
+   !-8<T<-3 without raindrops). In this case the RF gives in total 3
+   !predictions: log(IEFBR), log(IEFDS) or log(IEFHM), log(QIRSIP) or log(QICSIP)
+   SUBROUTINE runforestriv(mdim,max_nodes,jbt,features,ypred1,ypred2,ypred3, &
+        & leftchild,rightchild,splitfeat,thresh,out1,out2,out3)
 
-      IMPLICIT NONE
       integer,intent(in) :: jbt,mdim,max_nodes
       integer,dimension(jbt,max_nodes),intent(in) :: splitfeat,leftchild,rightchild
       real(r8),dimension(jbt,max_nodes),intent(in)    :: out1,out2,out3,thresh
       real(r8),dimension(mdim),intent(in) :: features
       real(r8), intent(out)   :: ypred1,ypred2,ypred3
       integer :: jb,inode,next_node
-
-!      PRINT*, "runforestriv_feature",features
 
       ! Initialize variables
       ypred1 = 0._r8
@@ -352,24 +396,24 @@ end subroutine sec_ice_readnl
       ! loop over trees in forest
       DO jb=1,jbt
 
-          ! set current node to root node
-          inode = 1
+         ! set current node to root node
+         inode = 1
 
-          ! loop as long as we reach a leaf node
-          do while (leftchild(jb,inode) .ne. rightchild(jb,inode))
-             if (features(splitfeat(jb,inode)).le.thresh(jb,inode)) then
-                next_node = leftchild(jb,inode)
-             else 
-                next_node = rightchild(jb,inode)
-             endif
+         ! loop as long as we reach a leaf node
+         do while (leftchild(jb,inode) .ne. rightchild(jb,inode))
+            if (features(splitfeat(jb,inode)).le.thresh(jb,inode)) then
+               next_node = leftchild(jb,inode)
+            else
+               next_node = rightchild(jb,inode)
+            endif
 
-             inode = next_node
-       
-          enddo  !do while
+            inode = next_node
 
-          YPRED1 = YPRED1 + out1(jb,inode)
-          YPRED2 = YPRED2 + out2(jb,inode)  
-          YPRED3 = YPRED3 + out3(jb,inode)
+         enddo  !do while
+
+         YPRED1 = YPRED1 + out1(jb,inode)
+         YPRED2 = YPRED2 + out2(jb,inode)
+         YPRED3 = YPRED3 + out3(jb,inode)
 
       ENDDO  !tree loop
 
@@ -379,25 +423,22 @@ end subroutine sec_ice_readnl
       YPRED3 = YPRED3/jbt  !YPRED3=log10(QIRSIP) or log10(QICSIP)
 
 
-      End subroutine runforestriv
+   end subroutine runforestriv
 
+   !------------------------------------------------------------------------+
 
-!-------------------------------------------------------------------------------------+
-     !This subroutine is called when the requirements for the forestALL are met 
-     !(i.e., -8<T<-3 in the presence of raindrops). In this case the RF gives 5
-     !predictions: log(IEFBR), log(IEFHM), log(IEFDS), log(QICSIP), log(QIRSIP)
-      SUBROUTINE runforestmulti(mdim,max_nodes,jbt,features,ypred1,ypred2,ypred3,ypred4,ypred5, &
+   !This subroutine is called when the requirements for the forestALL are met
+   !(i.e., -8<T<-3 in the presence of raindrops). In this case the RF gives 5
+   !predictions: log(IEFBR), log(IEFHM), log(IEFDS), log(QICSIP), log(QIRSIP)
+   SUBROUTINE runforestmulti(mdim,max_nodes,jbt,features,ypred1,ypred2,ypred3,ypred4,ypred5, &
         & leftchild,rightchild,splitfeat,thresh,out1,out2,out3,out4,out5)
 
-      IMPLICIT NONE
       integer,intent(in) :: jbt,mdim,max_nodes
       integer,dimension(jbt,max_nodes),intent(in) :: splitfeat,leftchild,rightchild
       real(r8),dimension(jbt,max_nodes),intent(in)    :: out1,out2,out3,out4,out5,thresh
       real(r8),dimension(mdim),intent(in) :: features
       real(r8), intent(out)   :: ypred1,ypred2,ypred3,ypred4,ypred5
       integer :: jb,inode,next_node
-
-!      PRINT*, "runforest_multi",features
 
       ! Initialize variables
       ypred1 = 0._r8
@@ -410,28 +451,26 @@ end subroutine sec_ice_readnl
       ! loop over trees in forest
       DO jb=1,jbt
 
-!         PRINT*, "forestALL_nrnodes", nrnodes3(jb)
+         ! set current node to root node
+         inode = 1
 
-          ! set current node to root node
-          inode = 1
-
-          ! loop as long as we reach a leaf node
-          do while (leftchild(jb,inode) .ne. rightchild(jb,inode))
+         ! loop as long as we reach a leaf node
+         do while (leftchild(jb,inode) .ne. rightchild(jb,inode))
             if (features(splitfeat(jb,inode)).le.thresh(jb,inode)) then
-                next_node = leftchild(jb,inode)
-             else
-                next_node = rightchild(jb,inode)
-             endif
+               next_node = leftchild(jb,inode)
+            else
+               next_node = rightchild(jb,inode)
+            endif
 
-             inode = next_node
+            inode = next_node
 
-          enddo  !do while
+         enddo  !do while
 
-          YPRED1 = YPRED1 + out1(jb,inode)
-          YPRED2 = YPRED2 + out2(jb,inode)
-          YPRED3 = YPRED3 + out3(jb,inode)
-          YPRED4 = YPRED4 + out4(jb,inode)
-          YPRED5 = YPRED5 + out5(jb,inode)
+         YPRED1 = YPRED1 + out1(jb,inode)
+         YPRED2 = YPRED2 + out2(jb,inode)
+         YPRED3 = YPRED3 + out3(jb,inode)
+         YPRED4 = YPRED4 + out4(jb,inode)
+         YPRED5 = YPRED5 + out5(jb,inode)
 
       ENDDO  !tree loop
 
@@ -443,10 +482,6 @@ end subroutine sec_ice_readnl
       YPRED5 = YPRED5/jbt  !YPRED5=log10(QIRSIP)
 
 
-      End subroutine runforestmulti
+   end subroutine runforestmulti
 
-!+---+-----------------------------------------------------------------+
-
-
-
- END module module_random_forests
+end module module_random_forests
