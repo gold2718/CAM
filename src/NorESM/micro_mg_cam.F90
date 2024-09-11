@@ -254,10 +254,11 @@ contains
 
 subroutine micro_mg_cam_readnl(nlfile)
 
-  use namelist_utils,  only: find_group_name
-  use units,           only: getunit, freeunit
-  use spmd_utils,      only: mpicom, mstrid=>masterprocid, mpi_integer, mpi_real8, &
-                             mpi_logical, mpi_character
+  use namelist_utils,        only: find_group_name
+  use units,                 only: getunit, freeunit
+  use spmd_utils,            only: mpicom, mstrid=>masterprocid, mpi_integer, &
+                                   mpi_real8, mpi_logical, mpi_character
+  use module_random_forests, only: sec_ice_readnl
 
   character(len=*), intent(in) :: nlfile  ! filepath for file containing namelist input
 
@@ -385,6 +386,8 @@ subroutine micro_mg_cam_readnl(nlfile)
      write(iulog,*) '  micro_mg_ncnst              = ', micro_mg_ncnst
      write(iulog,*) '  micro_mg_ninst              = ', micro_mg_ninst
   end if
+
+  call sec_ice_readnl(nlfile)
 
 contains
 
