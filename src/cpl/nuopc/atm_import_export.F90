@@ -13,7 +13,9 @@ module atm_import_export
   use shr_mpi_mod       , only : shr_mpi_min, shr_mpi_max
   use nuopc_shr_methods , only : chkerr
   use cam_logfile       , only : iulog
+  use cam_history       , only: outfld
   use spmd_utils        , only : masterproc, mpicom
+  use constituents      , only : cnst_get_ind, sflxnam
   use srf_field_check   , only : set_active_Sl_ram1
   use srf_field_check   , only : set_active_Sl_fv
   use srf_field_check   , only : set_active_Sl_soilw
@@ -155,6 +157,7 @@ contains
        dms_from_ocn = .false.
     end if
     if (masterproc) write(iulog,'(a,l)') trim(subname)//'dms_from_ocn = ',dms_from_ocn
+    write(6,'(a,l)')trim(subname)//'dms_from_ocn = ',dms_from_ocn
 
     call NUOPC_CompAttributeGet(gcomp, name='flds_brf', value=cvalue, ispresent=ispresent, isset=isset, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -578,6 +581,7 @@ contains
     real(r8), pointer  :: fldptr_tauy(:)
     real(r8), pointer  :: fldptr_sen(:)
     real(r8), pointer  :: fldptr_evap(:)
+    integer            :: pndx_fdms  ! DMS surface flux physics index
     logical, save      :: first_time = .true.
     character(len=*), parameter :: subname='(atm_import_export:import_fields)'
     !---------------------------------------------------------------------------
@@ -886,12 +890,16 @@ contains
 
     call state_getfldptr(importState,  'Faoo_fdms_ocn', fldptr=fldptr1d, exists=exists, rc=rc)
     if (exists) then
+       call cnst_get_ind('DMS', pndx_fdms, abort=.true.)
        g = 1
        do c = begchunk,endchunk
           do i = 1,get_ncols_p(c)
              cam_in(c)%fdms(i) = -fldptr1d(g) * med2mod_areacor(g)
+             cam_in(c)%cflx(i,pndx_fdms) = cam_in(c)%fdms(i)
              g = g + 1
           end do
+          ncols = get_ncols_p(c)
+          call outfld( sflxnam(pndx_fdms), cam_in(c)%cflx(:ncols,pndx_fdms), ncols, c)
        end do
     end if
 

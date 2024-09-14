@@ -241,8 +241,6 @@ contains
     call set_component_logging(gcomp, localpet==0, iulog, shrlogunit, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call shr_log_setLogUnit (iulog)
-
     !----------------------------------------------------------------------------
     ! advertise import/export fields
     !----------------------------------------------------------------------------
@@ -316,6 +314,8 @@ contains
        call shr_sys_abort(subname//'Need to set attribute mediator_present')
     endif
 
+    ! reset shr logging to original values
+    call shr_log_setLogUnit (shrlogunit)
     if (dbug_flag > 5) then
        call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
     end if

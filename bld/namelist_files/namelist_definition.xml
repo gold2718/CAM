@@ -9644,6 +9644,12 @@ created from AeroTab
 <entry id="lwkcomp9_file" type="char*256" input_pathname="abs" category="cam_oslo" group="aerotab_ctl_nl" valid_values="" > AeroTab file</entry>
 <entry id="lwkcomp10_file" type="char*256" input_pathname="abs" category="cam_oslo" group="aerotab_ctl_nl" valid_values="" > AeroTab file</entry>
 
+<entry id="use_dms_from_ocean" type="logical" category="cam_oslo"
+       group="oslo_ctl_nl" valid_values="" >
+If true, obtain dms flux from ocean component.
+Default: false
+</entry>
+
 <entry id="dms_source" type="char*20" category="cam_oslo"
        group="oslo_ctl_nl" valid_values="" >
 Type of DMS data source
@@ -9691,5 +9697,8 @@ Default: name
 Path to ocean file
 Default: path
 </entry>
+
+
+
 
 </namelist_definition>
