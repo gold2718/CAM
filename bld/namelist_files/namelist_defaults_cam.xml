@@ -1229,6 +1229,9 @@
 <micro_mg_berg_eff_factor                  >  1.0D0    </micro_mg_berg_eff_factor>
 <micro_mg_berg_eff_factor microphys="mg2"  >  1.0D0    </micro_mg_berg_eff_factor>
 
+<micro_mg_do_cldice>.true.</micro_mg_do_cldice>
+<micro_mg_do_cldliq>.true.</micro_mg_do_cldliq>
+
 <!-- djlo commented out as not used for MAM4-->
 <!--micro_do_sb_physics chem="trop_mam_oslo"> .true. </micro_do_sb_physics-->
 
@@ -1263,6 +1266,14 @@
 <nucleate_ice_incloud    phys="cam6" >.false.</nucleate_ice_incloud>
 <nucleate_ice_strat                  >1.0D0</nucleate_ice_strat>
 <nucleate_ice_use_troplev            >.true.</nucleate_ice_use_troplev>
+
+<!-- Secondary ice production -->
+<rafsip_on>.false.</rafsip_on>
+<forestfileALL>atm/cam/RaFSIP/forestALL.txt</forestfileALL>
+<forestfileBRDS>atm/cam/RaFSIP/forestBRDS.txt</forestfileBRDS>
+<forestfileBRHM>atm/cam/RaFSIP/forestBRHM.txt</forestfileBRHM>
+<forestfileBR>atm/cam/RaFSIP/forestBR.txt</forestfileBR>
+<forestfileBRwarm>atm/cam/RaFSIP/forestBRwarm.txt</forestfileBRwarm>
 
 <chem_use_chemtrop>.true.</chem_use_chemtrop>
 

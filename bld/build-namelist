@@ -3038,9 +3038,26 @@ if ($cfg->get('microphys') =~ /^mg/) {
     add_default($nl, 'micro_mg_berg_eff_factor');
     add_default($nl, 'nucleate_ice_incloud');
     add_default($nl, 'nucleate_ice_strat');
+    add_default($nl, 'micro_mg_do_cldice');
+    add_default($nl, 'micro_mg_do_cldliq');
 
     # For CESM2, the decision was made to set micro_do_sb_physics to false
     add_default($nl, 'micro_do_sb_physics', 'val'=>'.false.');
+
+    # Check usage of random forests secondary ice production
+    add_default($nl, 'rafsip_on');
+    if ($nl->get_value('rafsip_on') =~ m/$TRUE/io) {
+        if ($nl->get_value('micro_mg_do_cldice') =~ m/$FALSE/io) {
+            # Generate an error since both of these variables would have to be
+            #    set manually for this condition
+            die "$ProgName - Error: Cannot set rafsip_on = .true. if micro_mg_do_cldice = .false.\n";
+        }
+        add_default($nl, 'forestfileALL');
+        add_default($nl, 'forestfileBRDS');
+        add_default($nl, 'forestfileBRHM');
+        add_default($nl, 'forestfileBR');
+        add_default($nl, 'forestfileBRwarm');
+    }
 }
 
 # Ice nucleation options
