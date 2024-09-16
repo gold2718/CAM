@@ -2493,12 +2493,6 @@ subroutine micro_mg_tend ( &
              nprc(i,k)*lcldm(i,k)+(nsubr(i,k)-npracs(i,k)-nnuccr(i,k) &
              -nnuccri(i,k)+nragg(i,k))*precip_frac(i,k)
 
-!! In NorESM, there was an artificial limit on the number of ice particles.
-!! By default, NorESM2.1 is using a 'corrected' ice delimiter
-!! Uncomment the line below to recover the NorESM2 ice delimiter behavior
-!! See the NorESM2.1 release notes for more information.
-!#define NORESM2_ICE_DELIMITER
-#ifndef NORESM2_ICE_DELIMITER
         ! make sure that ni at advanced time step does not exceed
         ! maximum (existing N + source terms*dt), which is possible
         ! if mtime < deltat
@@ -2521,12 +2515,6 @@ subroutine micro_mg_tend ( &
            nitend(i,k)=max(0._r8,(nimax(i,k)-ni(i,k))/deltat)
         end if
         !shofer---
-#else
-        if (do_cldice .and. nitend(i,k).gt.0._r8.and.ni(i,k)+nitend(i,k)*deltat.gt.nimax(i,k)) then
-           nitncons(i,k) = nitncons(i,k) + nitend(i,k)-max(0._r8,(nimax(i,k)-ni(i,k))/deltat) !AL
-           nitend(i,k)=max(0._r8,(nimax(i,k)-ni(i,k))/deltat)
-        end if
-#endif
 
      end do
 
