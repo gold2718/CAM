@@ -197,6 +197,8 @@ contains
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_z'          )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_u'          )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_v'          )
+    call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_u10m'       )
+    call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_v10m'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_tbot'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_ptem'       )
     call fldlist_add(fldsFrAtm_num, fldsFrAtm, 'Sa_shum'       )
@@ -1033,17 +1035,19 @@ contains
 
     ! local variables
     type(ESMF_State)  :: exportState
+    type(ESMF_State)  :: importState
     type(ESMF_Clock)  :: clock
     integer           :: i,m,c,n,g  ! indices
     integer           :: ncols      ! Number of columns
     integer           :: nstep
     logical           :: exists
     real(r8)          :: scale_ndep
-    ! 2d pointers
+    real(r8)          :: wind_dir
+    ! 2d output pointers
     real(r8), pointer :: fldptr_ndep(:,:)
     real(r8), pointer :: fldptr_bcph(:,:)  , fldptr_ocph(:,:)
     real(r8), pointer :: fldptr_dstwet(:,:), fldptr_dstdry(:,:)
-    ! 1d pointers
+    ! 1d output pointers
     real(r8), pointer :: fldptr_soll(:)    , fldptr_sols(:)
     real(r8), pointer :: fldptr_solld(:)   , fldptr_solsd(:)
     real(r8), pointer :: fldptr_snowc(:)   , fldptr_snowl(:)
@@ -1057,13 +1061,17 @@ contains
     real(r8), pointer :: fldptr_co2prog(:) , fldptr_co2diag(:)
     real(r8), pointer :: fldptr_ozone(:)
     real(r8), pointer :: fldptr_lght(:)
+    real(r8), pointer :: fldptr_u10m(:)
+    real(r8), pointer :: fldptr_v10m(:)
+    ! import state pointer
+    real(r8), pointer :: fldptr_wind10m(:)
     character(len=*), parameter :: subname='(atm_import_export:export_fields)'
     !---------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
     ! Get export state
-    call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
+    call NUOPC_ModelGet(gcomp, exportState=exportState, importState=importState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! required export state variables
@@ -1087,6 +1095,13 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getfldptr(exportState, 'Sa_pslv', fldptr=fldptr_pslv, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'Sa_u10m', fldptr=fldptr_u10m, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(exportState, 'Sa_v10m', fldptr=fldptr_v10m, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call state_getfldptr(importState, 'Sx_u10' , fldptr=fldptr_wind10m, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     g = 1
     do c = begchunk,endchunk
        do i = 1,get_ncols_p(c)
@@ -1100,6 +1115,9 @@ contains
           fldptr_dens(g) = cam_out(c)%rho(i)
           fldptr_ptem(g) = cam_out(c)%thbot(i)
           fldptr_pslv(g) = cam_out(c)%psl(i)
+          wind_dir       = cam_out(c)%wind_dir(i)
+          fldptr_u10m(g) = fldptr_wind10m(g)*cos(wind_dir)
+          fldptr_v10m(g) = fldptr_wind10m(g)*sin(wind_dir)
           g = g + 1
        end do
     end do
