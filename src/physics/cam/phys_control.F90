@@ -14,7 +14,6 @@ use spmd_utils,        only: masterproc
 use cam_logfile,       only: iulog
 use cam_abortutils,    only: endrun
 use shr_kind_mod,      only: r8 => shr_kind_r8, cl=>shr_kind_cl
-use atm_import_export, only: drv_dms_from_ocn => dms_from_ocn
 
 implicit none
 private
@@ -105,9 +104,6 @@ logical, public, protected :: fv_am_correction = .false.
 
 ! Option for Harmonized Emissions Component (HEMCO)
 logical, public, protected :: use_hemco = .false.
-
-! Take DMS from ocean?
-logical, public, protected :: dms_from_ocn = .false.
 
 ! CAM snapshot before/after file numbers and control
 character(len=32) :: cam_take_snapshot_before = ''  ! Physics routine to take a snopshot "before"
@@ -280,9 +276,6 @@ subroutine phys_ctl_readnl(nlfile)
 
    ! prog_modal_aero determines whether prognostic modal aerosols are present in the run.
    prog_modal_aero = index(cam_chempkg,'_mam')>0
-
-   ! Set this from the driver namelist (always read first)
-   dms_from_ocn = drv_dms_from_ocn
 
 end subroutine phys_ctl_readnl
 
