@@ -510,7 +510,11 @@ subroutine cam_export(state,cam_out,pbuf)
       ! Direction of bottom level wind
       ubot = state%u(i,pver)
       vbot = state%v(i,pver)
-      cam_out%wind_dir(i) = atan2(vbot,ubot)
+      if ((ubot == 0.0_r8) .and. (vbot == 0.0_r8)) then
+         cam_out%wind_dir(i) = 0.0_r8 ! Default to U for zero wind
+      else
+         cam_out%wind_dir(i) = atan2(vbot,ubot)
+      end if
    end do
    do m = 1, pcnst
      do i = 1, ncol
