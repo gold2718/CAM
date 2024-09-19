@@ -238,6 +238,12 @@ When using NorESM-derived boundary conditions, we have opted to use the same lan
   </compset>
 
   <compset>
+    <alias>NF1850norbc_tropstratchem</alias>
+    <lname>1850_CAM60%NORESM%NORBC%TROPSTRATCHEM_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+    <science_support grid="f19_f19"/>
+  </compset>
+
+  <compset>
     <alias>NF1850frc2norbc</alias>
     <lname>1850_CAM60%NORESM%NORBC%FRC2_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
