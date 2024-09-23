@@ -1102,6 +1102,12 @@ contains
     call state_getfldptr(importState, 'Sx_u10' , fldptr=fldptr_wind10m, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+    ! The 10m wind speed over ocean obtained from the atm/ocn flux computation in the mediator
+    ! and is merged with the 10m wind speed obtained from the land ice ice components
+    ! This computation for 10m wind speed will have used the bottom level winds from cam sent
+    ! at the previous time
+    ! The decomposition of the 10m wind into its zonal and meridional components is done using
+    ! the bottom level u and v fields from cam (at the current time)
     g = 1
     do c = begchunk,endchunk
        do i = 1,get_ncols_p(c)
