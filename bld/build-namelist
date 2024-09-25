@@ -2922,6 +2922,8 @@ unless (defined $nl->get_value('dms_source_type')) {
 
 if ($chem =~ /_mam_oslo/) {
   add_default($nl, 'hetfrz_aer_scalfac');
+  add_default($nl, 'pbl_nucleation');
+  add_default($nl, 'atm_nucleation');
 }
 
 if ($waccmx) {

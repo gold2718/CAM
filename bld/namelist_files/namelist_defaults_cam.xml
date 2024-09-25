@@ -1379,6 +1379,11 @@
 <seasalt_emis_scale  spcam_clubb_sgs="1" phys="spcam_sam1mom"            >1.00D0</seasalt_emis_scale >
 <seasalt_emis_scale  spcam_clubb_sgs="1" phys="spcam_m2005"              >1.00D0</seasalt_emis_scale >
 
+<!-- Oslo-Aero variables  -->
+<pbl_nucleation                             >2</pbl_nucleation>
+<pbl_nucleation chem="pp_trop_mam_oslo_sec" >3</pbl_nucleation>
+<atm_nucleation                             >.true.</atm_nucleation>
+
 <!-- sub-column switches for physics packages -->
 <use_subcol_microp>.false.</use_subcol_microp>
 <subcol_scheme    >off    </subcol_scheme>
