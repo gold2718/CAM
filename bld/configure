@@ -132,7 +132,7 @@ OPTIONS
      -[no]clubb_sgs     Switch on [off] CLUBB_SGS.  Default: on for cam6, otherwise off.
      -clubb_opts <list> Comma separated list of CLUBB options to turn on/off.  By default they are all off.
                         Current option is: clubb_do_adv (Advect CLUBB moments)
-     -co2_cycle         This option is meant to be used with the -ccsm_seq option.  It modifies the
+     -[no]co2_cycle     This option is meant to be used with the -ccsm_seq option.  It modifies the
                         CAM configuration by increasing the number of advected constituents by 4.
      -cosp              Enable the COSP simulator.
      -cppdefs <string>  A string of user specified CPP defines.  Appended to
@@ -310,7 +310,7 @@ GetOptions(
     "chem=s"                    => \$opts{'chem'},
     "clubb_sgs!"                => \$opts{'clubb_sgs'},
     "clubb_opts=s"              => \$opts{'clubb_opts'},
-    "co2_cycle"                 => \$opts{'co2_cycle'},
+    "co2_cycle!"                => \$opts{'co2_cycle'},
     "cosp"                      => \$opts{'cosp'},
     "cosp_libdir=s"             => \$opts{'cosp_libdir'},
     "cppdefs=s"                 => \$opts{'cppdefs'},
@@ -1561,8 +1561,17 @@ else {
 
         # co2_cycle
         if ($co2_cycle) {
-            $nadv += 4;
-            if ($print>=2) { print "Advected constituents added by co2_cycle: 4$eol"; }
+            if ($chem_pkg =~ 'strat' or $chem_pkg =~ 'waccm') {
+                $nadv += 3;
+                if ($print>=2) {
+                    print "Advected constituents added by co2_cycle: 3$eol";
+                }
+            } else {
+                $nadv += 4;
+                if ($print>=2) {
+                    print "Advected constituents added by co2_cycle: 4$eol";
+                }
+            }
         }
 
         # CARMA package:
