@@ -1,3 +1,14 @@
+#-----------------------------
+# Required CAM externals
+#-----------------------------
+
+[submodule "atmos_phys"]
+	path = src/atmos_phys
+	url = https://github.com/ESCOMP/atmospheric_physics
+        fxtag = atmos_phys0_05_001
+        fxrequired = AlwaysRequired
+	fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
+
 [submodule "chem_proc"]
 	path = chem_proc
 	url = https://github.com/ESCOMP/CHEM_PREPROCESSOR.git
@@ -11,6 +22,29 @@
         fxrequired = AlwaysRequired
         fxtag = carma4_01
         fxDONOTUSEurl = https://github.com/ESCOMP/CARMA_base.git
+
+[submodule "clubb"]
+	path = src/physics/clubb
+	url = https://github.com/larson-group/clubb_release
+        fxrequired = AlwaysRequired
+        fxsparse = ../.clubb_sparse_checkout
+        fxtag = clubb_4ncar_20240605_73d60f6_gpufixes_posinf
+        fxDONOTUSEurl = https://github.com/larson-group/clubb_release
+
+[submodule "cosp2"]
+	path = src/physics/cosp2/src
+	url = https://github.com/CFMIP/COSPv2.0
+        fxrequired = AlwaysRequired
+        fxsparse = ../.cosp_sparse_checkout
+        fxtag = v2.1.4cesm
+	fxDONOTUSEurl = https://github.com/CFMIP/COSPv2.0
+
+[submodule "hemco"]
+	path = src/hemco
+	url = https://github.com/ESCOMP/HEMCO_CESM.git
+        fxtag = hemco-cesm2_0_hemco3_9_0
+        fxrequired = AlwaysRequired
+	fxDONOTUSEurl = https://github.com/ESCOMP/HEMCO_CESM.git
 
 [submodule "pumas"]
 	path = src/physics/pumas
@@ -26,33 +60,12 @@
         fxtag = pumas_cam-release_v1.17_rename
         fxDONOTUSEurl = https://github.com/ESCOMP/PUMAS
 
-[submodule "ali_arms"]
-	path = src/physics/ali_arms
-	url = https://github.com/ESCOMP/ALI-ARMS
-        fxrequired = AlwaysOptional
-        fxtag = ALI_ARMS_v1.0.1
-        fxDONOTUSEurl = https://github.com/ESCOMP/ALI-ARMS
-
-[submodule "atmos_phys"]
-	path = src/atmos_phys
-	url = https://github.com/ESCOMP/atmospheric_physics
-        fxtag = atmos_phys0_02_006
+[submodule "rrtmgp-data"]
+	path = src/physics/rrtmgp/data
+	url = https://github.com/earth-system-radiation/rrtmgp-data.git
         fxrequired = AlwaysRequired
-	fxDONOTUSEurl = https://github.com/ESCOMP/atmospheric_physics
-
-[submodule "geoschem"]
-	path = src/chemistry/geoschem/geoschem_src
-	url = https://github.com/geoschem/geos-chem.git
-        fxrequired = AlwaysOptional
-        fxtag = 14.1.2
-        fxDONOTUSEurl = https://github.com/geoschem/geos-chem.git
-
-[submodule "hemco"]
-	path = src/hemco
-	url = https://github.com/ESCOMP/HEMCO_CESM.git
-        fxtag = hemco-cesm1_2_1_hemco3_6_3_cesm_rme
-        fxrequired = AlwaysRequired
-	fxDONOTUSEurl = https://github.com/ESCOMP/HEMCO_CESM.git
+        fxtag = v1.8
+        fxDONOTUSEurl = https://github.com/earth-system-radiation/rrtmgp-data.git
 
 [submodule "rte-rrtmgp"]
 	path = src/physics/rrtmgp/ext
@@ -61,36 +74,49 @@
         fxtag = v1.7
         fxDONOTUSEurl = https://github.com/earth-system-radiation/rte-rrtmgp.git
 
-[submodule "rrtmgp-data"]
-	path = src/physics/rrtmgp/data
-	url = https://github.com/earth-system-radiation/rrtmgp-data.git
-        fxrequired = AlwaysRequired
-        fxtag = v1.8
-        fxDONOTUSEurl = https://github.com/earth-system-radiation/rrtmgp-data.git
+#-----------------------------
+# Optional CAM externals
+#-----------------------------
+
+[submodule "ali_arms"]
+	path = src/physics/ali_arms
+	url = https://github.com/ESCOMP/ALI-ARMS
+        fxrequired = AlwaysOptional
+        fxtag = ALI_ARMS_v1.0.1
+        fxDONOTUSEurl = https://github.com/ESCOMP/ALI-ARMS
+
+[submodule "cloud_j"]
+	path = src/chemistry/cloud_j
+	url = https://github.com/geoschem/cloud-j.git
+        fxrequired = AlwaysOptional
+        fxtag = 7.7.3
+        fxDONOTUSEurl = https://github.com/geoschem/cloud-j.git
+
+[submodule "geoschem"]
+	path = src/chemistry/geoschem/geoschem_src
+	url = https://github.com/geoschem/geos-chem.git
+        fxrequired = AlwaysOptional
+        fxtag = 14.4.3
+        fxDONOTUSEurl = https://github.com/geoschem/geos-chem.git
+
+[submodule "hetp"]
+	path = src/chemistry/hetp
+	url = https://github.com/geoschem/heterogeneous-vectorized-or-parallel.git
+        fxrequired = AlwaysOptional
+        fxtag = geoschem_hetp_1.0
+        fxDONOTUSEurl = https://github.com/geoschem/heterogeneous-vectorized-or-parallel.git
 
 [submodule "mpas"]
 	path = src/dynamics/mpas/dycore
 	url = https://github.com/MPAS-Dev/MPAS-Model.git
         fxrequired = AlwaysOptional
         fxsparse = ../.mpas_sparse_checkout
-        fxtag = b8c33daa
+        fxtag = v8.2.1
 	fxDONOTUSEurl = https://github.com/MPAS-Dev/MPAS-Model.git
 
-[submodule "cosp2"]
-	path = src/physics/cosp2/src
-	url = https://github.com/CFMIP/COSPv2.0
-        fxrequired = AlwaysRequired
-        fxsparse = ../.cosp_sparse_checkout
-        fxtag = v2.1.4cesm
-	fxDONOTUSEurl = https://github.com/CFMIP/COSPv2.0
-
-[submodule "clubb"]
-	path = src/physics/clubb
-	url = https://github.com/larson-group/clubb_release
-        fxrequired = AlwaysRequired
-        fxsparse = ../.clubb_sparse_checkout
-        fxtag = clubb_4ncar_20231115_5406350
-        fxDONOTUSEurl = https://github.com/larson-group/clubb_release
+#-----------------------------
+# CESM libraries
+#-----------------------------
 
 [submodule "parallelio"]
 path = libraries/parallelio
@@ -180,4 +206,3 @@ url = https://github.com/ESCOMP/MOSART
 fxtag = mosart1.1.02
 fxrequired = ToplevelRequired
 fxDONOTUSEurl = https://github.com/ESCOMP/MOSART
-
