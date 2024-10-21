@@ -168,7 +168,7 @@
        The ocean temperatures are initailized with the values:
         T_s = Tmin + Tdlt*exp[-0.5*(Lat/Twidth)^2]
        Default: 26.
-</entry>
+       </entry>
 
 <!-- Nudging Parameters -->
 
@@ -476,20 +476,6 @@
        Default: none
        </entry>
 
-<!-- Aerosols: Data (CAM version) -->
-
-<entry id="bndtvaer" type="char*256" input_pathname="abs" category="aero_data_cam"
-       group="cam3_aero_data_nl" valid_values="" >
-Full pathname of time-variant boundary dataset for aerosol masses.
-Default: set by build-namelist.
-</entry>
-
-<entry id="cam3_aero_data_on" type="logical" category="aero_data_cam"
-       group="cam3_aero_data_nl" valid_values="" >
-Add CAM3 prescribed aerosols to the physics buffer.
-Default: FALSE
-</entry>
-
 <!-- Physics grid decomp including physics dynamics coupling methods -->
 
 <entry id="phys_alltoall" type="integer"  category="perf_dp_coup"
@@ -685,8 +671,7 @@ Default: 0
 
 <entry id="fv_fft_flt" type="integer"  category="dyn_fv"
        group="dyn_fv_inparm" valid_values="0,1" >
-1 for FFT filter always, 0 for combined algebraic/FFT filter.  The value 0
-is used for CAM3, otherwise it is using the value 1.
+1 for FFT filter always, 0 for combined algebraic/FFT filter.
 Default: set by build-namelist
 </entry>
 
@@ -1354,6 +1339,12 @@ Whether or not to enable gravity waves produced by shallow convection.
 Default: .false.
 </entry>
 
+<entry id="use_gw_movmtn_pbl" type="logical" category="gw_drag"
+       group="phys_ctl_nl" valid_values="" >
+Whether or not to enable gravity waves from PBL moving mountains source.
+Default: .false.
+</entry>
+
 <entry id="pgwv" type="integer" category="gw_drag"
        group="gw_drag_nl" valid_values="" >
 Gravity wave spectrum dimension (wave numbers are from -pgwv to pgwv).
@@ -1511,12 +1502,6 @@ Full pathname of boundary dataset for meso-gamma ridges.
 Default: set by build-namelist.
 </entry>
 
-<entry id="fcrit2" type="real"  category="gw_drag"
-       group="gw_drag_nl" valid_values="" >
-Critical Froude number squared (used only for orographic waves).
-Default: set by build-namelist.
-</entry>
-
 <entry id="gw_oro_south_fac" type="real" category="gw_drag"
        group="gw_drag_nl" valid_values="" >
 Factor to multiply tau by, for orographic waves in the southern hemisphere.
@@ -1555,6 +1540,13 @@ Width of gaussian used to create frontogenesis tau profile [m/s].
 Default: set by build-namelist.
 </entry>
 
+<entry id="alpha_gw_movmtn" type="real" category="gw_drag"
+       group="gw_drag_nl" valid_values="" >
+Tunable parameter controlling proportion of boundary layer momentum flux escaping as GW momentum flux
+Default: set by build-namelist.
+</entry>
+
+
 <entry id="gw_drag_file" type="char*256" input_pathname="abs" category="gw_drag"
        group="gw_drag_nl" valid_values="" >
 Full pathname of Beres lookup table data file for gravity waves sourced
@@ -1566,6 +1558,12 @@ Default: set by build-namelist.
        group="gw_drag_nl" valid_values="" >
 Full pathname of Beres lookup table data file for gravity waves sourced
 from shallow convection.
+Default: set by build-namelist.
+</entry>
+
+<entry id="gw_drag_file_mm" type="char*256" input_pathname="abs" category="gw_drag"
+       group="gw_drag_nl" valid_values="" >
+Relative pathname of lookup table for deep convective moving mountain GW source
 Default: set by build-namelist.
 </entry>
 
@@ -2764,7 +2762,7 @@ Default: 1.0
 
 <entry id="micro_mg_vtrms_factor" type="real" category="microphys"
        group="micro_mg_nl" valid_values="" >
-Unitless scaling factor for snow fall speed to account for sub-grid scale ice crysta shape variability.
+Unitless scaling factor for snow fall speed to account for sub-grid scale ice crystal shape variability.
 Default: 1.0
 </entry>
 
@@ -2994,8 +2992,6 @@ Default: 1.0
 
 <entry id="microp_aero_wsub_min" type="real" category="microphys"
        group="microp_aero_nl" valid_values="" >
-Minimum subgrid vertical velocity for liquid droplets during aerosol activation with units of (m s-1).
-Default: 0.2 m s-1
 Minimum subgrid vertical velocity (before scale factor) for liquid droplets during aerosol activation with units of (m s-1).
 Default: set by build-namelist
 </entry>
@@ -3629,7 +3625,9 @@ Default: set by build-namelist
 
 <entry id="do_clubb_sgs" type="logical" category="conv"
        group="phys_ctl_nl" valid_values="" >
-Switch for CLUBB_SGS
+Flag for CLUBB_SGS.  N.B. this variable may not be set by the user.  It is
+set by build-namelist via information in the configure cache file to be
+consistent with how CAM was built.
 Default: set by build-namelist
 </entry>
 
