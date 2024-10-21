@@ -83,7 +83,7 @@
     </options>
   </test>
 
-  <test compset="F2000climo" grid="f19_f19_mtn14" name="SMS_D_Ln9_P256" testmods="cam/outfrq9s">
+  <test compset="F2000climo" grid="ne30pg3_ne30pg3_mtn14" name="SMS_D_Ln9_P256" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
       <machine name="betzy" compiler="intel" category="prealpha_noresm"/>
@@ -93,7 +93,7 @@
     </options>
   </test>
 
-  <test compset="F2000climo" grid="f10_f10_mg37" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
+  <test compset="F2000climo" grid="ne30pg3_ne30pg3_mtn14" name="ERP_D_Ln9_P36" testmods="cam/outfrq9s">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cam_noresm"/>
     </machines>
