@@ -4914,30 +4914,6 @@ Specifies the name of the sea salt emission parameterization.
 Default: Gong
 </entry>
 
-
-=======
-<!-- Ozone: Data (original CAM version) -->
-
-<entry id="bndtvo" type="char*256" input_pathname="abs" category="o3_data_cam"
-       group="cam3_ozone_data_nl" valid_values="" >
-Full pathname of time-variant ozone mixing ratio boundary dataset.
-Default: set by build-namelist.
-</entry>
-
-<entry id="cam3_ozone_data_on" type="logical"  category="o3_data_cam"
-       group="cam3_ozone_data_nl" valid_values="" >
-Add CAM3 prescribed ozone to the physics buffer.
-Default: FALSE
-</entry>
-
-<entry id="ozncyc" type="logical"  category="o3_data_cam"
-       group="cam3_ozone_data_nl" valid_values="" >
-Flag for yearly cycling of ozone data. If set to FALSE, a multi-year
-dataset is assumed, otherwise a single-year dataset is assumed, and ozone
-will be cycled over the 12 monthly averages in the file.
-Default: TRUE
-</entry>
-
 <!-- Performance Tuning and Profiling -->
 
 <entry id="papi_ctr1_str" type="char*16"  category="performance"
@@ -5071,7 +5047,7 @@ Default: TRUE
 <!-- Physics control -->
 
 <entry id="cam_physpkg" type="char*16" category="build"
-       group="phys_ctl_nl" valid_values="cam3,cam4,cam5,cam6,adiabatic,held_suarez,kessler,frierson" >
+       group="phys_ctl_nl" valid_values="cam4,cam5,cam6,adiabatic,held_suarez,kessler,frierson" >
 Name of the CAM physics package.  N.B. this variable may not be set by
 the user.  It is set by build-namelist via information in the configure
 cache file to be consistent with how CAM was built.
@@ -5298,9 +5274,21 @@ Default: set by build-namelist for climo cases, otherwise -1 to use model clock.
 
 <!-- GEOS-Chem model -->
 
-<entry id="geoschem_cheminputs" type="char*256" input_pathname="abs" category="geoschem"
+<entry id="geoschem_chem_inputs" type="char*256" input_pathname="abs" category="geoschem"
        group="geoschem_nl" valid_values="" >
-Full pathname to GEOS-Chem chemistry inputs directory
+Full pathname of the GEOS-Chem chemistry inputs directory.
+Default: set by build-namelist.
+</entry>
+
+<entry id="geoschem_aeropt_inputs" type="char*256" input_pathname="abs" category="geoschem"
+       group="geoschem_nl" valid_values="" >
+Full pathname of the aerosols optical property inputs directory used in GEOS-Chem outside of Cloud-J.
+Default: set by build-namelist.
+</entry>
+
+<entry id="geoschem_photol_inputs" type="char*256" input_pathname="abs" category="geoschem"
+       group="geoschem_nl" valid_values="" >
+Full pathname of the Cloud-J photolysis inputs directory used in GEOS-Chem.
 Default: set by build-namelist.
 </entry>
 
@@ -5601,7 +5589,7 @@ Default: Unused
 
 <!-- Radiation -->
 <entry id="radiation_scheme" type="char*16" category="radiation"
-       group="phys_ctl_nl" valid_values="rrtmgp,camrt" >
+       group="phys_ctl_nl" valid_values="rrtmgp,rrtmg,camrt" >
 Type of radiation scheme employed.
 Default: set by build-namelist
 </entry>
@@ -5809,6 +5797,7 @@ code directory for the CAM component.
 Default: set by build-namelist.
 </entry>
 
+
 <!-- Aerosol and cloud optics -->
 
 <entry id="water_refindex_file" type="char*256" input_pathname="abs" category="radiation"
@@ -6010,6 +5999,12 @@ Default: FALSE
        group="scam_nl" valid_values="">
 Use the SCAM-IOP specified observed water vapor at each time step instead of forecast value
 Default: FALSE
+</entry>
+
+<entry id="scm_use_3dfrc" type="logical" category="scam"
+       group="scam_nl" valid_values="">
+Use the SCAM-IOP 3d forcing if true, use combination of dycore vertical advection and iop horiz advection if false
+Default:False
 </entry>
 
 <entry id="scm_force_latlon" type="logical" category="scam"
@@ -6287,19 +6282,19 @@ Default: set by build-namelist.
 </entry>
 
 <entry id="sol_factb_interstitial" type="real" category="cam_chem"
-       group="aerosol_nl" valid_values="" >
+       group="aero_wetdep_nl" valid_values="" >
 Tuning for below cloud scavenging of interstitial modal aerosols.
 Default: set by build-namelist.
 </entry>
 
 <entry id="sol_factic_interstitial" type="real" category="cam_chem"
-       group="aerosol_nl" valid_values="" >
+       group="aero_wetdep_nl" valid_values="" >
 Tuning for in-cloud scavenging of interstitial modal aerosols.
 Default: set by build-namelist.
 </entry>
 
 <entry id="sol_facti_cloud_borne" type="real" category="cam_chem"
-       group="aerosol_nl" valid_values="" >
+       group="aero_wetdep_nl" valid_values="" >
 Tuning for in-cloud scavenging of cloud-borne modal aerosols.
 Default: set by build-namelist.
 </entry>
@@ -7708,6 +7703,21 @@ List of fluxes needed by the CARMA model, from CLM to CAM.
 Default: set by build-namelist.
 </entry>
 
+<entry id="dust_emis_method" type="char*80" category="dust_emissions"
+       group="dust_emis_inparm" valid_values="Zender_2003,Leung_2023" >
+Which dust emission method is going to be used.
+Either the Zender 2003 scheme or the Leung 2023 scheme.
+Default: Zender_2003
+</entry>
+
+<entry id="zender_soil_erod_source" type="char*80" category="dust_emissions"
+       group="dust_emis_inparm" valid_values="none,lnd,atm" >
+Option only applying for the Zender_2003 method for whether the soil erodibility
+file is handled in the active LAND model or in the ATM model.
+(only used when dust_emis_method is Zender_2003)
+Default: atm
+</entry>
+
 <!-- Ozone namelist variables shared between CAM and driver -->
 
 <entry id="atm_ozone_frequency" type="char*64" category="ozone_coupling"
@@ -8372,6 +8382,7 @@ Number of threads to use when processing loops over threads.
 Normally equal to se_vert_num_threads.
 Default: Set by build-namelist.
 </entry>
+
 <entry id="se_pgf_formulation" type="integer" category="se"
        group="dyn_se_inparm" valid_values="1,2,3" >
 
@@ -8400,6 +8411,7 @@ Default: Set by build-namelist.
 
   Default: Set by build-namelist.
 </entry>
+
 
 <!-- MPAS dycore -->
 
