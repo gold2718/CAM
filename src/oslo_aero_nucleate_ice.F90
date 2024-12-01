@@ -184,7 +184,7 @@ contains
        call endrun(routine//': ERROR qsatfac is required when subgrid = -1 or subgrid_strat = -1')
     end if
 
-    if (cam_physpkg_is("cam_dev")) then
+    if (cam_physpkg_is("cam7")) then
        ! Updates for PUMAS v1.21+
        call addfld('NIHFTEN',  (/ 'lev' /), 'A', '1/m3/s', 'Activated Ice Number Concentration tendency due to homogenous freezing')
        call addfld('NIDEPTEN', (/ 'lev' /), 'A', '1/m3/s', 'Activated Ice Number Concentration tendency due to deposition nucleation')
@@ -209,7 +209,7 @@ contains
        call addfld ('WICE',     (/ 'lev' /), 'A','m/s','Vertical velocity Reduction caused by preexisting ice'  )
        call addfld ('WEFF',     (/ 'lev' /), 'A','m/s','Effective Vertical velocity for ice nucleation' )
 
-       if (cam_physpkg_is("cam_dev")) then
+       if (cam_physpkg_is("cam7")) then
           ! Updates for PUMAS v1.21+
           call addfld ('INnso4TEN',   (/ 'lev' /), 'A','1/m3/s','Number Concentration tendency so4 (in) to ice_nucleation')
           call addfld ('INnbcTEN',    (/ 'lev' /), 'A','1/m3/s','Number Concentration tendency bc  (in) to ice_nucleation')
@@ -460,7 +460,7 @@ contains
              ! *** Turn off soot nucleation ***
              soot_num = 0.0_r8
 
-             if (cam_physpkg_is("cam_dev")) then
+             if (cam_physpkg_is("cam7")) then
                 call nucleati( &
                      wsubi(icol,ilev), t(icol,ilev), pmid(icol,ilev), relhum(icol,ilev), icldm(icol,ilev),   &
                      qc(icol,ilev), qi(icol,ilev), ni(icol,ilev), rho(icol,ilev),                      &
@@ -555,7 +555,7 @@ contains
                 end if
              end if
 
-             if (cam_physpkg_is("cam_dev")) then
+             if (cam_physpkg_is("cam7")) then
                 !Updates for pumas v1.21+
 
                 naai_hom(icol,ilev) = nihf(icol,ilev)/dtime
@@ -595,7 +595,7 @@ contains
                    endif
                 end if
 
-             else ! Not cam_dev
+             else ! Not cam7
 
                 naai_hom(icol,ilev) = nihf(icol,ilev)
 
@@ -633,13 +633,13 @@ contains
                    endif
                 end if
 
-             end if ! cam_dev
+             end if ! cam7
 
           end if freezing
        end do iloop
     end do kloop
 
-    if (cam_physpkg_is("cam_dev")) then
+    if (cam_physpkg_is("cam7")) then
        ! Updates for PUMAS v1.21+
        call outfld('NIHFTEN',   nihf(:ncol,:), ncol, lchnk)
        call outfld('NIIMMTEN', niimm(:ncol,:), ncol, lchnk)
@@ -659,7 +659,7 @@ contains
        call outfld('fhom', fhom(:ncol,:), ncol, lchnk)
        call outfld('WICE', wice(:ncol,:), ncol, lchnk)
        call outfld('WEFF', weff(:ncol,:), ncol, lchnk)
-       if (cam_physpkg_is("cam_dev")) then
+       if (cam_physpkg_is("cam7")) then
           ! Updates for PUMAS v1.21+
           call outfld('INnso4TEN',     INnso4(:ncol,:), ncol, lchnk)
           call outfld('INnbcTEN',       INnbc(:ncol,:), ncol, lchnk)
