@@ -238,3 +238,7 @@
     fxtag = mosart1.1.12_noresm_v2
     fxrequired = ToplevelRequired
     fxDONOTUSEurl = https://github.com/NorESMhub/MOSART
+
+[submodule "src/chemistry/oslo_sectional"]
+	path = src/chemistry/oslo_sectional
+	url = git@github.com:Trudigard/OsloSectional.git
