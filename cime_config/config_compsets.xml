@@ -98,9 +98,7 @@
 
   <compset>
     <alias>SecDust</alias>
-      TIME_ ATM[%phys] _LND[%phys] _ICE[%phys] _OCN[%phys]_ ROF[%phys]_ GLC[%phys]_ WAV[%phys] [_BGC%phys]
-      2000_ CAM70%
-    <lname>2000_CAM70%LT%NORESM%SecOslo_CLM60%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+    <lname>2000_CAM70%LT%NORESM%oslosectional_CLM60%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
   </compset>
 
 
