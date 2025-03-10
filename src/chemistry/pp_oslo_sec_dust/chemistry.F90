@@ -68,10 +68,10 @@ contains
 !-----------------------------------------------------------------------
 
     use aero_model,     only : aero_model_register
-    use constituents,   only : pcnst, cnst_add, cnst_name
+    use constituents,   only : cnst_add, cnst_name
     use mo_sim_dat,     only : set_sim_dat
     use mo_tracname,    only : solsym
-    use chem_mods,      only : adv_mass
+    use chem_mods,      only : adv_mass, gas_pcnst
 
     implicit none
 
@@ -92,7 +92,7 @@ contains
 !-----------------------------------------------------------------------
 ! Set names of diffused variable tendencies and declare them as history variables
 !-----------------------------------------------------------------------
-    do m = 1, pcnst ! usually gas_pcnst, try pcnst for aerosol tracers for now
+    do m = 1, gas_pcnst !
       lng_name = trim( solsym(m) )
 
       qmin = 1.e-36_r8
