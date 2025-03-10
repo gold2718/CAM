@@ -1,5 +1,6 @@
 !================================================================================================
-! This is the 'none' chemistry module.
+! This is the 'sec_dust' chemistry module.
+! It was copied from the 'none' chemistry module.
 ! Most of the routines return without doing anything.
 !================================================================================================
 
@@ -7,7 +8,6 @@ module chemistry
   use shr_kind_mod,        only: r8 => shr_kind_r8
   use physics_types,       only: physics_state, physics_ptend
   use ppgrid,              only: begchunk, endchunk, pcols
-  
 
   implicit none
   private
@@ -27,7 +27,7 @@ module chemistry
   public :: chem_write_restart
   public :: chem_read_restart
   public :: chem_init_restart
-  public :: chem_readnl                    ! read chem namelist 
+  public :: chem_readnl                    ! read chem namelist
   public :: chem_reset_fluxes
   public :: chem_emissions
 
@@ -60,13 +60,46 @@ contains
 !================================================================================================
 
   subroutine chem_register
-    use aero_model, only : aero_model_register
-    !----------------------------------------------------------------------- 
-    ! 
-    ! Purpose: register advected constituents for parameterized greenhouse gas chemistry
-    ! 
-    !-----------------------------------------------------------------------
 
+!-----------------------------------------------------------------------
+!
+! Purpose: register advected constituents for parameterized greenhouse gas chemistry
+!
+!-----------------------------------------------------------------------
+
+    use aero_model,     only : aero_model_register
+    use constituents,   only : pcnst, cnst_add, cnst_name
+    use mo_sim_dat,     only : set_sim_dat
+    use mo_tracname,    only : solsym
+    use chem_mods,      only : adv_mass
+
+    implicit none
+
+!-----------------------------------------------------------------------
+! Local variables - check how and where these are initialized!!
+!-----------------------------------------------------------------------
+    integer               :: m, n            ! Tracer index
+    real(r8), parameter   :: cptmp = 666._r8 ! specific heat at cnst prs (from mozart/chemistry.F90)
+    real(r8)              :: qmin            ! min value
+    logical               :: cam_outfld
+    character(len=128)    :: lng_name        ! variable long name
+
+!-----------------------------------------------------------------------
+! Set the simulation chemistry variables
+!-----------------------------------------------------------------------
+! - currently no chemistry - only aerosol
+    call set_sim_dat ! get arrays/vars from mo_sim_dat
+!-----------------------------------------------------------------------
+! Set names of diffused variable tendencies and declare them as history variables
+!-----------------------------------------------------------------------
+    do m = 1, pcnst ! usually gas_pcnst, try pcnst for aerosol tracers for now
+      lng_name = trim( solsym(m) )
+
+      qmin = 1.e-36_r8
+
+      call cnst_add( solsym(m), adv_mass(m), cptmp, qmin, n, cam_outfld=cam_outfld, &
+                         longname=trim(lng_name) )
+    end do
    ! for prescribed aerosols
     call aero_model_register()
 
@@ -95,12 +128,12 @@ contains
 !================================================================================================
 
   function chem_implements_cnst(name)
-    !----------------------------------------------------------------------- 
-    ! 
+    !-----------------------------------------------------------------------
+    !
     ! Purpose: return true if specified constituent is implemented by this package
-    ! 
+    !
     ! Author: B. Eaton
-    ! 
+    !
     !-----------------------------------------------------------------------
     implicit none
     !-----------------------------Arguments---------------------------------
@@ -115,11 +148,11 @@ contains
 !===============================================================================
 
   subroutine chem_init(phys_state, pbuf2d)
-    !----------------------------------------------------------------------- 
-    ! 
+    !-----------------------------------------------------------------------
+    !
     ! Purpose: initialize parameterized greenhouse gas chemistry
     !          (declare history variables)
-    ! 
+    !
     !-----------------------------------------------------------------------
     use physics_buffer, only : physics_buffer_desc
     use aero_model,     only : aero_model_init
@@ -138,7 +171,7 @@ contains
     use physics_buffer, only : physics_buffer_desc
     use time_manager, only: get_curr_date, get_perp_date, get_curr_calday, &
          is_perpetual
-    type(physics_state), intent(in):: phys_state(begchunk:endchunk)                 
+    type(physics_state), intent(in):: phys_state(begchunk:endchunk)
     type(physics_buffer_desc), pointer :: pbuf2d(:,:)
 
 
@@ -162,7 +195,7 @@ contains
     type(cam_out_t),     intent(in)    :: cam_out
     type(physics_buffer_desc), pointer :: pbuf(:)
     real(r8), optional,  intent(out)   :: fh2o(pcols) ! h2o flux to balance source from chemistry
-    
+
     return
   end subroutine chem_timestep_tend
 
@@ -215,7 +248,7 @@ contains
   end subroutine chem_init_restart
 !================================================================================
   subroutine chem_reset_fluxes( fptr, cam_in )
-    use camsrfexch,          only : cam_in_t     
+    use camsrfexch,          only : cam_in_t
 
     real(r8), pointer             :: fptr(:,:)        ! pointer into    array data
     type(cam_in_t), intent(inout) :: cam_in(begchunk:endchunk)
@@ -223,7 +256,7 @@ contains
   end subroutine chem_reset_fluxes
 !================================================================================
   subroutine chem_emissions( state, cam_in, pbuf )
-    use camsrfexch,       only: cam_in_t     
+    use camsrfexch,       only: cam_in_t
     use physics_buffer,   only: physics_buffer_desc
 
     ! Arguments:
