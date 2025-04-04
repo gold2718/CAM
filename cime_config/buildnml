@@ -4,7 +4,7 @@
 CAM namelist creator
 """
 # pylint: disable=multiple-imports
-import sys, os, shutil, filecmp
+import sys, os, shutil, filecmp, hashlib
 
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
@@ -48,6 +48,9 @@ def buildnml(case, caseroot, compname):
     RUN_REFTOD          = case.get_value("RUN_REFTOD")
     COMP_INTERFACE      = case.get_value("COMP_INTERFACE")
 
+    CAM_AEROSOL_CONFIG  = case.get_value("CAM_AEROSOL_CONFIG")
+    CAM_AEROSOL_CONFIG_HASH = case.get_value("CAM_AEROSOL_CONFIG_HASH")
+
     testsrc = os.path.join(srcroot, "components", "cam")
     if os.path.exists(testsrc):
         srcroot = testsrc
@@ -58,6 +61,23 @@ def buildnml(case, caseroot, compname):
     call_buildcpp = False
     camconf = os.path.join(caseroot, "Buildconf", "camconf")
     filename = os.path.join(camconf, "config_cache.xml")
+
+    aerconf = os.path.join(srcroot, "src", "chemistry", "oslo_sectional", "config", CAM_AEROSOL_CONFIG)
+
+    if os.path.isfile(aerconf):
+        aerconf_hash = # hash of config file
+            # call bin_config
+            # pass new file hash from config file & chem_mech.in to cime_config/buildcpp with case.set_value
+            # if file hash is different: build chemistry: call_buildcpp = True
+
+#2.1 check for config file (the one added in 1.) with case.get_value: check its file hash from the previously created file in a case folder (?) in config_cache.xml and compare to current file hash. If different or nonexistent: run bin_config
+#-> call bin_config: creates new chem_mech.in, adds stuff to atm_in (ideally, to be figured out)
+#2.2 pass the (possibly new) file hash from "config.ini" & chem_mech.in to cime_config/buildcpp via case.set_value (which will take care of passing it to configure somehow but we might have to add some input options)
+#2.3 if the file hash is different, set the correct flags for chemistry build. I don't quite get this part, do we want to have call_buildcpp=True or Build_complete=False or both?
+#3. Chemistry magically builds itself if necessary
+    # filename path+cam_aerosol_config
+    # check file hash value in case folder? in config_cache.xml, compare to current file hash.
+    # if different: run bin_config
     if not os.path.isfile(filename):
         call_buildcpp = True
     else:
@@ -65,6 +85,8 @@ def buildnml(case, caseroot, compname):
         file2 = os.path.join(caseroot,"LockedFiles","env_build.xml")
         if os.path.isfile(file2) and not filecmp.cmp(file1, file2):
             call_buildcpp = True
+# check here if hash in existing config_cache xml is same as file hash from new file
+# call bin_config, set call_buildcpp = True, pass new hash to config_cache
     if call_buildcpp:
         cmd = os.path.join(os.path.join(srcroot,"cime_config","buildcpp"))
         logger.info("     ...calling cam buildcpp to set build time options")
