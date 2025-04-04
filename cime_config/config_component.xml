@@ -160,7 +160,7 @@
       <value compset="_CAM.*(%GHGMAM4)">-chem ghg_mam4</value>
       <value compset="_CAM.*(%CAMoslo)">-chem trop_mam_oslo</value>
       <value compset="_CAM.*(%GHGCAMoslo)">-chem ghg_mam_oslo</value>
-      <value compset="_CAM.*(%oslosectional)">-chem oslo_sec_dust</value>
+      <value compset="_CAM.*(%oslosectional)">-chem dust_oslo_sectional</value>
 
       <!-- Modifiers for CAM runs (%.* includes SCAM runs) -->
       <value compset="_CAM.*(%CT1S|%CFIRE)">-chem trop_strat_mam5_vbs</value>
