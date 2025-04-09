@@ -61,11 +61,12 @@ def buildnml(case, caseroot, compname):
     call_buildcpp = False
     camconf = os.path.join(caseroot, "Buildconf", "camconf")
     filename = os.path.join(camconf, "config_cache.xml")
-
     aerconf = os.path.join(srcroot, "src", "chemistry", "oslo_sectional", "config", CAM_AEROSOL_CONFIG)
 
     if os.path.isfile(aerconf):
-        aerconf_hash = # hash of config file
+        with open(aerconf, "r", encoding="utf-8") as f:
+            aerconf_read = aerconf.read()
+            aeconf_hash = hashlib.md5(aerconf_read.encode("utf-8")).hexdigest()
             # call bin_config
             # pass new file hash from config file & chem_mech.in to cime_config/buildcpp with case.set_value
             # if file hash is different: build chemistry: call_buildcpp = True
