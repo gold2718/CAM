@@ -236,6 +236,7 @@ GetOptions(
     "cachedir=s"                => \$opts{'cachedir'},
     "carma=s"                   => \$opts{'carma'},
     "cam_bld=s"                 => \$opts{'cam_bld'},
+    "cam_aerosol_config_hash=s" => \$opts{'cam_aerosol_config_hash'}
     "cam_exe=s"                 => \$opts{'cam_exe'},
     "cam_exedir=s"              => \$opts{'cam_exedir'},
     "camiop"                    => \$opts{'camiop'},
