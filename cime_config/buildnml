@@ -61,20 +61,23 @@ def buildnml(case, caseroot, compname):
     call_buildcpp = False
     camconf = os.path.join(caseroot, "Buildconf", "camconf")
     filename = os.path.join(camconf, "config_cache.xml")
-    aerconf = os.path.join(srcroot, "src", "chemistry", "oslo_sectional", "config", CAM_AEROSOL_CONFIG)
 
-    if os.path.isfile(aerconf):
-        with open(aerconf, "r", encoding="utf-8") as f:
-            aerconf_read = f.read()
-            aeconf_hash = hashlib.md5(aerconf_read.encode("utf-8")).hexdigest()
-    case.set_value("CAM_AEROSOL_CONFIG_HASH", aerconf_hash)
-    aerconf_cache = QueryBuildCache.query_cache(filename, "CAM_AEROSOL_CONFIG_HASH")
+    if  CAM_AEROSOL_CONFIG != 'UNSET':
+        aerconf = os.path.join(srcroot, "src", "chemistry", "oslo_sectional", "config", CAM_AEROSOL_CONFIG)
+        sys.path.append(os.path.join(srcroot, "src", "chemistry", "oslo_sectional", "config"))
+        import bin_config
+        if os.path.isfile(aerconf):
+            with open(aerconf, "r", encoding="utf-8") as f:
+                aerconf_read = f.read()
+                aeconf_hash = hashlib.md5(aerconf_read.encode("utf-8")).hexdigest()
+        case.set_value("CAM_AEROSOL_CONFIG_HASH", aerconf_hash)
+        aerconf_cache = QueryBuildCache.query_cache(filename, "CAM_AEROSOL_CONFIG_HASH")
+        if not aerconf_cache or aerconf_cache['CAM_AEROSOL_CONFIG_HASH'] != aerconf_hash:
+            call_buildcpp = True
+            #call bin_config
 
     if not os.path.isfile(filename):
         call_buildcpp = True
-    elif not aerconf_cache or aerconf_cache['CAM_AEROSOL_CONFIG_HASH'] != aerconf_hash:
-        call_buildcpp = True
-        #call bin_config
     else:
         file1 = os.path.join(caseroot,"env_build.xml")
         file2 = os.path.join(caseroot,"LockedFiles","env_build.xml")
