@@ -79,7 +79,7 @@ def buildcpp(case):
     if cam_dycore == 'fv3':
          config_opts += ["-fv3core_libdir", os.path.join(exeroot,"atm","obj","atmos_cubed_sphere")]
 
-    if cam_Aerosol_config != 'UNSET':
+    if cam_aerosol_config != 'UNSET':
         config_opts += ['-cam_aerosol_config_hash', cam_aerosol_config_hash]
     # The ocean component setting is only used by CAM to do attribute matching for
     # setting default tuning parameter values.  In SOM mode we want to use the same
