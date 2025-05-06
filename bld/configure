@@ -57,6 +57,7 @@ OPTIONS
      -aquaplanet        Switch on aqua-planet mode.
      -build_chem_proc   Switch forces the build of the chemistry preprocessor (primarily for testing).
      -camnor            Build CAM with CAM-Nor modifications
+     -cam_aerosol_config_hash <string>  Hash for the sectional aerosol bin configuration file created in buildnml
      -carma <name>      Build CAM with specified CARMA microphysics model
                         [ none | bc_strat | cirrus | cirrus_dust | dust | meteor_impact |
                           meteor_smoke | mixed_sulfate | pmc | pmc_sulfate | sea_salt | sulfate | tholin |
@@ -235,6 +236,7 @@ GetOptions(
     "cache=s"                   => \$opts{'cache'},
     "cachedir=s"                => \$opts{'cachedir'},
     "carma=s"                   => \$opts{'carma'},
+    "cam_aerosol_config_hash=s" => \$opts{'cam_aerosol_config_hash'}
     "cam_bld=s"                 => \$opts{'cam_bld'},
     "cam_exe=s"                 => \$opts{'cam_exe'},
     "cam_exedir=s"              => \$opts{'cam_exedir'},
