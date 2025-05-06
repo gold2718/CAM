@@ -440,6 +440,11 @@
     <desc>User mods to apply to specific compset matches. </desc>
   </entry>
 
+  <!--
+    ===============
+    Sectional Aerosol opts
+    ===============
+   -->
   <entry id="CAM_AEROSOL_CONFIG">
     <type>char</type>
     <valid_values></valid_values>
