@@ -1318,8 +1318,8 @@ if ($chem_pkg =~ '_mam3') {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_5MODE ';
 } elsif ($chem_pkg =~ '_mam7') {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_7MODE ';
-} elsif ($chem_pkg =~ '_oslo') {
-    # Add MODAL_AERO_4MODE so that modal_aero_coag.F90 will compile
+} elsif ($chem_pkg =~ '_oslo' and not $chem_pkg =~ '_oslo_sectional') {
+     Add MODAL_AERO_4MODE so that modal_aero_coag.F90 will compile
     $chem_cppdefs = ' -DOSLO_AERO -DMODAL_AERO_4MODE';
 }
 
@@ -1970,7 +1970,7 @@ sub write_filepath
     # needs to take precedence over everything. This is because several shadow files
     # for oslo_aero routines are now in camnor_physics and contain stub interfaces
     # needed for use statements. These replace the previous use of #ifdef OSLO_AERO queries.
-    if ($chem =~/_oslo/) {
+    if ($chem =~/_oslo/ and not $chem=~/_oslo_sectional/) {
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
     }
