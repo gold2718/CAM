@@ -1318,8 +1318,8 @@ if ($chem_pkg =~ '_mam3') {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_5MODE ';
 } elsif ($chem_pkg =~ '_mam7') {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_7MODE ';
-} elsif ($chem_pkg =~ '_oslo' and not $chem_pkg =~ '_oslo_sectional') {
-     Add MODAL_AERO_4MODE so that modal_aero_coag.F90 will compile
+} elsif (($chem_pkg =~ '_oslo') and not ($chem_pkg =~ '_oslo_sectional')) {
+    # Add MODAL_AERO_4MODE so that modal_aero_coag.F90 will compile
     $chem_cppdefs = ' -DOSLO_AERO -DMODAL_AERO_4MODE';
 }
 

@@ -83,6 +83,7 @@ def buildnml(case, caseroot, compname):
             config_opts += ['-usr_mech_infile', chem_outfile]
             case.set_value("CAM_CONFIG_OPTS", config_opts)
             oslo_sectional_in = os.path.join(caseroot, "oslo_sectional_in")
+            # call bin_config to set up the sectional aerosol model
             bin_config.bin_config(aerconf, chemconf, chem_outfile, oslo_sectional_in)
 
     if not os.path.isfile(filename):
