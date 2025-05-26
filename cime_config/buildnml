@@ -63,17 +63,19 @@ def buildnml(case, caseroot, compname):
     filename = os.path.join(camconf, "config_cache.xml")
 
     if CAM_AEROSOL_CONFIG != 'UNSET':
-
         aerconf = os.path.join(srcroot, "src", "chemistry", "oslo_sectional", "config", CAM_AEROSOL_CONFIG)
         sys.path.append(os.path.join(srcroot, "src", "chemistry", "oslo_sectional", "config"))
         import bin_config
         if os.path.isfile(aerconf):
             with open(aerconf, "r", encoding="utf-8") as f:
                 aerconf_read = f.read()
-                aeconf_hash = hashlib.md5(aerconf_read.encode("utf-8")).hexdigest()
+                aerconf_hash = hashlib.md5(aerconf_read.encode("utf-8")).hexdigest()
         case.set_value("CAM_AEROSOL_CONFIG_HASH", aerconf_hash)
-        aerconf_cache = QueryBuildCache.query_cache(filename, "CAM_AEROSOL_CONFIG_HASH")
-        if not aerconf_cache or aerconf_cache['CAM_AEROSOL_CONFIG_HASH'] != aerconf_hash:
+        try:
+            aerconf_cache = QueryBuildCache.query_cache([filename, "CAM_AEROSOL_CONFIG_HASH"])
+        except:
+            aerconf_cache = 0.
+        if aerconf_cache != aerconf_hash:
             call_buildcpp = True
             config_opts = CAM_CONFIG_OPTS.split(' ')
             chem_index = config_opts.index('-chem')
