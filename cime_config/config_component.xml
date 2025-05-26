@@ -450,7 +450,7 @@
     <valid_values></valid_values>
     <default_value>UNSET</default_value>
     <values match="last">
-      <value compset="%oslosectional_">$dust_oslo_sectional.ini</value>
+      <value compset="%oslosectional_">dust_oslo_sectional.ini</value>
       </values>
     <group>build_component_cam</group>
     <file>env_build.xml</file>
