@@ -84,7 +84,8 @@ def buildnml(case, caseroot, compname):
             chem_outfile = os.path.join(caseroot, 'my_chem_mech.in')
             # TODO: figure out if we want to use something other than -usr_mech_infile
             config_opts += ['-usr_mech_infile', chem_outfile]
-            case.set_value("CAM_CONFIG_OPTS", config_opts)
+            config_opts_out = " ".join(config_opts)
+            case.set_value("CAM_CONFIG_OPTS", config_opts_out)
             oslo_sectional_in = os.path.join(caseroot, "oslo_sectional_in")
             # call bin_config to set up the sectional aerosol model
             bin_config.bin_config(aerconf, chemconf, chem_outfile, oslo_sectional_in)
@@ -229,8 +230,8 @@ def buildnml(case, caseroot, compname):
 
             shutil.move(atm_nlfile, oslo_atm_nlfile)
 
-            expect(os.path.isfile(oslo_sectional_in), f" Missing {oslo_sectional_in}")
-            expect(os.path.isfile(atm_nlfile), f" Missing {oslo_atm_nlfile}")
+            #expect(os.path.isfile(oslo_sectional_in), f" Missing {oslo_sectional_in}")
+            #expect(os.path.isfile(atm_nlfile), f" Missing {oslo_atm_nlfile}")
 
             with open(oslo_atm_nlfile, 'r') as f1:
                 lines = f1.readlines()
@@ -238,7 +239,7 @@ def buildnml(case, caseroot, compname):
                 lines_oslo_sec = f2.readlines()
             idx = 0
             for line in lines:
-                if "&" in line and line > lines_oslo_sec: # write entries before oslo_sectional nl
+                if "&" in line and line > lines_oslo_sec[0]: # write entries before oslo_sectional nl
                     break
                 else:
                     modified_atm_in.append(f"{line}")
@@ -253,7 +254,7 @@ def buildnml(case, caseroot, compname):
 
             expect(os.path.isfile(atm_nlfile), f" Missing {atm_nlfile}")
 
-            #os.remove(oslo_atm_nlfile)
+            os.remove(oslo_atm_nlfile)
         # -----------------------------------------------------
         # copy resolved namelist, atm_in, to rundir
         # -----------------------------------------------------

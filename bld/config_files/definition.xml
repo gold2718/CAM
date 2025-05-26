@@ -295,5 +295,9 @@ bluegene systems $OSNAME has the value "linux".
 <entry id="aerocom" valid_values="0,1" value="0">
 Turns on aerocom
 </entry>
-
+<entry id="CAM_AEROSOL_CONFIG_HASH" value="">
+Hash for the CAM oslo_sectional aerosol model configuration file.
+If the hash is different from the original, the CAM_AEROSOL_CONFIG file
+has changed and chemistry needs to be rebuilt.
+</entry>
 </config_definition>
