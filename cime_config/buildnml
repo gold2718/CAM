@@ -79,12 +79,25 @@ def buildnml(case, caseroot, compname):
         if aerconf_cache != aerconf_hash:                                                      # if the aerosol config file has changed
             call_buildcpp = True                                                               # run bin configuration file and chemical pp
             config_opts = CAM_CONFIG_OPTS.split(' ')
-            chem_index = config_opts.index('-chem')                                            # get chem_mech.in from the chemistry
-            CHEM_OPT = config_opts[chem_index + 1]                                             # specified in the compset
-            chemconf = os.path.join(srcroot, "src", "chemistry", "pp_" + CHEM_OPT, "chem_mech.in")
             chem_infile = os.path.join(caseroot, 'oslo_sec_chem_mech.in')                     # where bin_config will write out the new chem_mech
+
+            try:
+                # TODO not sure how to handle this. currently there are infinite -usr_mech_infile options attached
+                # at the end of cam_config_opts with every build
+                # My first idea is to check if a -usr_mech_infile is specified by the user
+                # if yes, add aerosol tracers and replace the specified -usr_mech_infile option with the edited file.
+                # bin_config checks whether the aerosol tracers are already in the usr_mech_infile and only adds ones that
+                # didn't exist in there previously
+                usr_mech_index = config_opts.index('-usr_mech_infile')                         # check if a usr_mech_infile is already specified -> do nothing!
+                chemconf = config_opts[usr_mech_index +1]                                      # get user specified chem_mech infile
+                config_opts[usr_mech_index + 1] = chem_infile
+            except:
+                chem_index = config_opts.index('-chem')
+                CHEM_OPT = config_opts[chem_index + 1]                                             # specified in the compset
+                chemconf = os.path.join(srcroot, "src", "chemistry", "pp_" + CHEM_OPT, "chem_mech.in")
             # TODO: figure out if we want to use something other than -usr_mech_infile
-            config_opts += ['-usr_mech_infile', chem_infile]
+                config_opts += ['-usr_mech_infile', chem_infile]
+
             config_opts_out = " ".join(config_opts)
             case.set_value("CAM_CONFIG_OPTS", config_opts_out)
             oslo_sectional_in = os.path.join(caseroot, "oslo_sectional_in")                    # where bin_config will write out a temporary nl file
