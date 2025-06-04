@@ -981,6 +981,9 @@ if ($chem =~ /_mam_oslo/) {
 if ($aer_model eq 'oslo') {
   add_default($nl, 'emis_fact_in_coarse_mode', 'ver'=>'oslo_aero');
   add_default($nl, 'seasalt_emis_scale',  'ver'=>'oslo_aero');
+} elsif ($aer_model eq 'oslo_sectional') {
+
+   #do nothing here
 
 } elsif ($aer_model eq 'mam' ) {
 
