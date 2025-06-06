@@ -1,6 +1,7 @@
 SPECIES
 
   Solution
+H2O
   End Solution
 
   Fixed
@@ -18,6 +19,7 @@ Solution Classes
   Explicit
   End Explicit
   Implicit
+    H2O
   End Implicit
 End Solution Classes
 
@@ -29,6 +31,7 @@ CHEMISTRY
   End Reactions
 
   Ext Forcing
+    H2O <- dataset
   End Ext Forcing
 
 END CHEMISTRY
