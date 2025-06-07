@@ -1000,7 +1000,7 @@ elsif ($phys_pkg =~ m/cam5|cam6/) {
     $rad_pkg = 'rrtmg';
 }
 elsif ($chem_pkg =~ '_oslo') {
-    $rad_pkg = 'rrtmg';
+    $rad_pkg = 'rrtmgp';
 }
 elsif ($phys_pkg =~ m/cam7/) {
     $rad_pkg = 'rrtmgp';
@@ -1139,7 +1139,7 @@ if (defined $opts{'camiop'}) {
 }
 my $camiop = $cfg_ref->get('camiop') ? "ON" : "OFF";
 
-# The only dycores supported in SCAM mode is the Spectral Element
+# The only dycore supported in SCAM mode is the Spectral Element
 if ($camiop eq 'ON' and !($dyn_pkg eq 'se')) {
     die <<"EOF";
 **  ERROR: CAMIOP mode only works with the Spectral Element dycore.
@@ -1156,7 +1156,6 @@ my $hgrid;
 if ($dyn_pkg eq 'fv') {
     $hgrid = '1.9x2.5';
 }
-
 elsif ($dyn_pkg eq 'se') {
     $hgrid = 'ne16np4';
 }
@@ -1296,7 +1295,6 @@ EOF
 $cfg_ref->set('nlev', $nlev);
 
 if ($print>=2) { print "Number of vertical levels: $nlev$eol"; }
-
 
 #------------------------------------------------------------------------------------------------
 # chemistry preprocessor....
@@ -2017,7 +2015,13 @@ sub write_filepath
     if ($chem =~/_oslo/) {
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
-    }
+        if ($rad eq 'rrtmg') {
+          print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam/rrtmg\n";
+        }
+        elsif ($rad eq 'rrtmgp') {
+          print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam/rrtmgp\n";
+        }
+      }
 
     # CAM-Nor-physics has precedence over everything except SourceMods and oslo-aero
     # Only active in NF or NB compsets
@@ -2367,7 +2371,7 @@ sub set_horiz_grid
         unless ($found) { die "set_horiz_grid: no match for dycore $dyn_pkg and hgrid $hgrid\n"; }
 
         # Set parameter values -- dycore specific.
-        if ( $dyn_pkg  eq 'fv' ) {
+        if ( $dyn_pkg eq 'fv' ) {
             $cfg_ref->set('nlat', $a{'nlat'});
             $cfg_ref->set('nlon', $a{'nlon'});
         }

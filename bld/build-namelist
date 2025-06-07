@@ -2181,7 +2181,7 @@ if ($chem =~ /trop_mozart/ or $chem =~ /trop_strat/ or $chem =~ /waccm_tsmlt/ or
 
     my @files;
     # Datasets
-    if ($chem =~ /trop_strat/ or $chem =~ /waccm_tsmlt/ or $chem =~ /_t4ma/) {
+    if ($chem =~ /trop_strat/ or $chem =~ /waccm_tsmlt/ or $chem =~ /waccm_t4ma/) {
        @files = ( 'flbc_file',
                   'xs_coef_file','xs_short_file','xs_long_file', 'rsf_file' );
     } else {
@@ -2298,7 +2298,7 @@ if ($chem eq 'trop_mam3') {
 }
 
 # CMIP6 emissions
-if (($phys =~ /cam6/ or $phys =~ /cam7/)) {
+if ($phys =~ /cam6/ or $phys =~ /cam7/) {
 
     # OASISS (ocean) DMS emissions
     if (!$aqua_mode and !$scam and chem_has_species($cfg, 'DMS')) {
@@ -2535,13 +2535,12 @@ if (($phys =~ /cam6/ or $phys =~ /cam7/)) {
                   'num_a2_cv_ext_file' => 'num_a2',
                 );
     }
-
     # air craft emissions
     if ($chem !~ /trop_mam/ and $chem !~ /ghg_mam/ and $chem !~ /waccm_sc/) {
       if ($chem !~ /_noaer/) {
         %species = (%species,
                     'bc_a4_ar_ext_file'  => 'bc_a4',
-                    'num_a4_ar_ext_file' => 'num_a4');
+                    'num_a4_ar_ext_file' => 'num_a4' );
       }
       %species = (%species,
                   'no2_ar_ext_file'    => 'NO2',
