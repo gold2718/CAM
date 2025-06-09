@@ -96,6 +96,7 @@ def buildnml(case, caseroot, compname):
                 CHEM_OPT = config_opts[chem_index + 1]                                             # specified in the compset
                 chemconf = os.path.join(srcroot, "src", "chemistry", "pp_" + CHEM_OPT, "chem_mech.in")
                 config_opts += ['-usr_mech_infile', chem_infile]
+            #expect(os.path.isfile(chemconf), "chem_mech.in not found")
 
             config_opts_out = " ".join(config_opts)
             case.set_value("CAM_CONFIG_OPTS", config_opts_out)
