@@ -117,7 +117,6 @@ contains
     end do
    ! for prescribed aerosols
     call aero_model_register()
-
   end subroutine chem_register
 
 !================================================================================================
