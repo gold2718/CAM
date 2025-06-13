@@ -1974,6 +1974,10 @@ sub write_filepath
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
     }
+    if ($chem =~/_oslo_sectional/) {
+        print $fh "$camsrcdir/src/chemistry/oslo_sectional/src\n";
+        print $fh "$camsrcdir/src/chemistry/oslo_sectional/src/base_objects\n";
+    }
 
     # CAM-Nor-physics has precedence over everything except SourceMods and oslo-aero
     # Only active in NF or NB compsets

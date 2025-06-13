@@ -5,13 +5,12 @@
 !================================================================================================
 
 module chemistry
-  use shr_kind_mod,        only: r8 => shr_kind_r8
-  use physics_types,       only: physics_state, physics_ptend
-  use ppgrid,              only: begchunk, endchunk, pcols
-  use mo_gas_phase_chemdr, only : map2chm
-  use spmd_utils,       only : masterproc
-  use cam_logfile,      only : iulog
-
+  use shr_kind_mod,                     only: r8 => shr_kind_r8
+  use physics_types,                    only: physics_state, physics_ptend
+  use ppgrid,                           only: begchunk, endchunk, pcols
+  use mo_gas_phase_chemdr,              only : map2chm
+  use spmd_utils,                       only : masterproc
+  use cam_logfile,                      only : iulog
 
   implicit none
   private
@@ -125,7 +124,8 @@ contains
 
     use aero_model,     only: aero_model_readnl
 
-    character(len=*), intent(in) :: nlfile  ! filepath for file containing namelist input
+    character(len=*), intent(in) :: nlfile
+    character(len=*), parameter  :: subname = 'chem_readnl'
 
     call aero_model_readnl(nlfile)
 
