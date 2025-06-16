@@ -2776,14 +2776,12 @@ See https://github.com/NorESMhub/noresm3_dev_simulations/discussions/78
 
 <zmconv_parcel_pbl                                                    > .false. </zmconv_parcel_pbl>
 <zmconv_parcel_hscale                                                 >  0.5    </zmconv_parcel_hscale>
-<!-- +tht zm parameters-->
 <zmconv_tiedke_lnd>    1.0  </zmconv_tiedke_lnd>
 <zmconv_tht_thermo> .false. </zmconv_tht_thermo>
 <zmconv_retrigger>  .false. </zmconv_retrigger>
 <zmconv_entrmn>       2e-4  </zmconv_entrmn>
 <zmconv_alfadet>       0.1  </zmconv_alfadet>
 <zmconv_plclmin>      6.e2  </zmconv_plclmin>
-<!-- -tht zm parameters-->
 
 <!-- Cloud sedimentation -->
 
