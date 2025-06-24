@@ -127,7 +127,7 @@ contains
     character(len=*), intent(in) :: nlfile
     character(len=*), parameter  :: subname = 'chem_readnl'
 
-    call aero_model_readnl(nlfile)
+    !call aero_model_readnl(nlfile)
 
   end subroutine chem_readnl
 
@@ -175,8 +175,12 @@ contains
     type(physics_state), intent(in):: phys_state(begchunk:endchunk)
     type(physics_buffer_desc), pointer :: pbuf2d(:,:)
 
+    character(len=6) :: nlfile
+
+    nlfile = "atm_in" ! TODO: fix this so atm_in comes from cam_comp?
+
    ! for prescribed aerosols
-    call aero_model_init(pbuf2d)
+    call aero_model_init(pbuf2d, nlfile)
 
   end subroutine chem_init
 
