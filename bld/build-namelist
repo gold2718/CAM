@@ -2936,6 +2936,81 @@ if ($chem eq 'trop_mam_oslo' or $chem eq 'ghg_mam_oslo') {
         add_default($nl, $file);
     }
 }
+if ($chem =~ "oslo_sectional") {
+
+    my %species;
+
+    # Surface emission datasets:
+    %species = ();
+    %species = (%species,
+                'DMS      -> ' => 'dms_oslo_emis_file',
+                'SO2      -> ' => 'so2_oslo_emis_file',
+            );
+
+    my $first = 1;
+    my $pre = "";
+    my $val = "";
+    foreach my $id (sort keys %species) {
+        my $rel_filepath = get_default_value($species{$id} );
+        my $abs_filepath = set_abs_filepath($rel_filepath, $inputdata_rootdir);
+        $val .= $pre . quote_string($id . $abs_filepath);
+        if ($first) {
+            $pre = ",";
+            $first = 0;
+        }
+    }
+    add_default($nl, 'srf_emis_specifier', 'val'=>$val);
+    unless (defined $nl->get_value('srf_emis_type')) {
+        add_default($nl, 'srf_emis_type',      'val'=>'CYCLICAL');
+        add_default($nl, 'srf_emis_cycle_yr',  'val'=>'2000');
+    }
+
+    # Vertical emission datasets:
+    %species = ();
+    %species = ('SO2     -> ' => 'so2_oslo_ext_file');
+
+    $first = 1;
+    $pre = "";
+    $val = "";
+    foreach my $id (sort keys %species) {
+        my $rel_filepath = get_default_value($species{$id} );
+        my $abs_filepath = set_abs_filepath($rel_filepath, $inputdata_rootdir);
+        $val .= $pre . quote_string($id . $abs_filepath);
+        if ($first) {
+            $pre = ",";
+            $first = 0;
+        }
+    }
+    add_default($nl, 'ext_frc_specifier', 'val'=>$val);
+    unless (defined $nl->get_value('ext_frc_type')) {
+        add_default($nl, 'ext_frc_type',      'val'=>"'CYCLICAL'");
+	add_default($nl, 'ext_frc_cycle_yr',  'val'=>'2000');
+    }
+
+    # Prescribed species
+    add_default($nl, 'tracer_cnst_specifier', 'val'=>"'O3','OH','NO3','HO2'");
+    unless (defined $nl->get_value('tracer_cnst_type')) {
+        add_default($nl, 'tracer_cnst_type',    'ver'=>'fixed_ox');
+        add_default($nl, 'tracer_cnst_cycle_yr','ver'=>'fixed_ox');
+    }
+
+    my @files = ('tracer_cnst_datapath', 'tracer_cnst_file', 'tracer_cnst_filelist');
+    foreach my $file (@files) {
+        add_default($nl, $file, 'ver'=>'fixed_ox');
+    }
+
+    add_default($nl, 'fstrat_list', 'val'=>"' '");
+    add_default($nl, 'flbc_list', 'val'=>"' '");
+
+    # Datasets
+    my @files = ('xs_long_file', 'rsf_file', 'exo_coldens_file' );
+    if ($soil_erod_atm =~ /$TRUE/) {
+        @files = ( @files, 'soil_erod_file' );
+    }
+    foreach my $file (@files) {
+        add_default($nl, $file);
+    }
+}
 if ($chem eq 'trop_mam7') {
 
     my %species;
@@ -3037,7 +3112,7 @@ if ($waccmx){
     $maxzen = 116.;
 } elsif ($chem =~ "trop_strat" or $chem =~ "waccm_" or $model_top eq "ht") {
     $maxzen = 97.01;
-} elsif ($chem =~ "trop_mam" or $chem =~ "trop_mozart" or $chem =~ "ghg_mam") {
+} elsif ($chem =~ "trop_mam" or $chem =~ "trop_mozart" or $chem =~ "ghg_mam" or $chem =~ "oslo_sectional") {
     $maxzen = 88.85;
 }
 if ($maxzen>0.0) {

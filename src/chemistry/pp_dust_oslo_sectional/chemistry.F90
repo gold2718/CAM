@@ -122,8 +122,17 @@ module chemistry
 
   character(len=fieldname_len) :: srcnam(gas_pcnst) ! names of source/sink tendencies
 
-  ! species indices
-     integer :: h2o_ndx
+
+  integer :: ixcldliq                ! index of liquid cloud water
+  integer :: ndx_cld
+  integer :: ndx_cmfdqr
+  integer :: ndx_nevapr
+  integer :: ndx_prain
+  integer :: ndx_cldtop
+  integer :: h2o_ndx
+  integer :: ixndrop             ! cloud droplet number index
+  integer :: ndx_pblh
+  integer :: ndx_fsds
 
   logical :: ghg_chem = .false.      ! .true. => use ghg chem package
   logical :: chem_step = .true.
@@ -588,6 +597,7 @@ contains
 
     character(len=*), intent(in) :: name   ! constituent name
     logical :: chem_implements_cnst        ! return value
+    integer :: m
 
     chem_implements_cnst = .false.
     do m = 1,gas_pcnst
@@ -619,18 +629,208 @@ contains
     !
     !-----------------------------------------------------------------------
     use physics_buffer, only : physics_buffer_desc, pbuf_get_index, pbuf_set_field
+        use time_manager,        only : is_first_step
+    use constituents,        only : cnst_get_ind
+    use cam_history,         only : addfld, add_default, horiz_only, fieldname_len
+    use mo_chemini,          only : chemini
+    use mo_ghg_chem,         only : ghg_chem_init
+    use mo_tracname,         only : solsym
+    use cfc11star,           only : init_cfc11star
+    use phys_control,        only : phys_getopts
+    use chem_mods,           only : adv_mass
+    use infnan,              only : nan, assignment(=)
+    use mo_chem_utls,        only : get_spc_ndx
+    use cam_abortutils,      only : endrun
+    use mo_setsox,           only : sox_inti
+    use constituents,        only : sflxnam
+    use fire_emissions,      only : fire_emissions_init
+    use short_lived_species, only : short_lived_species_initic
+    use ocean_emis,          only : ocean_emis_init, ocean_emis_species
+    use mo_srf_emissions,    only : has_emis
     use aero_model,     only : aero_model_init
 
+    ! args
+    character(len=6) :: nlfile
     type(physics_state), intent(in):: phys_state(begchunk:endchunk)
     type(physics_buffer_desc), pointer :: pbuf2d(:,:)
 
-    character(len=6) :: nlfile
+!-----------------------------------------------------------------------
+! Local variables
+!-----------------------------------------------------------------------
+    integer :: m                                ! tracer indicies
+    character(len=fieldname_len) :: spc_name
+    integer :: n, ii, ierr
+    logical :: history_aerosol
+    logical :: history_chemistry
+    logical :: history_cesm_forcing
+
+    character(len=2)  :: unit_basename  ! Units 'kg' or '1'
+    logical :: history_budget                 ! output tendencies and state variables for CAM
+                                              ! temperature, water vapor, cloud ice and cloud
+                                              ! liquid budgets.
+    integer :: history_budget_histfile_num    ! output history file number for budget fields
+
+    character(len=*), parameter :: prefix = 'chem_init: '
+
+    call phys_getopts( cam_chempkg_out=chem_name, &
+                       history_aerosol_out=history_aerosol , &
+                       history_chemistry_out=history_chemistry , &
+                       history_budget_out = history_budget , &
+                       history_budget_histfile_num_out = history_budget_histfile_num, &
+                       history_cesm_forcing_out = history_cesm_forcing )
+
+    ! aqueous chem initialization
+    call sox_inti()
 
     nlfile = "atm_in" ! TODO: fix this so atm_in comes from cam_comp?
 
    ! for prescribed aerosols
     call aero_model_init(pbuf2d, nlfile)
 
+
+    !-----------------------------------------------------------------------
+! Get liq and ice cloud water indicies
+!-----------------------------------------------------------------------
+    call cnst_get_ind( 'CLDLIQ', ixcldliq )
+    call cnst_get_ind( 'NUMLIQ', ixndrop, abort=.false.  )
+
+!-----------------------------------------------------------------------
+! get pbuf indicies
+!-----------------------------------------------------------------------
+    ndx_cld    = pbuf_get_index('CLD')
+    ndx_cmfdqr = pbuf_get_index('RPRDTOT')
+    ndx_nevapr = pbuf_get_index('NEVAPR')
+    ndx_prain  = pbuf_get_index('PRAIN')
+    ndx_cldtop = pbuf_get_index('CLDTOP')
+    ndx_pblh   = pbuf_get_index('pblh')
+    ndx_fsds   = pbuf_get_index('FSDS')
+
+    call addfld( 'HEIGHT',     (/ 'ilev' /),'A','m',       'geopotential height above surface at interfaces (m)' )
+    call addfld( 'CT_H2O_GHG', (/ 'lev' /), 'A','kg/kg/s', 'ghg-chem h2o source/sink' )
+
+!-----------------------------------------------------------------------
+! Initialize chemistry modules
+!-----------------------------------------------------------------------
+    call chemini &
+       ( euvac_file &
+       , photon_file &
+       , electron_file &
+       , airpl_emis_file &
+       , depvel_lnd_file &
+       , xs_coef_file &
+       , xs_short_file &
+       , xs_long_file &
+       , photo_max_zen &
+       , rsf_file &
+       , fstrat_file &
+       , fstrat_list &
+       , srf_emis_specifier &
+       , srf_emis_type &
+       , srf_emis_cycle_yr &
+       , srf_emis_fixed_ymd &
+       , srf_emis_fixed_tod &
+       , ext_frc_specifier &
+       , ext_frc_type &
+       , ext_frc_cycle_yr &
+       , ext_frc_fixed_ymd &
+       , ext_frc_fixed_tod &
+       , exo_coldens_file &
+       , use_hemco &
+       , pbuf2d &
+       )
+
+    if ( ghg_chem ) then
+       call ghg_chem_init(phys_state, bndtvg, h2orates)
+    endif
+
+    call init_cfc11star(pbuf2d)
+
+    ! MEGAN emissions initialize
+    if (shr_megan_mechcomps_n>0) then
+
+       allocate( megan_indices_map(shr_megan_mechcomps_n), stat=ierr)
+       if( ierr /= 0 ) then
+          call endrun(prefix//'failed to allocate megan_indices_map')
+       end if
+       allocate( megan_wght_factors(shr_megan_mechcomps_n), stat=ierr)
+       if( ierr /= 0 ) then
+          call endrun(prefix//'failed to allocate megan_indices_map')
+       end if
+       megan_wght_factors(:) = nan
+
+       do n=1,shr_megan_mechcomps_n
+          call cnst_get_ind (shr_megan_mechcomps(n)%name,  megan_indices_map(n), abort=.false.)
+          ii = get_spc_ndx(shr_megan_mechcomps(n)%name)
+          if (ii>0) then
+             megan_wght_factors(n) = adv_mass(ii)*1.e-3_r8 ! kg/moles (to convert moles/m2/sec to kg/m2/sec)
+          else
+             call endrun( 'gas_phase_chemdr_inti: MEGAN compound not in chemistry mechanism : '&
+                  //trim(shr_megan_mechcomps(n)%name))
+          endif
+
+          ! MEGAN  history fields
+          call addfld( 'MEG_'//trim(shr_megan_mechcomps(n)%name),horiz_only,'A','kg/m2/sec',&
+               trim(shr_megan_mechcomps(n)%name)//' MEGAN emissions flux')
+          if (history_chemistry) then
+             call add_default('MEG_'//trim(shr_megan_mechcomps(n)%name), 1, ' ')
+          endif
+
+          srf_emis_diag(megan_indices_map(n)) = .true.
+       enddo
+    endif
+
+    ! Galatic Cosmic Rays ...
+    call gcr_ionization_init()
+
+    ! Fire emissions ...
+    call fire_emissions_init()
+
+    call short_lived_species_initic()
+
+    call ocean_emis_init()
+    !-----------------------------------------------------------------------
+    ! Set names of chemistry variable tendencies and declare them as history variables
+    !-----------------------------------------------------------------------
+    do m = 1,gas_pcnst
+       spc_name = solsym(m)
+       srcnam(m) = 'CT_' // spc_name ! chem tendancy (source/sink)
+
+       call addfld( srcnam(m), (/ 'lev' /), 'A', 'kg/kg/s', trim(spc_name)//' source/sink' )
+       call cnst_get_ind(solsym(m), n, abort=.false.)
+
+        if ( n>0 ) then
+            if (has_emis(m) .or. ocean_emis_species(solsym(m)) .or. srf_emis_diag(n)) then
+                srf_emis_diag(n) = .true.
+
+                if (sflxnam(n)(3:5) == 'num') then  ! name is in the form of "SF****"
+                    unit_basename = ' 1'
+                else
+                    unit_basename = 'kg'
+                endif
+
+                call addfld (sflxnam(n),horiz_only, 'A', unit_basename//'/m2/s',trim(solsym(m))//' surface flux')
+                if ( history_aerosol .or. history_chemistry ) then
+                    call add_default( sflxnam(n), 1, ' ' )
+                endif
+
+                if ( history_cesm_forcing ) then
+                    if ( spc_name == 'NO' .or. spc_name == 'NH3' ) then
+                        call add_default( sflxnam(n), 1, ' ' )
+                    endif
+                endif
+            endif
+       endif
+    end do
+
+    ! Add chemical tendency of water vapor to water budget output
+    if ( history_budget ) then
+      call add_default ('CT_H2O'  , history_budget_histfile_num, ' ')
+    endif
+
+    ! initialize srf ozone to zero
+    if (is_first_step() .and. srf_ozone_pbf_ndx>0) then
+       call pbuf_set_field(pbuf2d, srf_ozone_pbf_ndx, 0._r8)
+    end if
   end subroutine chem_init
 
 !===============================================================================

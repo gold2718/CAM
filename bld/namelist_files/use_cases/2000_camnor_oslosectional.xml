@@ -18,14 +18,14 @@
   'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO2_airALL_vertical_1849-2015_0.9x1.25_version20180512.nc',
   'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO2_anthroprofALL_vertical_1849-2015_0.9x1.25_version20180512.nc',
   'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO2_bbALL_vertical_1849-2015_0.9x1.25_version20180512.nc',
-  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO2_volcALL_vertical_1849-2015_0.9x1.25_version20180512.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO2_volcALL_vertical_1849-2015_0.9x1.25_version20180512.nc'
 </ext_frc_specifier>
 
 <!-- Surface emissions -->
 <srf_emis_type>CYCLICAL</srf_emis_type>
 <srf_emis_cycle_yr>2000</srf_emis_cycle_yr>
 <srf_emis_specifier>
-  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO2_anthrosurfALL_surface_1849-2015_0.9x1.25_version20180512.nc',
+  'SO2    ->  $INPUTDATA_ROOT/atm/cam/chem/emis/cmip6_emissions_version20180512/emissions_cmip6_noresm2_SO2_anthrosurfALL_surface_1849-2015_0.9x1.25_version20180512.nc'
 </srf_emis_specifier>
 
 </namelist_defaults>
