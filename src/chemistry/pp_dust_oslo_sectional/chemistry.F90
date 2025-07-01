@@ -5,21 +5,38 @@
 !================================================================================================
 
 module chemistry
-  use shr_kind_mod,                     only: r8 => shr_kind_r8
-  use physics_types,                    only: physics_state, physics_ptend
-  use ppgrid,                           only: begchunk, endchunk, pcols
-  use mo_gas_phase_chemdr,              only : map2chm
-  use spmd_utils,                       only : masterproc
-  use cam_logfile,                      only : iulog
+  use shr_kind_mod,         only: r8 => shr_kind_r8, shr_kind_cl
+  use ppgrid,               only: begchunk, endchunk, pcols, pver
+  use physconst,            only: gravit
+  use constituents,         only: pcnst, cnst_fixed_ubc
+  use chem_mods,            only: gas_pcnst
+  use cam_history,          only: fieldname_len
+  use tracer_data,          only: MAXTRCRS
+  use physics_types,        only: physics_state, physics_ptend, physics_ptend_init
+  use shr_megan_mod,        only: shr_megan_mechcomps, shr_megan_mechcomps_n
+  use srf_field_check,      only: active_Fall_flxvoc
+  use gcr_ionization,       only: gcr_ionization_readnl, gcr_ionization_init, gcr_ionization_adv
+  use epp_ionization,       only: epp_ionization_readnl, epp_ionization_adv
+  use mee_ionization,       only: mee_ion_readnl
+  use mo_apex,              only: mo_apex_readnl
+  use ref_pres,             only: ptop_ref
+  use phys_control,         only: waccmx_is   ! WACCM-X switch query function
+  use phys_control,         only: use_hemco   ! HEMCO switch logical
+  use mo_gas_phase_chemdr,  only: map2chm
+  use spmd_utils,           only: masterproc
+  use cam_logfile,          only: iulog
 
   implicit none
   private
   save
-  !
+
+  !---------------------------------------------------------------------------------
   ! Public interfaces
-  !
+  !---------------------------------------------------------------------------------
+
   public :: chem_is                        ! identify which chemistry is being used
   public :: chem_register                  ! register consituents
+  public :: chem_readnl                    ! read chem namelist
   public :: chem_is_active                 ! returns true if this package is active (ghg_chem=.true.)
   public :: chem_implements_cnst           ! returns true if consituent is implemented by this package
   public :: chem_init_cnst                 ! initialize mixing ratios if not read from initial file
@@ -30,10 +47,14 @@ module chemistry
   public :: chem_write_restart
   public :: chem_read_restart
   public :: chem_init_restart
-  public :: chem_readnl                    ! read chem namelist
   public :: chem_reset_fluxes
   public :: chem_emissions
 
+  integer, public :: imozart = -1       ! index of 1st constituent
+
+  !---------------------------------------------------------------------------------
+  ! TODO: Delete?
+  !---------------------------------------------------------------------------------
   interface chem_write_restart
      module procedure chem_write_restart_bin
      module procedure chem_write_restart_pio
@@ -42,22 +63,93 @@ module chemistry
      module procedure chem_read_restart_bin
      module procedure chem_read_restart_pio
   end interface
+  !---------------------------------------------------------------------------------
+  ! Namelist variables
+  !---------------------------------------------------------------------------------
+  ! control
+
+  integer :: chem_freq = 1 ! time steps
+
+  ! ghg
+
+  character(len=shr_kind_cl) :: bndtvg = ' ' ! pathname for greenhouse gas loss rate
+  character(len=shr_kind_cl) :: h2orates = ' ' ! pathname for greenhouse gas (lyman-alpha H2O loss)
+
+  ! photolysis
+
+  character(len=shr_kind_cl) :: rsf_file = 'rsf_file'
+  character(len=shr_kind_cl) :: exo_coldens_file = ''
+  character(len=shr_kind_cl) :: xs_coef_file = 'xs_coef_file'
+  character(len=shr_kind_cl) :: xs_short_file = 'xs_short_file'
+  character(len=shr_kind_cl) :: xs_long_file = 'xs_long_file'
+  character(len=shr_kind_cl) :: electron_file = 'electron_file'
+  character(len=shr_kind_cl) :: euvac_file = 'NONE'
+  real(r8)                   :: photo_max_zen=-huge(1._r8)
+
+  ! solar / geomag data
+
+  character(len=shr_kind_cl) :: photon_file = 'photon_file'
+
+  ! dry dep
+
+  character(len=shr_kind_cl) :: depvel_lnd_file = 'depvel_lnd_file'
+
+  ! emis
+  integer, parameter :: max_num_emis_files = max(100,2*pcnst)
+  character(len=shr_kind_cl) :: airpl_emis_file = '' ! airplane emissions
+  character(len=shr_kind_cl) :: srf_emis_specifier(max_num_emis_files) = ''
+  character(len=shr_kind_cl) :: ext_frc_specifier(max_num_emis_files) = ''
+
+  character(len=24)  :: srf_emis_type = 'CYCLICAL' ! 'CYCLICAL' | 'SERIAL' |  'INTERP_MISSING_MONTHS'
+  integer            :: srf_emis_cycle_yr  = 0
+  integer            :: srf_emis_fixed_ymd = 0
+  integer            :: srf_emis_fixed_tod = 0
+
+  character(len=24)  :: ext_frc_type = 'CYCLICAL' ! 'CYCLICAL' | 'SERIAL' |  'INTERP_MISSING_MONTHS'
+  integer            :: ext_frc_cycle_yr  = 0
+  integer            :: ext_frc_fixed_ymd = 0
+  integer            :: ext_frc_fixed_tod = 0
+
+  ! fixed stratosphere
+
+  character(len=shr_kind_cl) :: fstrat_file = 'fstrat_file'
+  character(len=16)  :: fstrat_list(pcnst)  = ''
+
+  !---------------------------------------------------------------------------------
+  ! dummy values for specific heats at constant pressure
+  !---------------------------------------------------------------------------------
+  real(r8), parameter   :: cptmp = 666._r8
+
+  character(len=fieldname_len) :: srcnam(gas_pcnst) ! names of source/sink tendencies
 
   ! species indices
      integer :: h2o_ndx
+
+  logical :: ghg_chem = .false.      ! .true. => use ghg chem package
+  logical :: chem_step = .true.
+  logical :: is_active = .false.
+
+  character(len=32) :: chem_name = 'NONE'
+  logical :: chem_rad_passive = .false.
+
+  ! for MEGAN emissions
+  integer, allocatable :: megan_indices_map(:)
+  real(r8),allocatable :: megan_wght_factors(:)
+
+  logical :: chem_use_chemtrop = .false.
+
+  integer :: srf_ozone_pbf_ndx = -1
+  logical :: srf_emis_diag(pcnst) = .false.
 
 !================================================================================================
 contains
 !================================================================================================
 
   logical function chem_is (name)
+   use phys_control,     only : cam_chempkg_is
 
-    character(len=*), intent(in) :: name
-
-    chem_is = .false.
-    if (name == 'none' ) then
-       chem_is = .true.
-    end if
+   character(len=*), intent(in) :: name
+   chem_is = cam_chempkg_is(name)
 
   end function chem_is
 
@@ -76,7 +168,7 @@ contains
     use mo_sim_dat,     only : set_sim_dat
     use mo_tracname,    only : solsym
     use mo_chem_utls,   only : get_spc_ndx, get_inv_ndx
-    use chem_mods,      only : adv_mass, gas_pcnst
+    use chem_mods,      only : adv_mass
 
     implicit none
 
