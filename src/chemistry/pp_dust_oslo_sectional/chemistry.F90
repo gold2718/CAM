@@ -339,7 +339,7 @@ contains
     use mo_drydep,         only: drydep_srf_file
     use mo_sulf,           only: sulf_readnl
     use species_sums_diags,only: species_sums_readnl
-    use ocean_emis,        only: ocean_emis_readnl
+    !use ocean_emis,        only: ocean_emis_readnl
 
     ! args
     character(len=*), intent(in) :: nlfile
@@ -553,7 +553,7 @@ contains
     call mo_apex_readnl(nlfile)
     call sulf_readnl(nlfile)
     call species_sums_readnl(nlfile)
-    call ocean_emis_readnl(nlfile)
+    !call ocean_emis_readnl(nlfile)
 
   end subroutine chem_readnl
 
@@ -633,7 +633,7 @@ contains
     use constituents,        only: sflxnam
     use fire_emissions,      only: fire_emissions_init
     use short_lived_species, only: short_lived_species_initic
-    use ocean_emis,          only: ocean_emis_init, ocean_emis_species
+    !use ocean_emis,          only: ocean_emis_init, ocean_emis_species
     use mo_srf_emissions,    only: has_emis
     use aero_model,          only: aero_model_init
 
@@ -775,7 +775,7 @@ contains
 
     call short_lived_species_initic()
 
-    call ocean_emis_init()
+    !call ocean_emis_init()
     !-----------------------------------------------------------------------
     ! Set names of chemistry variable tendencies and declare them as history variables
     !-----------------------------------------------------------------------
@@ -787,7 +787,7 @@ contains
         call cnst_get_ind(solsym(m), n, abort=.false.)
 
         if ( n>0 ) then
-            if (has_emis(m) .or. ocean_emis_species(solsym(m)) .or. srf_emis_diag(n)) then
+            !if (has_emis(m) .or. ocean_emis_species(solsym(m)) .or. srf_emis_diag(n)) then
                 srf_emis_diag(n) = .true.
 
                 if (sflxnam(n)(3:5) == 'num') then  ! name is in the form of "SF****"
@@ -806,7 +806,7 @@ contains
                         call add_default( sflxnam(n), 1, ' ' )
                     endif
                 endif
-            endif
+            !endif
         endif
     end do
 
@@ -835,7 +835,7 @@ contains
     use mo_srf_emissions, only: set_srf_emissions
     use hco_cc_emissions, only: hco_set_srf_emissions
     use fire_emissions,   only: fire_emissions_srf
-    use ocean_emis,       only: ocean_emis_getflux
+    !use ocean_emis,       only: ocean_emis_getflux
 
     ! Arguments:
 
@@ -910,7 +910,7 @@ contains
     call fire_emissions_srf( lchnk, ncol, cam_in%fireflx, cam_in%cflx )
 
     ! air-sea exchange of trace gases
-    call ocean_emis_getflux(lchnk, ncol, state, cam_in%u10, cam_in%sst, cam_in%ocnfrac, cam_in%icefrac, cam_in%cflx)
+    !call ocean_emis_getflux(lchnk, ncol, state, cam_in%u10, cam_in%sst, cam_in%ocnfrac, cam_in%icefrac, cam_in%cflx)
 
   end subroutine chem_emissions
 
@@ -1026,7 +1026,7 @@ contains
 
     use cfc11star,         only: update_cfc11star
     use physics_buffer,    only: physics_buffer_desc
-    use ocean_emis,        only: ocean_emis_advance
+    !use ocean_emis,        only: ocean_emis_advance
     use mee_fluxes,        only: mee_fluxes_adv
 
     implicit none
@@ -1101,7 +1101,7 @@ contains
     ! medium energy electron flux data ...
     call mee_fluxes_adv()
 
-    call ocean_emis_advance( pbuf2d, phys_state )
+    !call ocean_emis_advance( pbuf2d, phys_state )
 
   end subroutine chem_timestep_init
 
@@ -1220,12 +1220,33 @@ contains
     endif
 
     tim_ndx = pbuf_old_tim_idx()
+    if (masterproc) then
+        write(iulog,*) 'DEBUG: trying to get field: fsds'
+    end if
     call pbuf_get_field(pbuf, ndx_fsds,       fsds)
+        if (masterproc) then
+        write(iulog,*) 'DEBUG: trying to get field: pblh'
+    end if
     call pbuf_get_field(pbuf, ndx_pblh,       pblh)
+        if (masterproc) then
+        write(iulog,*) 'DEBUG: trying to get field: prain'
+    end if
     call pbuf_get_field(pbuf, ndx_prain,      prain,  start=(/1,1/), kount=(/ncol,pver/))
+        if (masterproc) then
+        write(iulog,*) 'DEBUG: trying to get field: cldfr'
+    end if
     call pbuf_get_field(pbuf, ndx_cld,        cldfr,  start=(/1,1,tim_ndx/), kount=(/ncol,pver,1/) )
+        if (masterproc) then
+        write(iulog,*) 'DEBUG: trying to get field: cmfdqr'
+    end if
     call pbuf_get_field(pbuf, ndx_cmfdqr,     cmfdqr, start=(/1,1/),         kount=(/ncol,pver/))
+        if (masterproc) then
+        write(iulog,*) 'DEBUG: trying to get field: nevapr'
+    end if
     call pbuf_get_field(pbuf, ndx_nevapr,     nevapr, start=(/1,1/),         kount=(/ncol,pver/))
+        if (masterproc) then
+        write(iulog,*) 'DEBUG: trying to get field: cldtop'
+    end if
     call pbuf_get_field(pbuf, ndx_cldtop,     cldtop )
 
 !-----------------------------------------------------------------------
