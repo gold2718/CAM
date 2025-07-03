@@ -2943,7 +2943,7 @@ if ($chem =~ "oslo_sectional") {
     # Surface emission datasets:
     %species = ();
     %species = (%species,
-                'DMS      -> ' => 'dms_oslo_emis_file',
+#                'DMS      -> ' => 'dms_oslo_emis_file', # DMS
                 'SO2      -> ' => 'so2_oslo_emis_file',
             );
 
