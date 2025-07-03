@@ -706,11 +706,11 @@ subroutine microp_aero_run ( &
    !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
    !ICE Nucleation
 
-   if (associated(aero_props_obj).and.associated(aero_state1_obj)) then
-      call nucleate_ice_cam_calc(state1, wsubi, pbuf, deltatin, ptend_loc, aero_props_obj, aero_state1_obj)
-   else
-      call nucleate_ice_cam_calc(state1, wsubi, pbuf, deltatin, ptend_loc)
-   end if
+!   if (associated(aero_props_obj).and.associated(aero_state1_obj)) then
+!      call nucleate_ice_cam_calc(state1, wsubi, pbuf, deltatin, ptend_loc, aero_props_obj, aero_state1_obj)
+!   else
+!      call w_cam_calc(state1, wsubi, pbuf, deltatin, ptend_loc)
+!   end if
 
    call physics_ptend_sum(ptend_loc, ptend_all, ncol)
    call physics_update(state1, ptend_loc, deltatin)
