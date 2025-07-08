@@ -1220,33 +1220,12 @@ contains
     endif
 
     tim_ndx = pbuf_old_tim_idx()
-    if (masterproc) then
-        write(iulog,*) 'DEBUG: trying to get field: fsds'
-    end if
     call pbuf_get_field(pbuf, ndx_fsds,       fsds)
-        if (masterproc) then
-        write(iulog,*) 'DEBUG: trying to get field: pblh'
-    end if
     call pbuf_get_field(pbuf, ndx_pblh,       pblh)
-        if (masterproc) then
-        write(iulog,*) 'DEBUG: trying to get field: prain'
-    end if
     call pbuf_get_field(pbuf, ndx_prain,      prain,  start=(/1,1/), kount=(/ncol,pver/))
-        if (masterproc) then
-        write(iulog,*) 'DEBUG: trying to get field: cldfr'
-    end if
     call pbuf_get_field(pbuf, ndx_cld,        cldfr,  start=(/1,1,tim_ndx/), kount=(/ncol,pver,1/) )
-        if (masterproc) then
-        write(iulog,*) 'DEBUG: trying to get field: cmfdqr'
-    end if
     call pbuf_get_field(pbuf, ndx_cmfdqr,     cmfdqr, start=(/1,1/),         kount=(/ncol,pver/))
-        if (masterproc) then
-        write(iulog,*) 'DEBUG: trying to get field: nevapr'
-    end if
     call pbuf_get_field(pbuf, ndx_nevapr,     nevapr, start=(/1,1/),         kount=(/ncol,pver/))
-        if (masterproc) then
-        write(iulog,*) 'DEBUG: trying to get field: cldtop'
-    end if
     call pbuf_get_field(pbuf, ndx_cldtop,     cldtop )
 
 !-----------------------------------------------------------------------
