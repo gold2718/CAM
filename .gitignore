@@ -14,5 +14,9 @@ aux_cam_*.log
 test_driver_*.sh
 cam_test_summaries
 
+# Fortran module files
+*.mod
+*.smod
+
 # Ignore python bytecode files
 *.pyc
