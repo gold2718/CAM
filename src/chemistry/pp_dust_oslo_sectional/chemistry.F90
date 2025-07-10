@@ -25,6 +25,7 @@ module chemistry
   use mo_gas_phase_chemdr,  only: map2chm
   use spmd_utils,           only: masterproc
   use cam_logfile,          only: iulog
+  use mo_chm_diags,         only: chem_has_ndep_flx => chm_prod_ndep_flx
 
   implicit none
   private
@@ -48,6 +49,7 @@ module chemistry
   public :: chem_read_restart
   public :: chem_init_restart
   public :: chem_emissions
+  public :: chem_has_ndep_flx
 
   integer, public :: imozart = -1       ! index of 1st constituent
 
@@ -1131,7 +1133,7 @@ contains
     use tropopause,          only : tropopause_findChemTrop, tropopause_find_cam
     use mo_drydep,           only : drydep_update
     use mo_neu_wetdep,       only : neu_wetdep_tend
-    !use aerodep_flx,         only : aerodep_flx_prescribed
+    !use aerodep_flx,         only : aerodep_flx_prescribed ! TODO: circular dependency!
     use short_lived_species, only : short_lived_species_writeic
 
     implicit none
@@ -1244,7 +1246,7 @@ contains
             ncldwtr(:ncol,k) = state%q(:ncol,k,ixndrop)
     end do
 
-    call gas_phase_chemdr(lchnk, ncol, imozart, state%q, &
+    call gas_phase_chemdr(state, lchnk, ncol, imozart, state%q, &
                           state%phis, state%zm, state%zi, calday, &
                           state%t, state%pmid, state%pdel, state%pint, state%rpdel, state%rpdeldry, &
                           cldw, tropLev, tropLevChem, ncldwtr, state%u, state%v, chem_dt, state%ps, &
