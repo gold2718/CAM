@@ -336,7 +336,6 @@ contains
     use tracer_cnst,       only: tracer_cnst_defaultopts, tracer_cnst_setopts
     use tracer_srcs,       only: tracer_srcs_defaultopts, tracer_srcs_setopts
     use aero_model,       only: aero_model_readnl
-    use dust_model,       only: dust_readnl
     use gas_wetdep_opts,   only: gas_wetdep_readnl
     use mo_drydep,         only: drydep_srf_file
     use mo_sulf,           only: sulf_readnl
@@ -546,7 +545,6 @@ contains
         tracer_srcs_fixed_tod_in = tracer_srcs_fixed_tod )
 
     call aero_model_readnl(nlfile) ! read dms nl
-    call dust_readnl(nlfile)
 
     call gas_wetdep_readnl(nlfile)
     call gcr_ionization_readnl(nlfile)
