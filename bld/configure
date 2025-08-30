@@ -2011,26 +2011,12 @@ sub write_filepath
     print $fh "$CASEROOT/SourceMods/src.cam\n";
 
     # CAM chemistry for oslo-aero must be at the top of Filepath since it
-    # needs to take precedence over everything. This is because several shadow files
-    # for oslo_aero routines are now in camnor_physics and contain stub interfaces
-    # needed for use statements. These replace the previous use of #ifdef OSLO_AERO queries.
+    # needs to take precedence over everything. This is because oslo_aero/src_cam
+    # contains shadow files that need to be compiled instead of the CAM
+    # originals.
     if ($chem =~/_oslo/) {
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
-    }
-
-    # CAM-Nor-physics has precedence over everything except SourceMods and oslo-aero
-    # Only active in NF or NB compsets
-    if ($camnor) {
-      if ($phys_pkg eq 'cam7') {
-        print $fh "$camsrcdir/src/physics/camnor_phys/physics\n";
-      } else {
-        print $fh "$camsrcdir/src/physics/camnor_phys/physics_cam6\n";
-        die "CAM6 not currently supported for NorESM configurations.\n";
-      }
-      if ($dyn eq 'fv') {
-        print $fh "$camsrcdir/src/physics/camnor_phys/fv\n";
-      }
     }
 
     # offline unit driver (defaults to stub)

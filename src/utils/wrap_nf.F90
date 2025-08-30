@@ -35,21 +35,21 @@ contains
 
    subroutine wrap_redef (nfid)
    implicit none
-   
+
    integer, intent(in):: nfid
 
    integer ret      ! NetCDF return code
 
    ret = nf90_redef (nfid)
    if (ret/=NF90_NOERR) call handle_error (ret)
-   
+
    end subroutine wrap_redef
 !===============================================================================
 
    subroutine wrap_enddef (nfid)
    implicit none
-   
-   
+
+
    integer, intent(in):: nfid
 
    integer ret      ! NetCDF return code
@@ -68,7 +68,7 @@ contains
 ! Create a netCDF file for reading and/or writing
 !
 !-------------------------------------------------------------------------------
-   
+
    character*(*), intent(in):: path
    integer, intent(in):: cmode
    integer, intent(out):: ncid
@@ -171,7 +171,7 @@ contains
 ! Gets the dimension id
 !
 !-------------------------------------------------------------------------------
-   
+
    integer, intent(in):: nfid
    integer, intent(out):: dimid
    character*(*), intent(in):: dimname
@@ -182,7 +182,7 @@ contains
    if(ret==NF90_NOERR) return
    if (ret/=NF90_EBADDIM) call handle_error (ret)
    dimid=-1  ! do not exist on bad dim.  This allows the user to check for dims that may not
-             ! be in the file  
+             ! be in the file
    end subroutine wrap_inq_dimid
 
 !===============================================================================
@@ -196,11 +196,11 @@ contains
 ! Gets the dimension length for a given dimension
 !
 !-------------------------------------------------------------------------------
-   
+
    integer, intent(in)::  nfid
-   integer, intent(in)::  dimid 
+   integer, intent(in)::  dimid
    integer, intent(out):: dimlen
-   
+
    integer ret      ! NetCDF return code
 
    ret = nf90_inquire_dimension (nfid, dimid, len=dimlen)
@@ -218,11 +218,11 @@ contains
 !
 !-------------------------------------------------------------------------------
    implicit none
-   
+
    integer, intent(in):: nfid
    integer, intent(in):: varid
    integer, intent(out)::  dimids(:)
-   
+
    integer ret      ! NetCDF return code
 
    ret = nf90_inquire_variable (nfid, varid, dimids=dimids)
@@ -240,11 +240,11 @@ contains
 !
 !-------------------------------------------------------------------------------
    implicit none
-   
+
    integer, intent(in):: nfid
    integer, intent(in):: varid
    integer, intent(out):: ndims
-   
+
    integer ret      ! NetCDF return code
 
    ret = nf90_inquire_variable (nfid, varid, ndims=ndims)
@@ -262,12 +262,12 @@ contains
 !
 !-------------------------------------------------------------------------------
    implicit none
-   
+
    integer, intent(in):: nfid
    integer, intent(out):: varid
    character*(*), intent(in):: varname
    logical, optional :: abort
- 
+
    integer ret      ! NetCDF return code
    logical :: call_endrun
 
@@ -348,7 +348,7 @@ contains
 !
 !-------------------------------------------------------------------------------
    implicit none
-   
+
    integer, intent(in):: nfid
    integer, intent(in):: varid
    character*(*), intent(in):: attname
@@ -378,14 +378,13 @@ contains
 !
 !-------------------------------------------------------------------------------
    implicit none
-   
+
    integer, intent(in):: nfid
    integer, intent(in):: varid
    character*(*), intent(in):: attname
    character*(*), intent(in):: atttext
 
    integer ret      ! NetCDF return code
-   integer siz
 
    ret = nf90_put_att(nfid, varid, attname, atttext)
    if (ret/=NF90_NOERR) call handle_error (ret)
@@ -403,7 +402,7 @@ contains
 !
 !-------------------------------------------------------------------------------
    implicit none
-   
+
    integer , intent(in):: nfid
    integer , intent(in):: varid
    integer , intent(in):: xtype
@@ -431,7 +430,7 @@ contains
    integer, intent(in):: len
    integer, intent(out):: dimid
    character*(*), intent(in):: dimname
-   
+
    integer ret      ! NetCDF return code
 
    ret = nf90_def_dim (nfid, dimname, len, dimid)
@@ -456,7 +455,7 @@ contains
    integer, intent(out)::varid
    integer, intent(in):: vdims(nvdims)
    character*(*), intent(in):: name
-   
+
    integer ret      ! NetCDF return code
 
    ret = nf90_def_var(nfid, name, xtype, vdims, varid)
@@ -912,7 +911,7 @@ contains
    implicit none
 
    integer, intent(in):: ret
-   
+
    write(iulog,*)nf90_strerror(ret)
    call endrun ('HANDLE_ERROR')
    end subroutine handle_error

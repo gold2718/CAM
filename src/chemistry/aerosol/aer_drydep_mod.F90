@@ -27,7 +27,6 @@ contains
 !      real(r8), intent(in) :: xphi(:)           ! grid latitudes (radians)
 
 ! Local variables:
-      integer i, j, ncid, vid, ns
 !-----------------------------------------------------------------------
 !      ns = size(xphi)
 !      allocate(phi(ns))
@@ -67,7 +66,6 @@ contains
 ! Local variables:
 
       integer i
-      real(r8) a
 
 
       do i = 1, ncol
@@ -146,7 +144,7 @@ contains
 
 ! Local variables:
 
-      real(r8) :: flux(pcols,0:pver)  ! downward flux at each level:  kg/m2/s 
+      real(r8) :: flux(pcols,0:pver)  ! downward flux at each level:  kg/m2/s
       integer i,k
       do i=1,ncol
          flux(i,0)=0._r8
@@ -180,11 +178,11 @@ contains
            ustar,ram1in,ram1,t,pmid,&
            pdel,fvin,fv)
         !
-        ! !DESCRIPTION: 
-        !  
+        ! !DESCRIPTION:
+        !
         ! Calc aerodynamic resistance over oceans and sea ice (comes in from land model)
         ! from Seinfeld and Pandis, p.963.
-        !  
+        !
         ! Author: Natalie Mahowald
         !
         implicit none
@@ -221,14 +219,14 @@ contains
               psi0=min(max(zzocen/obklen(i),-1.0_r8),1.0_r8)
            endif
            temp=z/zzocen
-           if(icefrac(i) > 0.5_r8) then 
-              if(obklen(i).gt.0) then 
+           if(icefrac(i) > 0.5_r8) then
+              if(obklen(i).gt.0) then
                  psi0=min(max(zzsice/obklen(i),-1.0_r8),1.0_r8)
               else
                  psi0=0.0_r8
               endif
               temp=z/zzsice
-	   endif
+       endif
            if(psi> 0._r8) then
               ram=1/xkar/ustar(i)*(log(temp)+4.7_r8*(psi-psi0))
            else
@@ -239,7 +237,7 @@ contains
                       +log(((nu0**2+1.00_r8)*(nu0+1.0_r8)**2)/((nu**2+1.0_r8)*(nu+1.00_r8)**2)) &
                       +2.0_r8*(atan(nu)-atan(nu0)))
               else
-	         ram=0._r8
+             ram=0._r8
               endif
            endif
            if(landfrac(i) < 0.000000001_r8) then
@@ -254,9 +252,9 @@ contains
 
         enddo
 
-        ! fvitt -- fv == 0 causes a floating point exception in 
+        ! fvitt -- fv == 0 causes a floating point exception in
         ! dry dep of sea salts and dust
-        where ( fv(:ncol) == 0._r8 ) 
+        where ( fv(:ncol) == 0._r8 )
            fv(:ncol) = 1.e-12_r8
         endwhere
 

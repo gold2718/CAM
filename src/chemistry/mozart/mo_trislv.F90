@@ -100,12 +100,12 @@
       integer, intent(in) ::  syscnt, order
       real(r8), intent(in), dimension(syscnt,order)    ::  lower
       real(r8), intent(inout), dimension(syscnt,order) ::  main, upper
-      
+
 !--------------------------------------------------------------------
 !	... local variables
 !--------------------------------------------------------------------
       integer :: i
-      
+
 !----------------------------------------------------------------------
 !     	... lu-decomposition
 !----------------------------------------------------------------------
@@ -130,11 +130,11 @@
                                                        main, &
                                                        upper
       real(r8), intent(inout), dimension(syscnt,order) ::  x
-      
+
 !----------------------------------------------------------------------
 !     	... local variables
 !----------------------------------------------------------------------
-      integer :: i, im1, j, n, nm1
+      integer :: i, n, nm1
 
       nm1 = order - 1
       n   = order

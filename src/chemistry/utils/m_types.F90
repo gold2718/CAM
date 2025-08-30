@@ -1,7 +1,7 @@
 
       module m_types
 !---------------------------------------------------------------------
-! 	... Derived types definition and related parameters
+!   ... Derived types definition and related parameters
 !---------------------------------------------------------------------
 
       implicit none
@@ -16,10 +16,10 @@
       end type filespec
 
       type time_ramp
-	 character(len=8) :: type
-	 integer          :: cycle_yr
-	 integer          :: fixed_ymd
-	 integer          :: fixed_tod
+     character(len=8) :: type
+     integer          :: cycle_yr
+     integer          :: fixed_ymd
+     integer          :: fixed_tod
       end type time_ramp
 
       end module m_types
