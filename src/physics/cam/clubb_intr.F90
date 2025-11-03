@@ -2354,6 +2354,9 @@ end subroutine clubb_init_cnst
       rtphmp_zt,    &
       thlphmp_zt
 
+!+++arh
+    real(r8), dimension(state%ncol) :: pblh_ncol
+
     ! Variables below are needed to compute energy integrals for conservation
     ! NOTE: Arrays of size PCOLS (all possible columns) can be used to access State, PBuf and History Subroutines
     real(r8) :: te_a, se_a, ke_a, wv_a, wl_a
@@ -2937,6 +2940,9 @@ end subroutine clubb_init_cnst
     !$acc      copyin( hm_metadata, hm_metadata%l_mix_rat_hm )
     call t_stopf('clubb_tend_cam:acc_copyin')
     call t_startf('clubb_tend_cam:ACCR')
+
+!+++arh
+    pblh_ncol(1:ncol) = pblh(1:ncol)
 
     !$acc parallel loop gang vector collapse(2) default(present)
     do k = 1, pverp
@@ -3758,6 +3764,8 @@ end subroutine clubb_init_cnst
           hydromet, hm_metadata%l_mix_rat_hm, &
           rfrzm, radf, &
           wphydrometp, wp2hmp, rtphmp_zt, thlphmp_zt, &
+!+++arh
+          pblh_ncol, & !pass in pblh for scaling diff coef.
           grid_dx, grid_dy, &
           clubb_params, nu_vert_res_dep, lmin, &
           clubb_config_flags, &

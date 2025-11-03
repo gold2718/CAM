@@ -61,8 +61,10 @@
 
 [submodule "clubb"]
     path = src/physics/clubb
-    url = https://github.com/larson-group/clubb_release
-    fxtag = clubb_4ncar_20240605_73d60f6_gpufixes_posinf
+#    url = https://github.com/larson-group/clubb_release
+#    fxtag = clubb_4ncar_20240605_73d60f6_gpufixes_posinf
+    url = https://github.com/gold2718/clubb_release
+    fxtag = taper_clubb_tag001
     fxsparse = ../.clubb_sparse_checkout
     fxrequired = AlwaysRequired
     fxDONOTUSEurl = https://github.com/larson-group/clubb_release
