@@ -1,53 +1,64 @@
-SPECIES
+  SPECIES
 
-  Solution
+      Solution
+ SO2, H2SO4
+ H2O2
  H2O
-  End Solution
+   End Solution
 
-  Fixed
-    M
-  End Fixed
+      Fixed
+ M, N2, O2, O3, OH, NO3, HO2
+      End Fixed
 
-  Col-int
-    O3 = 0.
-    O2 = 0.
-  End Col-int
+      Col-int
+ O3 = 0.
+ O2 = 0.
+      End Col-int
 
-End SPECIES
+   End SPECIES
 
-Solution Classes
-  Explicit
-  End Explicit
-  Implicit
-    H2O
-  End Implicit
-End Solution Classes
+   Solution Classes
+      Explicit
+      End Explicit
+      Implicit
+        SO2, H2O2
+        H2SO4
+        H2O
+      End Implicit
+   End Solution Classes
 
-CHEMISTRY
-  Photolysis
-  End Photolysis
+ CHEMISTRY
+      Photolysis
+ [jh2o2]    H2O2 + hv ->
+      End Photolysis
 
-  Reactions
-  End Reactions
+      Reactions
+ [usr_HO2_HO2] HO2 + HO2 -> H2O2
+               H2O2 + OH -> H2O + HO2                                           ; 2.9e-12, -160
+               SO2 + OH + M -> H2SO4 + M                                      ; 3.0e-31, 3.3, 1.5e-12, 0.0, 0.6
+      End Reactions
 
-  Ext Forcing
-    H2O <- dataset
-  End Ext Forcing
+      Heterogeneous
+          H2O2, SO2
+      End Heterogeneous
 
-END CHEMISTRY
+      Ext Forcing
+          SO2 <- dataset
+          H2O <- dataset
+      End Ext Forcing
 
-SIMULATION PARAMETERS
+   END CHEMISTRY
 
-  Version Options
-    model   = cam
-    machine = intel
-    architecture = hybrid
-    vec_ftns  = on
-    multitask = on
-    namemod = on
-    modules = on
-  End Version Options
+   SIMULATION PARAMETERS
 
-END SIMULATION PARAMETERS
+     Version Options
+        model   = cam
+        machine = intel
+        architecture = hybrid
+        vec_ftns  = on
+        multitask = on
+        namemod = on
+        modules = on
+     End Version Options
 
-
+   END SIMULATION PARAMETERS
