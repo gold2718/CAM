@@ -416,7 +416,7 @@ subroutine carma_aero_gasaerexch_sub(  state, &
 
 !----------------------------------------------------------------------
    aero_props => carma_aerosol_properties()
-   aero_state => carma_aerosol_state(state, pbuf)
+   aero_state => carma_aerosol_state(state, pbuf, aero_props)
 
 !  map CARMA soa to working soa(nbins,nsoa)
 

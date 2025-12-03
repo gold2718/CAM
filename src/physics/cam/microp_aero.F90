@@ -241,7 +241,7 @@ subroutine microp_aero_init(phys_state,pbuf2d)
       allocate(aero_state(begchunk:endchunk))
       do c = begchunk,endchunk
          pbuf => pbuf_get_chunk(pbuf2d, c)
-         aero_state(c)%obj => modal_aerosol_state( phys_state(c), pbuf )
+         aero_state(c)%obj => modal_aerosol_state( phys_state(c), pbuf, aero_props )
          if (.not.associated(aero_state(c)%obj)) then
             call endrun('microp_aero_init: construction of modal_aerosol_state object failed')
          end if
@@ -579,12 +579,12 @@ subroutine microp_aero_run ( &
 
    ! create the aerosol state object
    if (clim_modal_aero) then
-      aero_state1_obj => modal_aerosol_state( state1, pbuf )
+      aero_state1_obj => modal_aerosol_state( state1, pbuf, aero_props )
       if (.not.associated(aero_state1_obj)) then
          call endrun('microp_aero_run: construction of aero_state1_obj modal_aerosol_state object failed')
       end if
    else if (clim_carma_aero) then
-      aero_state1_obj => carma_aerosol_state( state1, pbuf )
+      aero_state1_obj => carma_aerosol_state( state1, pbuf, aero_props )
       if (.not.associated(aero_state1_obj)) then
          call endrun('microp_aero_run: construction of aero_state1_obj carma_aerosol_state object failed')
       end if

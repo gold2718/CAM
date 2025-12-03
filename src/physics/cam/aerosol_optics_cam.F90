@@ -716,11 +716,11 @@ contains
     iaermod = 0
     if (modal_active) then
        iaermod = iaermod+1
-       aero_state(iaermod)%obj => modal_aerosol_state( state, pbuf )
+       aero_state(iaermod)%obj => modal_aerosol_state( state, pbuf, aero_props )
     end if
     if (carma_active) then
        iaermod = iaermod+1
-       aero_state(iaermod)%obj => carma_aerosol_state( state, pbuf )
+       aero_state(iaermod)%obj => carma_aerosol_state( state, pbuf, aero_props )
     end if
 
     allocate(pext(ncol), stat=istat)
@@ -1204,11 +1204,11 @@ contains
     iaermod = 0
     if (modal_active) then
        iaermod = iaermod+1
-       aero_state(iaermod)%obj => modal_aerosol_state( state, pbuf )
+       aero_state(iaermod)%obj => modal_aerosol_state( state, pbuf, aero_props )
     end if
     if (carma_active) then
        iaermod = iaermod+1
-       aero_state(iaermod)%obj => carma_aerosol_state( state, pbuf )
+       aero_state(iaermod)%obj => carma_aerosol_state( state, pbuf, aero_props )
     end if
 
     ncol = state%ncol
