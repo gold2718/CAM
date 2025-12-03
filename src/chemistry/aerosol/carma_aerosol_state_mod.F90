@@ -7,6 +7,7 @@ module carma_aerosol_state_mod
   use physics_buffer, only: physics_buffer_desc, pbuf_get_field, pbuf_get_index
   use physics_types, only: physics_state
   use aerosol_properties_mod, only: aerosol_properties, aero_name_len
+  use carma_aerosol_properties_mod, only: carma_aerosol_properties
 
   use physconst, only: pi
   use carma_intr, only: carma_get_total_mmr, carma_get_dry_radius, carma_get_number, carma_get_number_cld
@@ -21,7 +22,7 @@ module carma_aerosol_state_mod
   public :: carma_aerosol_state
 
   type, extends(aerosol_state) :: carma_aerosol_state
-     private
+  !   private
      type(physics_state), pointer :: state => null()
      type(physics_buffer_desc), pointer :: pbuf(:) => null()
    contains
@@ -61,12 +62,12 @@ contains
 
   !------------------------------------------------------------------------------
   !------------------------------------------------------------------------------
-  function constructor(state,pbuf) result(newobj)
+  function constructor(state,pbuf, aero_props) result(newobj)
     type(physics_state), target, optional :: state
     type(physics_buffer_desc), pointer, optional :: pbuf(:)
 
     type(carma_aerosol_state), pointer :: newobj
-
+    class(aerosol_properties), intent(in) :: aero_props
     integer :: ierr
 
     allocate(newobj,stat=ierr)
@@ -423,12 +424,12 @@ contains
   ! returns aerosol wet diameter and aerosol water concentration for a given
   ! radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  subroutine water_uptake(self, aero_props, list_idx, bin_idx, ncol, nlev, dgnumwet, qaerwat)
+  subroutine water_uptake(self, aero_props, list_ndx, bin_ndx, ncol, nlev, dgnumwet, qaerwat)
 
     class(carma_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
-    integer, intent(in) :: list_idx             ! rad climate/diags list number
-    integer, intent(in) :: bin_idx              ! bin number
+    integer, intent(in) :: list_ndx             ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx              ! bin number
     integer, intent(in) :: ncol                 ! number of columns
     integer, intent(in) :: nlev                 ! number of levels
     real(r8),intent(out) :: dgnumwet(ncol,nlev) ! aerosol wet diameter (m)
@@ -454,13 +455,13 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol dry volume (m3/kg) for given radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  function dry_volume(self, aero_props, list_idx, bin_idx, ncol, nlev) result(vol)
+  function dry_volume(self, aero_props, list_ndx, bin_ndx, ncol, nlev) result(vol)
 
     class(carma_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
 
-    integer, intent(in) :: list_idx  ! rad climate/diags list number
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: list_ndx  ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -473,7 +474,7 @@ contains
     character(len=aero_name_len) :: bin_name, shortname
     integer :: igroup, ibin, rc, nchr
 
-    call rad_cnst_get_info_by_bin(0, bin_idx, bin_name=bin_name)
+    call rad_cnst_get_info_by_bin(0, bin_ndx, bin_name=bin_name)
 
     nchr = len_trim(bin_name)-2
     shortname = bin_name(:nchr)
@@ -494,13 +495,13 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol wet volume (m3/kg) for given radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  function wet_volume(self, aero_props, list_idx, bin_idx, ncol, nlev) result(vol)
+  function wet_volume(self, aero_props, list_ndx, bin_ndx, ncol, nlev) result(vol)
 
     class(carma_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
 
-    integer, intent(in) :: list_idx  ! rad climate/diags list number
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: list_ndx  ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -513,7 +514,7 @@ contains
     character(len=aero_name_len) :: bin_name, shortname
     integer :: igroup, ibin, rc, nchr
 
-    call rad_cnst_get_info_by_bin(0, bin_idx, bin_name=bin_name)
+    call rad_cnst_get_info_by_bin(0, bin_ndx, bin_name=bin_name)
 
     nchr = len_trim(bin_name)-2
     shortname = bin_name(:nchr)
@@ -534,13 +535,13 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol water volume (m3/kg) for given radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  function water_volume(self, aero_props, list_idx, bin_idx, ncol, nlev) result(vol)
+  function water_volume(self, aero_props, list_ndx, bin_ndx, ncol, nlev) result(vol)
 
     class(carma_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
 
-    integer, intent(in) :: list_idx  ! rad climate/diags list number
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: list_ndx  ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -549,8 +550,8 @@ contains
     real(r8) :: wetvol(ncol,nlev)
     real(r8) :: dryvol(ncol,nlev)
 
-    wetvol = self%wet_volume(aero_props, list_idx, bin_idx, ncol, nlev)
-    dryvol = self%dry_volume(aero_props, list_idx, bin_idx, ncol, nlev)
+    wetvol = self%wet_volume(aero_props, list_ndx, bin_ndx, ncol, nlev)
+    dryvol = self%dry_volume(aero_props, list_ndx, bin_ndx, ncol, nlev)
 
     vol(:ncol,:) = wetvol(:ncol,:) - dryvol(:ncol,:)
 
@@ -563,9 +564,9 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol wet diameter
   !------------------------------------------------------------------------------
-  function wet_diameter(self, bin_idx, ncol, nlev) result(diam)
+  function wet_diameter(self, bin_ndx, ncol, nlev) result(diam)
     class(carma_aerosol_state), intent(in) :: self
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -577,7 +578,7 @@ contains
     character(len=aero_name_len) :: bin_name, shortname
     integer :: igroup, ibin, rc, nchr
 
-    call rad_cnst_get_info_by_bin(0, bin_idx, bin_name=bin_name)
+    call rad_cnst_get_info_by_bin(0, bin_ndx, bin_name=bin_name)
 
     nchr = len_trim(bin_name)-2
     shortname = bin_name(:nchr)

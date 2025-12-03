@@ -314,6 +314,8 @@ subroutine carma_aero_gasaerexch_sub(  state, &
   use carma_aerosol_state_mod, only: carma_aerosol_state
   use physics_types,     only: physics_state
   use physconst, only: mwdry, rair
+  use aerosol_properties_mod, only: aerosol_properties
+  use carma_aerosol_properties_mod, only: carma_aerosol_properties
 
 ! !PARAMETERS:
   type(physics_state), target, intent(in) :: state    ! Physics state variables
@@ -410,8 +412,10 @@ subroutine carma_aero_gasaerexch_sub(  state, &
   real(r8) :: rhoair(pcols,pver)
   real(r8), pointer :: nmr(:,:)
   type(carma_aerosol_state), pointer :: aero_state
+  class(aerosol_properties), pointer :: aero_props=>null()
 
 !----------------------------------------------------------------------
+   aero_props => carma_aerosol_properties()
    aero_state => carma_aerosol_state(state, pbuf)
 
 !  map CARMA soa to working soa(nbins,nsoa)
