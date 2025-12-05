@@ -59,12 +59,11 @@ contains
 
   !------------------------------------------------------------------------------
   !------------------------------------------------------------------------------
-  function constructor(state,pbuf, aero_props) result(newobj)
+  function constructor(state,pbuf) result(newobj)
     type(physics_state), target :: state
     type(physics_buffer_desc), pointer :: pbuf(:)
 
     type(modal_aerosol_state), pointer :: newobj
-    class(aerosol_properties), intent(in) :: aero_props
     integer :: ierr
 
     allocate(newobj,stat=ierr)

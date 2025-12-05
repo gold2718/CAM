@@ -417,12 +417,12 @@ contains
     dcondt_resusp3d(:,:,:) = 0._r8
 
     if (nmodes>0) then
-       aero_state => modal_aerosol_state(state,pbuf, aero_props)
+       aero_state => modal_aerosol_state(state,pbuf)
        if (.not.associated(aero_state)) then
           call endrun(subrname//' : construction of aero_state modal_aerosol_state object failed')
        end if
     else if (nbins>0) then
-       aero_state => carma_aerosol_state(state,pbuf, aero_props)
+       aero_state => carma_aerosol_state(state,pbuf)
        if (.not.associated(aero_state)) then
           call endrun(subrname//' : construction of aero_state carma_aerosol_state object failed')
        end if
