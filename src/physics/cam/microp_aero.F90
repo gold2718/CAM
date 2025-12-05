@@ -553,34 +553,17 @@ subroutine microp_aero_run ( &
    real(r8) :: wght
 
    integer :: lchnk, ncol, astat
-  integer :: nmodes=0
-  integer :: nbins=0
+
    real(r8), allocatable :: factnum(:,:,:) ! activation fraction for aerosol number
 
    class(aerosol_state), pointer :: aero_state1_obj
    class(aerosol_properties), pointer :: aero_props=>null()
-    character(len=*), parameter :: subrname = 'microp_aero_run'
 
    !-------------------------------------------------------------------------------
 
    nullify(aero_state1_obj)
 
    call physics_state_copy(state,state1)
-    call rad_cnst_get_info(0, nmodes=nmodes, nbins=nbins)
-
-    if (nmodes>0) then
-       aero_props => modal_aerosol_properties()
-       if (.not.associated(aero_props)) then
-          call endrun(subrname//' : construction of aero_props modal_aerosol_properties object failed')
-       end if
-    else if (nbins>0) then
-       aero_props => carma_aerosol_properties()
-       if (.not.associated(aero_props)) then
-          call endrun(subrname//' : construction of aero_props carma_aerosol_properties object failed')
-       end if
-    else
-       call endrun(subrname//' : cannot determine aerosol model')
-    endif
 
    lchnk = state1%lchnk
    ncol  = state1%ncol
