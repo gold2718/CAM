@@ -35,6 +35,10 @@ module aero_model
 
   public :: wetdep_lq
 
+  ! name of the aerosol scheme
+  public :: aero_modelname
+  character(len=*), parameter :: aero_modelname = 'ncar_bulk'
+
  ! Misc private data
 
   integer :: so4_ndx, cb2_ndx, oc2_ndx, nit_ndx

@@ -22,10 +22,12 @@ module aero_wetdep_cam
   use aerosol_properties_mod, only: aerosol_properties
   use modal_aerosol_properties_mod, only: modal_aerosol_properties
   use carma_aerosol_properties_mod, only: carma_aerosol_properties
+  use sectional_aerosol_properties_mod, only: sectional_aerosol_properties
 
   use aerosol_state_mod, only: aerosol_state, ptr2d_t
   use modal_aerosol_state_mod, only: modal_aerosol_state
   use carma_aerosol_state_mod, only: carma_aerosol_state
+  use sectional_aerosol_state_mod, only: sectional_aerosol_state
 
   use aero_convproc, only: aero_convproc_readnl, aero_convproc_init, aero_convproc_intr
   use aero_convproc, only: convproc_do_evaprain_atonce
@@ -33,6 +35,8 @@ module aero_wetdep_cam
 
   use infnan,         only: nan, assignment(=)
   use perf_mod,       only: t_startf, t_stopf
+
+  use aero_model,     only: aero_modelname
 
   implicit none
   private
@@ -174,19 +178,29 @@ contains
 
     call rad_cnst_get_info(0, nmodes=nmodes, nbins=nbins)
 
-    if (nmodes>0) then
+    select case(aero_modelname)
+    case ('mam')
+    !if (nmodes>0) then
        aero_props => modal_aerosol_properties()
        if (.not.associated(aero_props)) then
           call endrun(subrname//' : construction of aero_props modal_aerosol_properties object failed')
        end if
-    else if (nbins>0) then
+    !else if (nbins>0) then
+    case ('carma')
        aero_props => carma_aerosol_properties()
        if (.not.associated(aero_props)) then
           call endrun(subrname//' : construction of aero_props carma_aerosol_properties object failed')
        end if
-    else
-       call endrun(subrname//' : cannot determine aerosol model')
-    endif
+    !else
+    case ('oslo_sectional')
+       aero_props => sectional_aerosol_properties()
+       if (.not.associated(aero_props)) then
+          call endrun(subrname//' : construction of aero_props sectional_aerosol_properties object failed')
+       end if
+    !endif
+    case default
+        call endrun(subrname//' : cannot determine aerosol model')
+    end select
 
     nele_tot = aero_props%ncnst_tot()
 
@@ -416,19 +430,27 @@ contains
 
     dcondt_resusp3d(:,:,:) = 0._r8
 
-    if (nmodes>0) then
+    select case(aero_modelname)
+    !if (nmodes>0) then
+    case ('mam')
        aero_state => modal_aerosol_state(state,pbuf)
        if (.not.associated(aero_state)) then
           call endrun(subrname//' : construction of aero_state modal_aerosol_state object failed')
        end if
-    else if (nbins>0) then
+    !else if (nbins>0) then
+    case ('carma')
        aero_state => carma_aerosol_state(state,pbuf)
        if (.not.associated(aero_state)) then
           call endrun(subrname//' : construction of aero_state carma_aerosol_state object failed')
        end if
-    else
+    case ('oslo_sectional')
+        aero_props => sectional_aerosol_properties()
+        aero_state => sectional_aerosol_state(state, pbuf)
+    case default
+    !else
        call endrun(subrname//' : cannot determine aerosol model')
-    endif
+    !endif
+    end select
 
     lchnk = state%lchnk
     ncol = state%ncol

@@ -50,6 +50,9 @@ module aero_model
   ! Accessor functions
   public ::  get_scavimptblvol, get_scavimptblnum, get_dlndg_nimptblgrow
 
+  ! name of the aerosol scheme
+  public :: aero_modelname
+  character(len=*), parameter :: aero_modelname = 'mam'
   ! Misc private data
 
   ! number of modes
