@@ -638,9 +638,8 @@ contains
     use aero_model,          only: aero_model_init
 
     ! args
-    character(len=6) :: nlfile
     type(physics_state), intent(in):: phys_state(begchunk:endchunk)
-    type(physics_buffer_desc), pointer :: pbuf2d(:,:)
+    type(physics_buffer_desc), pointer :: pbuf2d(:,:), pbuf(:)
 
 !-----------------------------------------------------------------------
 ! Local variables
@@ -670,11 +669,8 @@ contains
     ! aqueous chem initialization
     call sox_inti()
 
-    nlfile = "atm_in" ! TODO: fix this so atm_in comes from cam_comp?
-
    ! for prescribed aerosols
-    call aero_model_init(pbuf2d, nlfile)
-
+    call aero_model_init(pbuf2d, phys_state)
 
 !-----------------------------------------------------------------------
 ! Get liq and ice cloud water indicies
