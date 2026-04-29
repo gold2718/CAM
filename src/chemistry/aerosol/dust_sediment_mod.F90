@@ -39,22 +39,22 @@ contains
 ! Arguments
     integer, intent(in) :: ncol                     ! number of colums to process
 
-    real(r8), intent(in)  :: icefrac (pcols)        ! sea ice fraction (fraction)
-    real(r8), intent(in)  :: landfrac(pcols)        ! land fraction (fraction)
-    real(r8), intent(in)  :: ocnfrac (pcols)        ! ocean fraction (fraction)
-    real(r8), intent(in)  :: pmid  (pcols,pver)     ! pressure of midpoint levels (Pa)
-    real(r8), intent(in)  :: pdel  (pcols,pver)     ! pressure diff across layer (Pa)
-    real(r8), intent(in)  :: t     (pcols,pver)     ! temperature (K)
-    real(r8), intent(in)  :: dustmr(pcols,pver)     ! dust (kg/kg)
+    real(r8), intent(in)  :: icefrac (:)        ! sea ice fraction (fraction)
+    real(r8), intent(in)  :: landfrac(:)        ! land fraction (fraction)
+    real(r8), intent(in)  :: ocnfrac (:)        ! ocean fraction (fraction)
+    real(r8), intent(in)  :: pmid  (:,:)     ! pressure of midpoint levels (Pa)
+    real(r8), intent(in)  :: pdel  (:,:)     ! pressure diff across layer (Pa)
+    real(r8), intent(in)  :: t     (:,:)     ! temperature (K)
+    real(r8), intent(in)  :: dustmr(:,:)     ! dust (kg/kg)
 
-    real(r8), intent(out) :: pvdust (pcols,pverp)    ! vertical velocity of dust (Pa/s)
+    real(r8), intent(out) :: pvdust (:,:)    ! vertical velocity of dust (Pa/s)
 ! -> note that pvel is at the interfaces (loss from cell is based on pvel(k+1))
 
 ! Local variables
     real (r8) :: rho(pcols,pver)                    ! air density in kg/m3
     real (r8) :: vfall(pcols)                       ! settling velocity of dust particles (m/s)
 
-    integer i,k
+    integer   :: i,k
 
     real (r8) :: lbound, ac, bc, cc
 
@@ -71,7 +71,7 @@ contains
           !!         vfall(i) = vland*landfrac(i) + vocean*ocnfrac(i) + vseaice*icefrac(i)
 
           ! fall velocity (assume positive downward)
-          pvdust(i,k+1) = vfall(i)     
+          pvdust(i,k+1) = vfall(i)
        end do
     end do
 
@@ -85,7 +85,7 @@ contains
        dustmr ,pvdust, dusttend, sfdust )
 
 !----------------------------------------------------------------------
-!     Apply Particle Gravitational Sedimentation 
+!     Apply Particle Gravitational Sedimentation
 !----------------------------------------------------------------------
 
     implicit none
@@ -94,21 +94,21 @@ contains
     integer,  intent(in)  :: ncol                      ! number of colums to process
 
     real(r8), intent(in)  :: dtime                     ! time step
-    real(r8), intent(in)  :: pint  (pcols,pverp)       ! interfaces pressure (Pa)
-    real(r8), intent(in)  :: pmid  (pcols,pver)        ! midpoint pressures (Pa)
-    real(r8), intent(in)  :: pdel  (pcols,pver)        ! pressure diff across layer (Pa)
-    real(r8), intent(in)  :: t     (pcols,pver)        ! temperature (K)
-    real(r8), intent(in)  :: dustmr(pcols,pver)        ! dust (kg/kg)
-    real(r8), intent(in)  :: pvdust (pcols,pverp)      ! vertical velocity of dust drops  (Pa/s)
+    real(r8), intent(in)  :: pint  (:,:)       ! interfaces pressure (Pa)
+    real(r8), intent(in)  :: pmid  (:,:)        ! midpoint pressures (Pa)
+    real(r8), intent(in)  :: pdel  (:,:)        ! pressure diff across layer (Pa)
+    real(r8), intent(in)  :: t     (:,:)        ! temperature (K)
+    real(r8), intent(in)  :: dustmr(:,:)        ! dust (kg/kg)
+    real(r8), intent(in)  :: pvdust (:,:)      ! vertical velocity of dust drops  (Pa/s)
 ! -> note that pvel is at the interfaces (loss from cell is based on pvel(k+1))
 
-    real(r8), intent(out) :: dusttend(pcols,pver)      ! dust tend
-    real(r8), intent(out) :: sfdust  (pcols)           ! surface flux of dust (rain, kg/m/s)
+    real(r8), intent(out) :: dusttend(:,:)      ! dust tend
+    real(r8), intent(out) :: sfdust  (:)           ! surface flux of dust (rain, kg/m/s)
 
 ! Local variables
     real(r8) :: fxdust(pcols,pverp)                     ! fluxes at the interfaces, dust (positive = down)
 
-    integer :: i,k
+    integer  :: i,k
 !----------------------------------------------------------------------
 
 ! initialize variables
@@ -143,7 +143,7 @@ contains
        end do
     end do
 
-! Now calculate the tendencies 
+! Now calculate the tendencies
     do k = 1,pver
        do i = 1,ncol
 ! net flux into cloud changes cloud dust/ice (all flux is out of cloud)
@@ -168,25 +168,24 @@ contains
 
     implicit none
 
-    integer ncol                      ! number of colums to process
+    integer, intent(in)    :: ncol                      ! number of colums to process
+    real (r8), intent(in)  :: xw(:,:)
+    real (r8), intent(in)  :: phi(:,:)
+    real (r8), intent(in)  :: vel(:,:)
+    real (r8), intent(in)  :: deltat
 
-    integer i
-    integer k
+    real (r8), intent(out) :: flux(:,:)
 
-    real (r8) vel(pcols,pverp)
-    real (r8) flux(pcols,pverp)
-    real (r8) xw(pcols,pverp)
-    real (r8) psi(pcols,pverp)
-    real (r8) phi(pcols,pverp-1)
-    real (r8) fdot(pcols,pverp)
-    real (r8) xx(pcols)
-    real (r8) fxdot(pcols)
-    real (r8) fxdd(pcols)
-
-    real (r8) psistar(pcols)
-    real (r8) deltat
-
-    real (r8) xxk(pcols,pver)
+    ! local variables
+    real (r8) :: psi(pcols,pverp)
+    real (r8) :: fdot(pcols,pverp)
+    real (r8) :: xx(pcols)
+    real (r8) :: fxdot(pcols)
+    real (r8) :: fxdd(pcols)
+    real (r8) :: psistar(pcols)
+    real (r8) :: xxk(pcols,pver)
+    integer   :: i
+    integer   :: k
 
     do i = 1,ncol
 !        integral of phi
@@ -215,7 +214,7 @@ contains
        end do
     end do
     do k = 2,pver
-       call cfint2(ncol, xw, psi, fdot, xxk(1,k), fxdot, fxdd, psistar)
+       call cfint2(ncol, xw, psi, fdot, xxk(:,k), fxdot, fxdd, psistar)
        do i = 1,ncol
           flux(i,k) = (psi(i,k)-psistar(i))
        end do
@@ -235,36 +234,38 @@ contains
     implicit none
 
 ! input
-    integer ncol                      ! number of colums to process
+    integer, intent(in) :: ncol                      ! number of colums to process
 
-    real (r8) x(pcols, pverp)
-    real (r8) f(pcols, pverp)
-    real (r8) fdot(pcols, pverp)
-    real (r8) xin(pcols)
+    real (r8), intent(in) :: x(:,:)
+    real (r8), intent(in) :: f(:,:)
+    real (r8), intent(in) :: fdot(:,:)
+    real (r8), intent(in) :: xin(:)
 
 ! output
-    real (r8) fxdot(pcols)
-    real (r8) fxdd(pcols)
-    real (r8) psistar(pcols)
+    real (r8), intent(out) :: fxdot(:)
+    real (r8), intent(out) :: fxdd(:)
+    real (r8), intent(out) :: psistar(:)
 
-    integer i
-    integer k
-    integer intz(pcols)
-    real (r8) dx
-    real (r8) s
-    real (r8) c2
-    real (r8) c3
-    real (r8) xx
-    real (r8) xinf
-    real (r8) psi1, psi2, psi3, psim
-    real (r8) cfint
-    real (r8) cfnew
-    real (r8) xins(pcols)
+! local variables
+    integer   :: i
+    integer   :: k
+    integer   :: intz(pcols)
+    real (r8) :: dx
+    real (r8) :: s
+    real (r8) :: c2
+    real (r8) :: c3
+    real (r8) :: xx
+    real (r8) :: xinf
+    real (r8) :: psi1, psi2, psi3, psim
+    real (r8) :: cfint
+    real (r8) :: cfnew
+    real (r8) :: xins(pcols)
 
-!     the minmod function 
-    real (r8) a, b, c
-    real (r8) minmod
-    real (r8) medan
+!     the minmod function
+    real (r8) :: a, b, c
+    real (r8) :: minmod
+    real (r8) :: medan
+
     minmod(a,b) = 0.5_r8*(sign(1._r8,a) + sign(1._r8,b))*min(abs(a),abs(b))
     medan(a,b,c) = a + minmod(b-a,c-a)
 
@@ -273,7 +274,7 @@ contains
        intz(i) = 0
     end do
 
-! first find the interval 
+! first find the interval
     do k =  1,pverp-1
        do i = 1,ncol
           if ((xins(i)-x(i,k))*(x(i,k+1)-xins(i)).ge.0._r8) then
@@ -346,12 +347,12 @@ contains
     implicit none
 
 ! input
-    integer ncol                      ! number of colums to process
+    integer, intent(in)   :: ncol                      ! number of colums to process
 
-    real (r8) x(pcols, pverp)
-    real (r8) f(pcols, pverp)
+    real (r8), intent(in) :: x(:,:)
+    real (r8), intent(in) :: f(:,:)
 ! output
-    real (r8) fdot(pcols, pverp)          ! derivative at nodes
+    real (r8), intent(out) :: fdot(:,:)          ! derivative at nodes
 
 ! assumed variable distribution
 !     x1.......x2.......x3.......x4.......x5.......x6     1,pverp points
@@ -371,33 +372,34 @@ contains
 ! work variables
 
 
-    integer i
-    integer k
+    integer :: i
+    integer :: k
 
-    real (r8) a                    ! work var
-    real (r8) b                    ! work var
-    real (r8) c                    ! work var
-    real (r8) s(pcols,pverp)             ! first divided differences at nodes
-    real (r8) sh(pcols,pverp)            ! first divided differences between nodes
-    real (r8) d(pcols,pverp)             ! second divided differences at nodes
-    real (r8) dh(pcols,pverp)            ! second divided differences between nodes
-    real (r8) e(pcols,pverp)             ! third divided differences at nodes
-    real (r8) eh(pcols,pverp)            ! third divided differences between nodes
-    real (r8) pp                   ! p prime
-    real (r8) ppl(pcols,pverp)           ! p prime on left
-    real (r8) ppr(pcols,pverp)           ! p prime on right
-    real (r8) qpl
-    real (r8) qpr
-    real (r8) ttt
-    real (r8) t
-    real (r8) tmin
-    real (r8) tmax
-    real (r8) delxh(pcols,pverp)
+    real (r8) :: a                    ! work var
+    real (r8) :: b                    ! work var
+    real (r8) :: c                    ! work var
+    real (r8) :: s(pcols,pverp)             ! first divided differences at nodes
+    real (r8) :: sh(pcols,pverp)            ! first divided differences between nodes
+    real (r8) :: d(pcols,pverp)             ! second divided differences at nodes
+    real (r8) :: dh(pcols,pverp)            ! second divided differences between nodes
+    real (r8) :: e(pcols,pverp)             ! third divided differences at nodes
+    real (r8) :: eh(pcols,pverp)            ! third divided differences between nodes
+    real (r8) :: pp                   ! p prime
+    real (r8) :: ppl(pcols,pverp)           ! p prime on left
+    real (r8) :: ppr(pcols,pverp)           ! p prime on right
+    real (r8) :: qpl
+    real (r8) :: qpr
+    real (r8) :: ttt
+    real (r8) :: t
+    real (r8) :: tmin
+    real (r8) :: tmax
+    real (r8) :: delxh(pcols,pverp)
 
 
-!     the minmod function 
-    real (r8) minmod
-    real (r8) medan
+!     the minmod function
+    real (r8) :: minmod
+    real (r8) :: medan
+
     minmod(a,b) = 0.5_r8*(sign(1._r8,a) + sign(1._r8,b))*min(abs(a),abs(b))
     medan(a,b,c) = a + minmod(b-a,c-a)
 
@@ -460,14 +462,14 @@ contains
        do i = 1,ncol
 
 !           p prime at k-0.5
-          ppl(i,k)=sh(i,k-1) + dh(i,k-1)*delxh(i,k-1)  
+          ppl(i,k)=sh(i,k-1) + dh(i,k-1)*delxh(i,k-1)
 !           p prime at k+0.5
           ppr(i,k)=sh(i,k)   - dh(i,k)  *delxh(i,k)
 
           t = minmod(ppl(i,k),ppr(i,k))
 
 !           derivate from parabola thru f(i,k-1), f(i,k), and f(i,k+1)
-          pp = sh(i,k-1) + d(i,k)*delxh(i,k-1) 
+          pp = sh(i,k-1) + d(i,k)*delxh(i,k-1)
 
 !           quartic estimate of fdot
           fdot(i,k) = pp                            &
