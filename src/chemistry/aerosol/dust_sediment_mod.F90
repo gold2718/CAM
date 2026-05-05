@@ -98,12 +98,12 @@ contains
     real(r8), intent(in)  :: pmid  (:,:)        ! midpoint pressures (Pa)
     real(r8), intent(in)  :: pdel  (:,:)        ! pressure diff across layer (Pa)
     real(r8), intent(in)  :: t     (:,:)        ! temperature (K)
-    real(r8), intent(in)  :: dustmr(:,:)        ! dust (kg/kg)
+    real(r8), intent(in)  :: dustmr(:,:)        ! dust (kg/kg) or (1/kg)
     real(r8), intent(in)  :: pvdust (:,:)      ! vertical velocity of dust drops  (Pa/s)
 ! -> note that pvel is at the interfaces (loss from cell is based on pvel(k+1))
 
     real(r8), intent(out) :: dusttend(:,:)      ! dust tend
-    real(r8), intent(out) :: sfdust  (:)           ! surface flux of dust (rain, kg/m/s)
+    real(r8), intent(out) :: sfdust  (:)           ! surface flux of dust (rain, kg/m/s) or (#/kg/s) depending on input
 
 ! Local variables
     real(r8) :: fxdust(pcols,pverp)                     ! fluxes at the interfaces, dust (positive = down)
