@@ -18,7 +18,8 @@ _FREQUENCY_COLNAME = "CMIP7 Freq."
 _MODELTYPE_COLNAME = "Modelling Realm - Primary"
 _REGION_COLNAME = "Region"
 _CAM_DIAG_COLNAME = "NorESM3 name (dependency)"
-_REQUIRED_HEADERS = [_FREQUENCY_COLNAME, _MODELTYPE_COLNAME, _REGION_COLNAME, _CAM_DIAG_COLNAME]
+_CAM_REQUIRED_HEADERS = [_FREQUENCY_COLNAME, _CAM_DIAG_COLNAME]
+_CMIP_REQUIRED_HEADERS = _CAM_REQUIRED_HEADERS + [_MODELTYPE_COLNAME, _REGION_COLNAME]
 _HIST_FILEORDER = ['mon', 'day', '6hr', '3hr', '1hr', 'subhr']
 _HIST_FRQCODES = {'mon':'0', 'day':'-24', '6hr':'-6', '3hr':'-3', '1hr':'-1', 'subhr':'1'}
 _HIST_MFILT = {'mon':'1', 'day':'30', '6hr':'30', '3hr':'30', '1hr':'30', 'subhr':'30'}
@@ -45,7 +46,8 @@ def command_line(args):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument("csv_file", metavar='<path to CMIP7 data request file>', type=str)
+    parser.add_argument("cmip7_csv_file", metavar='<path to CMIP7 data request file>', type=str)
+    parser.add_argument("cam_csv_file", metavar='<path to CAM history request file>', type=str)
     parser.add_argument("--namelist-file", type=str, default="-",
                         help="Path to write namelist file entries (Default: stdout)")
     parser.add_argument("--overwrite", action='store_true', default=False,
@@ -53,7 +55,7 @@ def command_line(args):
     parser.add_argument("--include-cosp", action='store_true', default=False,
                         help="Include COSP diagnostic fields in output")
     pargs = parser.parse_args(args)
-    return pargs.csv_file, pargs.namelist_file, pargs.overwrite, pargs.include_cosp
+    return pargs.cmip7_csv_file, pargs.cam_csv_file, pargs.namelist_file, pargs.overwrite, pargs.include_cosp
 
 @contextlib.contextmanager
 def flex_open(filename=None, mode='w'):
@@ -101,7 +103,7 @@ def read_diagnostic_fieldnames(include_cosp=False):
     # end if
     return all_fieldnames, cosp_fieldnames
 
-def parse_spreadsheet(csvfile, model_name="atmos"):
+def parse_spreadsheet(csvfile, req_headers=_CMIP_REQUIRED_HEADERS, model_name="atmos"):
     """Parse <csvfile> and return a dictionary of the requested CAM fields at
     different output frequencies.
     The dictionary keys are the frequency and the value is a list of
@@ -113,7 +115,7 @@ def parse_spreadsheet(csvfile, model_name="atmos"):
         # Create a dictionary with the column number for each required column
         col_dirs = {}
         for colnum, col in enumerate(headers):
-            if col in _REQUIRED_HEADERS:
+            if col in req_headers:
                 if col in col_dirs:
                     emsg = (f"Duplicate column entry, '{col}', in columns "
                             f"{col_dirs[col]} and {colnum}")
@@ -122,21 +124,23 @@ def parse_spreadsheet(csvfile, model_name="atmos"):
                 col_dirs[col] = colnum
             # end if
         # end for
-        if len(col_dirs) != len(_REQUIRED_HEADERS):
-            missing = ', '.join(set(_REQUIRED_HEADERS) - set(col_dirs.keys()))
+        if len(col_dirs) != len(req_headers):
+            missing = ', '.join(set(req_headers) - set(col_dirs.keys()))
             raise ValueError(f"Missing headers: {missing}")
         # end if
         rownum = 1
+        # CAM columns are always required
         freq_col = col_dirs[_FREQUENCY_COLNAME]
-        model_col = col_dirs[_MODELTYPE_COLNAME]
-        region_col = col_dirs[_REGION_COLNAME]
         name_col = col_dirs[_CAM_DIAG_COLNAME]
+        # CMIP7 columns are optional
+        model_col = col_dirs[_MODELTYPE_COLNAME] if _MODELTYPE_COLNAME in col_dirs else None
+        region_col = col_dirs[_REGION_COLNAME] if _REGION_COLNAME in col_dirs else None
         for row in reader:
             rownum += 1
-            if row[model_col] != model_name:
+            if model_col and (row[model_col] != model_name):
                 continue
             # end if
-            if (row[region_col] != "GLB") and row[name_col].strip():
+            if (region_col and row[region_col] != "GLB") and row[name_col].strip():
                 print(f"Field {row[name_col]} on row {rownum} has region, "
                       "{row[region_col]},  skipping")
             else:
@@ -172,7 +176,7 @@ def check_for_missing_fieldnames(masterlist, data_request):
     for key, value in data_request.items():
         data_request[key] = [x for x in value if x not in missing]
     # end for
-    return sorted(missing)
+    return missing
 
 def generate_namelist_entries(data_request, nl_filename, maxline=125, hist_files=_HIST_FILEORDER):
     """Write the set of namelist entries represented by <data_request> to
@@ -192,7 +196,7 @@ def generate_namelist_entries(data_request, nl_filename, maxline=125, hist_files
                 outfile.write(f"mfilt({index + 1}) = {_HIST_MFILT[freq]}\n")
                 outfile.write(f"empty_htapes({index + 1}) = .true.\n")
                 fields = data_request[freq]
-                fldstring = ', '.join([f"{x}:{avgflag}" for x in fields])
+                fldstring = ', '.join([f"'{x}:{avgflag}'" for x in fields])
                 nlstr = f"fincl{index + 1} = {fldstring}"
                 # Write the fincl string with appropriate line breaks
                 begpos = 0
@@ -218,13 +222,24 @@ def generate_namelist_entries(data_request, nl_filename, maxline=125, hist_files
 ###############################################################################
 
 if __name__ == "__main__":
-    csvfile, nl_filename, overwrite, include_cosp = command_line(sys.argv[1:])
+    cmipfile, camfile, nl_filename, overwrite, include_cosp = command_line(sys.argv[1:])
     if not overwrite and os.path.exists(nl_filename):
         raise ValueError(f"namelist file, '{nl_filename}', exists, aborting")
     # end if
     all_fieldnames, cosp_fieldnames = read_diagnostic_fieldnames(include_cosp)
-    data_request = parse_spreadsheet(csvfile)
-    missing = check_for_missing_fieldnames(all_fieldnames, data_request)
+    cmip_request = parse_spreadsheet(cmipfile)
+    cam_request = parse_spreadsheet(camfile, req_headers=_CAM_REQUIRED_HEADERS)
+    # Add CAM request fields to CMIP request dict
+    for key in cam_request:
+        if key in cmip_request:
+            set(cmip_request[key]).update(cam_request[key])
+            cmip_request[key] = sorted(cmip_request[key])
+        else:
+            cmip_request[key] = sorted(cam_request[key])
+        # end if
+    # end for
+    missing = check_for_missing_fieldnames(all_fieldnames, cmip_request)
+    missing.update(check_for_missing_fieldnames(all_fieldnames, cam_request))
     # Separate the COSP fields from the others
     cosp_missing = set(missing) & set(cosp_fieldnames)
     missing = set(missing) - cosp_missing
@@ -241,5 +256,5 @@ if __name__ == "__main__":
             print(f"  {field}")
         # end for
     # end if
-    generate_namelist_entries(data_request, nl_filename, maxline=80)
+    generate_namelist_entries(cmip_request, nl_filename, maxline=80)
     sys.exit(0)
