@@ -232,8 +232,8 @@ if __name__ == "__main__":
     # Add CAM request fields to CMIP request dict
     for key in cam_request:
         if key in cmip_request:
-            set(cmip_request[key]).update(cam_request[key])
-            cmip_request[key] = sorted(cmip_request[key])
+
+            cmip_request[key] = sorted(set(cmip_request[key] + cam_request[key]))
         else:
             cmip_request[key] = sorted(cam_request[key])
         # end if
