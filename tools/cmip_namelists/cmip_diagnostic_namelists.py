@@ -181,8 +181,9 @@ def check_for_missing_fieldnames(masterlist, data_request):
 def generate_namelist_entries(data_request, nl_filename, maxline=125, hist_files=_HIST_FILEORDER):
     """Write the set of namelist entries represented by <data_request> to
     <nl_filename> (which may be standard output)."""
-    lbreak = ''
     with flex_open(nl_filename, mode="w") as outfile:
+        outfile.write("! Only output fields from these fincl lists")
+        outfile.write(f"empty_htapes = .true.\n")
         for index, freq in enumerate(hist_files):
             if freq in data_request:
                 if freq == 'subhr':
@@ -191,10 +192,9 @@ def generate_namelist_entries(data_request, nl_filename, maxline=125, hist_files
                     avgflag = 'A'
                 # end if
                 # Write history file config info
-                outfile.write(f"{lbreak}{_HIST_TITLES[freq]}\n")
+                outfile.write(f"\n{_HIST_TITLES[freq]}\n")
                 outfile.write(f"nhtfrq({index + 1}) = {_HIST_FRQCODES[freq]}\n")
                 outfile.write(f"mfilt({index + 1}) = {_HIST_MFILT[freq]}\n")
-                outfile.write(f"empty_htapes({index + 1}) = .true.\n")
                 fields = data_request[freq]
                 fldstring = ', '.join([f"'{x}:{avgflag}'" for x in fields])
                 nlstr = f"fincl{index + 1} = {fldstring}"
@@ -213,7 +213,6 @@ def generate_namelist_entries(data_request, nl_filename, maxline=125, hist_files
                     begpos = endpos
                 # end while
             # end if
-            lbreak = '\n'
         # end for
         # Now, write out combined namelist items
     # end with
