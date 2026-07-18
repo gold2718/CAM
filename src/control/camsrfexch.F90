@@ -1,40 +1,46 @@
 module camsrfexch
-
-  !-----------------------------------------------------------------------
-  ! Module to handle data that is exchanged between the CAM atmosphere
-  ! model and the surface models (land, sea-ice, and ocean).
-  !-----------------------------------------------------------------------
-
-  use shr_kind_mod,    only: r8 => shr_kind_r8, r4 => shr_kind_r4
-  use constituents,    only: pcnst
-  use ppgrid,          only: pcols, begchunk, endchunk
-  use phys_grid,       only: get_ncols_p, phys_grid_initialized
-  use infnan,          only: posinf, assignment(=)
-  use cam_abortutils,  only: endrun
-  use cam_logfile,     only: iulog
-  use srf_field_check, only: active_Sl_ram1, active_Sl_fv, active_Sl_soilw,                &
-                             active_Fall_flxdst1, active_Fall_flxvoc, active_Fall_flxfire
-  use cam_control_mod, only: aqua_planet, simple_phys
+!-----------------------------------------------------------------------
+!
+! Module to handle data that is exchanged between the CAM atmosphere
+! model and the surface models (land, sea-ice, and ocean).
+!
+!-----------------------------------------------------------------------
+!
+! USES:
+!
+  use shr_kind_mod,  only: r8 => shr_kind_r8, r4 => shr_kind_r4
+  use constituents,  only: pcnst
+  use ppgrid,        only: pcols, begchunk, endchunk
+  use phys_grid,     only: get_ncols_p, phys_grid_initialized
+  use infnan,        only: posinf, assignment(=)
+  use cam_abortutils,only: endrun
+  use cam_logfile,   only: iulog
 
   implicit none
-  private
 
-  ! Public interfaces
+!----------------------------------------------------------------------- 
+! PRIVATE: Make default data and interfaces private
+!----------------------------------------------------------------------- 
+  private     ! By default all data is private to this module
+!
+! Public interfaces
+!
   public atm2hub_alloc              ! Atmosphere to surface data allocation method
   public hub2atm_alloc              ! Merged hub surface to atmosphere data allocation method
   public atm2hub_deallocate
   public hub2atm_deallocate
   public cam_export
-
-  ! Public data types
+!
+! Public data types
+!
   public cam_out_t                  ! Data from atmosphere
   public cam_in_t                   ! Merged surface data
 
-  !---------------------------------------------------------------------------
-  ! This is the data that is sent from the atmosphere to the surface models
-  !---------------------------------------------------------------------------
+!---------------------------------------------------------------------------
+! This is the data that is sent from the atmosphere to the surface models
+!---------------------------------------------------------------------------
 
-  type cam_out_t
+  type cam_out_t 
      integer  :: lchnk               ! chunk index
      integer  :: ncol                ! number of columns in chunk
      real(r8) :: tbot(pcols)         ! bot level temperature
@@ -42,25 +48,22 @@ module camsrfexch
      real(r8) :: topo(pcols)         ! surface topographic height (m)
      real(r8) :: ubot(pcols)         ! bot level u wind
      real(r8) :: vbot(pcols)         ! bot level v wind
-     real(r8) :: wind_dir(pcols)     ! direction of bottom level wind
      real(r8) :: qbot(pcols,pcnst)   ! bot level specific humidity
      real(r8) :: pbot(pcols)         ! bot level pressure
-     real(r8) :: rho(pcols)          ! bot level density
-     real(r8) :: netsw(pcols)        !
-     real(r8) :: flwds(pcols)        !
+     real(r8) :: rho(pcols)          ! bot level density	
+     real(r8) :: netsw(pcols)        !	
+     real(r8) :: flwds(pcols)        ! 
      real(r8) :: precsc(pcols)       !
      real(r8) :: precsl(pcols)       !
-     real(r8) :: precc(pcols)        !
-     real(r8) :: precl(pcols)        !
-     real(r8) :: soll(pcols)         !
-     real(r8) :: sols(pcols)         !
+     real(r8) :: precc(pcols)        ! 
+     real(r8) :: precl(pcols)        ! 
+     real(r8) :: soll(pcols)         ! 
+     real(r8) :: sols(pcols)         ! 
      real(r8) :: solld(pcols)        !
      real(r8) :: solsd(pcols)        !
-     real(r8) :: thbot(pcols)        !
+     real(r8) :: thbot(pcols)        ! 
      real(r8) :: co2prog(pcols)      ! prognostic co2
      real(r8) :: co2diag(pcols)      ! diagnostic co2
-     real(r8) :: ozone(pcols)        ! surface ozone concentration (mole/mole)
-     real(r8) :: lightning_flash_freq(pcols) ! cloud-to-ground lightning flash frequency (/min)
      real(r8) :: psl(pcols)
      real(r8) :: bcphiwet(pcols)     ! wet deposition of hydrophilic black carbon
      real(r8) :: bcphidry(pcols)     ! dry deposition of hydrophilic black carbon
@@ -78,13 +81,13 @@ module camsrfexch
      real(r8) :: dstdry4(pcols)      ! dry deposition of dust (bin4)
      real(r8), pointer, dimension(:) :: nhx_nitrogen_flx ! nitrogen deposition fluxes (kgN/m2/s)
      real(r8), pointer, dimension(:) :: noy_nitrogen_flx ! nitrogen deposition fluxes (kgN/m2/s)
-  end type cam_out_t
+  end type cam_out_t 
 
-  !---------------------------------------------------------------------------
-  ! This is the merged state of sea-ice, land and ocean surface parameterizations
-  !---------------------------------------------------------------------------
+!---------------------------------------------------------------------------
+! This is the merged state of sea-ice, land and ocean surface parameterizations
+!---------------------------------------------------------------------------
 
-  type cam_in_t
+  type cam_in_t    
      integer  :: lchnk                   ! chunk index
      integer  :: ncol                    ! number of active columns
      real(r8) :: asdir(pcols)            ! albedo: shortwave, direct
@@ -97,64 +100,76 @@ module camsrfexch
      real(r8) :: wsx(pcols)              ! surface u-stress (N)
      real(r8) :: wsy(pcols)              ! surface v-stress (N)
      real(r8) :: tref(pcols)             ! ref height surface air temp
-     real(r8) :: qref(pcols)             ! ref height specific humidity
+     real(r8) :: qref(pcols)             ! ref height specific humidity 
      real(r8) :: u10(pcols)              ! 10m wind speed
-     real(r8) :: ugustOut(pcols)         ! gustiness added
-     real(r8) :: u10withGusts(pcols)     ! 10m wind speed with gusts added
-     real(r8) :: ts(pcols)               ! merged surface temp
+     real(r8) :: ts(pcols)               ! merged surface temp 
      real(r8) :: sst(pcols)              ! sea surface temp
-     real(r8) :: snowhland(pcols)        ! snow depth (liquid water equivalent) over land
+     real(r8) :: snowhland(pcols)        ! snow depth (liquid water equivalent) over land 
      real(r8) :: snowhice(pcols)         ! snow depth over ice
      real(r8) :: fco2_lnd(pcols)         ! co2 flux from lnd
      real(r8) :: fco2_ocn(pcols)         ! co2 flux from ocn
-     real(r8) :: fdms(pcols)             ! dms flux from ocn
-     real(r8) :: fbrf(pcols)             ! bromoform flux from ocn
-     real(r8) :: fn2o_ocn(pcols)         ! n2o flux from ocn
-     real(r8) :: fnh3_ocn(pcols)         ! nh3 flux from ocn
+     real(r8) :: fdms(pcols)             ! dms flux
      real(r8) :: landfrac(pcols)         ! land area fraction
      real(r8) :: icefrac(pcols)          ! sea-ice areal fraction
      real(r8) :: ocnfrac(pcols)          ! ocean areal fraction
+     real(r8), pointer, dimension(:) :: ram1  !aerodynamical resistance (s/m) (pcols)
+     real(r8), pointer, dimension(:) :: fv    !friction velocity (m/s) (pcols)
+     real(r8), pointer, dimension(:) :: soilw !volumetric soil water (m3/m3)
      real(r8) :: cflx(pcols,pcnst)       ! constituent flux (emissions)
      real(r8) :: ustar(pcols)            ! atm/ocn saved version of ustar
      real(r8) :: re(pcols)               ! atm/ocn saved version of re
      real(r8) :: ssq(pcols)              ! atm/ocn saved version of ssq
-     real(r8), pointer, dimension(:)   :: ram1  !aerodynamical resistance (s/m) (pcols)
-     real(r8), pointer, dimension(:)   :: fv    !friction velocity (m/s) (pcols)
-     real(r8), pointer, dimension(:)   :: soilw !volumetric soil water (m3/m3)
      real(r8), pointer, dimension(:,:) :: depvel ! deposition velocities
      real(r8), pointer, dimension(:,:) :: dstflx ! dust fluxes
      real(r8), pointer, dimension(:,:) :: meganflx ! MEGAN fluxes
      real(r8), pointer, dimension(:,:) :: fireflx ! wild fire emissions
      real(r8), pointer, dimension(:)   :: fireztop ! wild fire emissions vert distribution top
-  end type cam_in_t
+  end type cam_in_t    
 
 !===============================================================================
 CONTAINS
 !===============================================================================
 
+!----------------------------------------------------------------------- 
+! 
+! BOP
+!
+! !IROUTINE: hub2atm_alloc
+!
+! !DESCRIPTION:
+!
+!   Allocate space for the surface to atmosphere data type. And initialize
+!   the values.
+! 
+!-----------------------------------------------------------------------
+!
+! !INTERFACE
+!
   subroutine hub2atm_alloc( cam_in )
-
-    ! Allocate space for the surface to atmosphere data type. And initialize
-    ! the values.
-
-    use shr_drydep_mod,  only: n_drydep
+    use seq_drydep_mod,  only: lnd_drydep, n_drydep
+    use cam_cpl_indices, only: index_x2a_Sl_ram1, index_x2a_Sl_fv, index_x2a_Sl_soilw, index_x2a_Fall_flxdst1
+    use cam_cpl_indices, only: index_x2a_Fall_flxvoc
     use shr_megan_mod,   only: shr_megan_mechcomps_n
+    use cam_cpl_indices, only: index_x2a_Fall_flxfire
     use shr_fire_emis_mod,only: shr_fire_emis_mechcomps_n
-
-    ! ARGUMENTS:
-    type(cam_in_t), pointer ::  cam_in(:)     ! Merged surface state
-
-    ! LOCAL VARIABLES:
+!
+!!ARGUMENTS:
+!
+   type(cam_in_t), pointer ::  cam_in(:)     ! Merged surface state
+!
+!!LOCAL VARIABLES:
+!
     integer :: c        ! chunk index
     integer :: ierror   ! Error code
-    character(len=*), parameter :: sub = 'hub2atm_alloc'
-    !-----------------------------------------------------------------------
-
-    if ( .not. phys_grid_initialized() ) call endrun(sub//": phys_grid not called yet")
+!----------------------------------------------------------------------- 
+! 
+! EOP
+!
+    if ( .not. phys_grid_initialized() ) call endrun( "HUB2ATM_ALLOC error: phys_grid not called yet" )
     allocate (cam_in(begchunk:endchunk), stat=ierror)
     if ( ierror /= 0 )then
-      write(iulog,*) sub//': Allocation error: ', ierror
-      call endrun(sub//': allocation error')
+      write(iulog,*) 'Allocation error: ', ierror
+      call endrun('HUB2ATM_ALLOC error: allocation error')
     end if
 
     do c = begchunk,endchunk
@@ -166,44 +181,44 @@ CONTAINS
        nullify(cam_in(c)%meganflx)
        nullify(cam_in(c)%fireflx)
        nullify(cam_in(c)%fireztop)
-    enddo
-    do c = begchunk,endchunk
-       if (active_Sl_ram1) then
+    enddo  
+    do c = begchunk,endchunk 
+       if (index_x2a_Sl_ram1>0) then
           allocate (cam_in(c)%ram1(pcols), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error ram1')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error ram1')
        endif
-       if (active_Sl_fv) then
+       if (index_x2a_Sl_fv>0) then
           allocate (cam_in(c)%fv(pcols), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error fv')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error fv')
        endif
-       if (active_Sl_soilw) then
+       if (index_x2a_Sl_soilw /= 0) then
           allocate (cam_in(c)%soilw(pcols), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error soilw')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error soilw')
        end if
-       if (active_Fall_flxdst1) then
+       if (index_x2a_Fall_flxdst1>0) then
           ! Assume 4 bins from surface model ....
           allocate (cam_in(c)%dstflx(pcols,4), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error dstflx')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error dstflx')
        endif
-       if (active_Fall_flxvoc .and. shr_megan_mechcomps_n>0) then
+       if ( index_x2a_Fall_flxvoc>0 .and. shr_megan_mechcomps_n>0 ) then
           allocate (cam_in(c)%meganflx(pcols,shr_megan_mechcomps_n), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error meganflx')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error meganflx')
        endif
     end do
 
-    if (n_drydep>0) then
-       do c = begchunk,endchunk
+    if (lnd_drydep .and. n_drydep>0) then
+       do c = begchunk,endchunk 
           allocate (cam_in(c)%depvel(pcols,n_drydep), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error depvel')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error depvel')
        end do
     endif
 
-    if (active_Fall_flxfire .and. shr_fire_emis_mechcomps_n>0) then
-       do c = begchunk,endchunk
+    if ( index_x2a_Fall_flxfire>0 .and. shr_fire_emis_mechcomps_n>0 ) then
+       do c = begchunk,endchunk 
           allocate(cam_in(c)%fireflx(pcols,shr_fire_emis_mechcomps_n), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error fireflx')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error fireflx')
           allocate(cam_in(c)%fireztop(pcols), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error fireztop')
+          if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error fireztop')
        enddo
     endif
 
@@ -222,8 +237,6 @@ CONTAINS
        cam_in(c)%tref     (:) = 0._r8
        cam_in(c)%qref     (:) = 0._r8
        cam_in(c)%u10      (:) = 0._r8
-       cam_in(c)%ugustOut (:) = 0._r8
-       cam_in(c)%u10withGusts (:) = 0._r8
        cam_in(c)%ts       (:) = 0._r8
        cam_in(c)%sst      (:) = 0._r8
        cam_in(c)%snowhland(:) = 0._r8
@@ -231,9 +244,6 @@ CONTAINS
        cam_in(c)%fco2_lnd (:) = 0._r8
        cam_in(c)%fco2_ocn (:) = 0._r8
        cam_in(c)%fdms     (:) = 0._r8
-       cam_in(c)%fbrf     (:) = 0._r8
-       cam_in(c)%fn2o_ocn (:) = 0._r8
-       cam_in(c)%fnh3_ocn (:) = 0._r8
        cam_in(c)%landfrac (:) = posinf
        cam_in(c)%icefrac  (:) = posinf
        cam_in(c)%ocnfrac  (:) = posinf
@@ -253,10 +263,10 @@ CONTAINS
        cam_in(c)%ustar    (:) = 0._r8
        cam_in(c)%re       (:) = 0._r8
        cam_in(c)%ssq      (:) = 0._r8
-       if (n_drydep>0) then
+       if (lnd_drydep .and. n_drydep>0) then
           cam_in(c)%depvel (:,:) = 0._r8
        endif
-       if (active_Fall_flxfire .and. shr_fire_emis_mechcomps_n>0) then
+       if ( index_x2a_Fall_flxfire>0 .and. shr_fire_emis_mechcomps_n>0 ) then
           cam_in(c)%fireflx(:,:) = 0._r8
           cam_in(c)%fireztop(:) = 0._r8
        endif
@@ -264,27 +274,46 @@ CONTAINS
 
   end subroutine hub2atm_alloc
 
-  !===============================================================================
+!
+!===============================================================================
+!
 
+!----------------------------------------------------------------------- 
+! 
+! BOP
+!
+! !IROUTINE: atm2hub_alloc
+!
+! !DESCRIPTION:
+!
+!   Allocate space for the atmosphere to surface data type. And initialize
+!   the values.
+! 
+!-----------------------------------------------------------------------
+!
+! !INTERFACE
+!
   subroutine atm2hub_alloc( cam_out )
-
-    ! Allocate space for the atmosphere to surface data type. And initialize
-    ! the values.
-
-    ! ARGUMENTS:
+!
+!!USES:
+!
+    use cam_cpl_indices, only: index_a2x_Faxa_nhx, index_a2x_Faxa_noy
+!
+!!ARGUMENTS:
+!
     type(cam_out_t), pointer :: cam_out(:)    ! Atmosphere to surface input
-
-    ! LOCAL VARIABLES:
+!
+!!LOCAL VARIABLES:
+!
     integer :: c            ! chunk index
     integer :: ierror       ! Error code
-    character(len=*), parameter :: sub = 'atm2hub_alloc'
-    !-----------------------------------------------------------------------
+    !----------------------------------------------------------------------- 
 
-    if (.not. phys_grid_initialized()) call endrun(sub//": phys_grid not called yet")
+    if ( .not. phys_grid_initialized() ) call endrun( "ATM2HUB_ALLOC error: phys_grid not called yet" )
     allocate (cam_out(begchunk:endchunk), stat=ierror)
     if ( ierror /= 0 )then
-      write(iulog,*) sub//': Allocation error: ', ierror
-      call endrun(sub//': allocation error: cam_out')
+      write(iulog,*) 'Allocation error: ', ierror
+      call endrun('ATM2HUB_ALLOC error: allocation error')
     end if
 
     do c = begchunk,endchunk
@@ -295,7 +324,6 @@ CONTAINS
        cam_out(c)%topo(:)     = 0._r8
        cam_out(c)%ubot(:)     = 0._r8
        cam_out(c)%vbot(:)     = 0._r8
-       cam_out(c)%wind_dir(:) = 0._r8
        cam_out(c)%qbot(:,:)   = 0._r8
        cam_out(c)%pbot(:)     = 0._r8
        cam_out(c)%rho(:)      = 0._r8
@@ -312,8 +340,6 @@ CONTAINS
        cam_out(c)%thbot(:)    = 0._r8
        cam_out(c)%co2prog(:)  = 0._r8
        cam_out(c)%co2diag(:)  = 0._r8
-       cam_out(c)%ozone(:)    = 0._r8
-       cam_out(c)%lightning_flash_freq(:) = 0._r8
        cam_out(c)%psl(:)      = 0._r8
        cam_out(c)%bcphidry(:) = 0._r8
        cam_out(c)%bcphodry(:) = 0._r8
@@ -333,44 +359,31 @@ CONTAINS
        nullify(cam_out(c)%nhx_nitrogen_flx)
        nullify(cam_out(c)%noy_nitrogen_flx)
 
-       if (.not. (simple_phys .or. aqua_planet)) then
-
+       if (index_a2x_Faxa_nhx>0) then
           allocate (cam_out(c)%nhx_nitrogen_flx(pcols), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error nhx_nitrogen_flx')
+          if ( ierror /= 0 ) call endrun('atm2hub_alloc error: allocation error nhx_nitrogen_flx')
           cam_out(c)%nhx_nitrogen_flx(:) = 0._r8
-
-          allocate (cam_out(c)%noy_nitrogen_flx(pcols), stat=ierror)
-          if ( ierror /= 0 ) call endrun(sub//': allocation error noy_nitrogen_flx')
-          cam_out(c)%noy_nitrogen_flx(:) = 0._r8
-
        endif
-
+       if (index_a2x_Faxa_noy>0) then
+          allocate (cam_out(c)%noy_nitrogen_flx(pcols), stat=ierror)
+          if ( ierror /= 0 ) call endrun('atm2hub_alloc error: allocation error noy_nitrogen_flx')
+          cam_out(c)%noy_nitrogen_flx(:) = 0._r8
+       endif
     end do
 
   end subroutine atm2hub_alloc
 
-  !===============================================================================
-
   subroutine atm2hub_deallocate(cam_out)
-
     type(cam_out_t), pointer :: cam_out(:)    ! Atmosphere to surface input
-    !-----------------------------------------------------------------------
-
     if(associated(cam_out)) then
        deallocate(cam_out)
     end if
     nullify(cam_out)
 
   end subroutine atm2hub_deallocate
-
-  !===============================================================================
-
   subroutine hub2atm_deallocate(cam_in)
-
     type(cam_in_t), pointer :: cam_in(:)    ! Atmosphere to surface input
-
     integer :: c
-    !-----------------------------------------------------------------------
 
     if(associated(cam_in)) then
        do c=begchunk,endchunk
@@ -398,7 +411,7 @@ CONTAINS
              deallocate(cam_in(c)%depvel)
              nullify(cam_in(c)%depvel)
           end if
-
+          
        enddo
 
        deallocate(cam_in)
@@ -412,28 +425,35 @@ CONTAINS
 
 subroutine cam_export(state,cam_out,pbuf)
 
-   ! Transfer atmospheric fields into necessary surface data structures
-
+!----------------------------------------------------------------------- 
+! 
+! Purpose: 
+! Transfer atmospheric fields into necessary surface data structures
+! 
+! Author: L. Bath  CMS Contact: M. Vertenstein
+! 
+!-----------------------------------------------------------------------
    use physics_types,    only: physics_state
-   use ppgrid,           only: pver
+   use ppgrid,           only: pcols, begchunk, endchunk, pver
    use cam_history,      only: outfld
-   use chem_surfvals,    only: chem_surfvals_get
+   use chem_surfvals,    only: chem_surfvals_get,chem_surfvals_get_co2zonal
    use co2_cycle,        only: co2_transport, c_i
-   use physconst,        only: rair, mwdry, mwco2, gravit, mwo3
+   use physconst,        only: rair, mwdry, mwco2, gravit
    use constituents,     only: pcnst
    use physics_buffer,   only: pbuf_get_index, pbuf_get_field, physics_buffer_desc
-   use rad_constituents, only: rad_cnst_get_gas
-   use cam_control_mod,  only: simple_phys
-
    implicit none
 
+   !------------------------------Arguments--------------------------------
+   !
    ! Input arguments
-   type(physics_state),  intent(in) :: state
+   !
+   type(physics_state),  intent(in)    :: state
    type (cam_out_t),     intent(inout) :: cam_out
    type(physics_buffer_desc), pointer  :: pbuf(:)
 
-   ! Local variables
-
+   !
+   !---------------------------Local variables-----------------------------
+   !
    integer :: i              ! Longitude index
    integer :: m              ! constituent index
    integer :: lchnk          ! Chunk index
@@ -441,8 +461,6 @@ subroutine cam_export(state,cam_out,pbuf)
    integer :: psl_idx
    integer :: prec_dp_idx, snow_dp_idx, prec_sh_idx, snow_sh_idx
    integer :: prec_sed_idx,snow_sed_idx,prec_pcw_idx,snow_pcw_idx
-   integer :: srf_ozone_idx, lightning_idx
-   real(r8):: ubot, vbot
 
    real(r8), pointer :: psl(:)
 
@@ -454,8 +472,7 @@ subroutine cam_export(state,cam_out,pbuf)
    real(r8), pointer :: snow_sed(:)                ! snow from ZM   convection
    real(r8), pointer :: prec_pcw(:)                ! total precipitation   from Hack convection
    real(r8), pointer :: snow_pcw(:)                ! snow from Hack   convection
-   real(r8), pointer :: o3_ptr(:,:), srf_o3_ptr(:)
-   real(r8), pointer :: lightning_ptr(:)
+   real(r8)          :: tmparr(pcols,begchunk:endchunk)
    !-----------------------------------------------------------------------
 
    lchnk = state%lchnk
@@ -472,8 +489,6 @@ subroutine cam_export(state,cam_out,pbuf)
    snow_sed_idx = pbuf_get_index('SNOW_SED', errcode=i)
    prec_pcw_idx = pbuf_get_index('PREC_PCW', errcode=i)
    snow_pcw_idx = pbuf_get_index('SNOW_PCW', errcode=i)
-   srf_ozone_idx = pbuf_get_index('SRFOZONE', errcode=i)
-   lightning_idx = pbuf_get_index('LGHT_FLASH_FREQ', errcode=i)
 
    if (prec_dp_idx > 0) then
      call pbuf_get_field(pbuf, prec_dp_idx, prec_dp)
@@ -510,44 +525,23 @@ subroutine cam_export(state,cam_out,pbuf)
       cam_out%pbot(i)  = state%pmid(i,pver)
       cam_out%psl(i)   = psl(i)
       cam_out%rho(i)   = cam_out%pbot(i)/(rair*cam_out%tbot(i))
-
-      ! Direction of bottom level wind
-      ubot = state%u(i,pver)
-      vbot = state%v(i,pver)
-      if ((ubot == 0.0_r8) .and. (vbot == 0.0_r8)) then
-         cam_out%wind_dir(i) = 0.0_r8 ! Default to U for zero wind
-      else
-         cam_out%wind_dir(i) = atan2(vbot,ubot)
-      end if
    end do
    do m = 1, pcnst
      do i = 1, ncol
-        cam_out%qbot(i,m) = state%q(i,pver,m)
+        cam_out%qbot(i,m) = state%q(i,pver,m) 
      end do
    end do
 
-   cam_out%co2diag(:ncol) = chem_surfvals_get('CO2VMR') * 1.0e+6_r8
+   !cam_out%co2diag(:ncol) = chem_surfvals_get('CO2VMR') * 1.0e+6_r8 
+   tmparr = chem_surfvals_get_co2zonal() * 1.0e+6_r8 
+   do i=1,ncol
+      cam_out%co2diag(i) = tmparr(i,lchnk) 
+   end do
    if (co2_transport()) then
       do i=1,ncol
          cam_out%co2prog(i) = state%q(i,pver,c_i(4)) * 1.0e+6_r8 *mwdry/mwco2
       end do
    end if
-
-   ! get bottom layer ozone concentrations to export to surface models
-   if (srf_ozone_idx > 0) then
-      call pbuf_get_field(pbuf, srf_ozone_idx, srf_o3_ptr)
-      cam_out%ozone(:ncol) = srf_o3_ptr(:ncol)
-   else if (.not.simple_phys) then
-      call rad_cnst_get_gas(0, 'O3', state, pbuf, o3_ptr)
-      cam_out%ozone(:ncol) = o3_ptr(:ncol,pver) * mwdry/mwo3 ! mole/mole
-   endif
-
-   ! get cloud to ground lightning flash freq (/min) to export to surface models
-   if (lightning_idx>0) then
-      call pbuf_get_field(pbuf, lightning_idx, lightning_ptr)
-      cam_out%lightning_flash_freq(:ncol) = lightning_ptr(:ncol)
-   end if
-
    !
    ! Precipation and snow rates from shallow convection, deep convection and stratiform processes.
    ! Compute total convective and stratiform precipitation and snow rates
@@ -589,7 +583,7 @@ subroutine cam_export(state,cam_out,pbuf)
       if (cam_out%precsl(i).lt.0._r8) cam_out%precsl(i)=0._r8
       if (cam_out%precsc(i).gt.cam_out%precc(i)) cam_out%precsc(i)=cam_out%precc(i)
       if (cam_out%precsl(i).gt.cam_out%precl(i)) cam_out%precsl(i)=cam_out%precl(i)
-
+      ! end jrm
    end do
 
 end subroutine cam_export

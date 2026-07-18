@@ -32,6 +32,7 @@ module chem_surfvals
       chem_surfvals_set,     &! set ghg surface values when scenario_ghg is 'RAMPED' or 'CHEM_LBC_FILE'
       chem_surfvals_get,     &! return surface values for: CO2VMR, CO2MMR, CH4VMR
                               ! N2OVMR, F11VMR, and F12VMR
+      chem_surfvals_get_co2zonal ,&
       chem_surfvals_co2_rad   ! return co2 for radiation
 
    public :: flbc_list
@@ -46,6 +47,7 @@ module chem_surfvals
    real(r8) :: ch4vmr = -1.0_r8                ! ch4   volume mixing ratio 
    real(r8) :: f11vmr = -1.0_r8                ! cfc11 volume mixing ratio 
    real(r8) :: f12vmr = -1.0_r8                ! cfc12 volume mixing ratio 
+   real(r8), allocatable :: co2vmr_fzonal(:,:) ! 
    character(len=16) :: scenario_ghg = 'FIXED' ! 'FIXED','RAMPED', 'RAMP_CO2_ONLY', 'CHEM_LBC_FILE'
    integer  :: rampYear_ghg = 0                ! ramped gases fixed at this year (if > 0)
    character(len=256) :: bndtvghg = 'NONE'     ! filename for ramped data
@@ -264,6 +266,7 @@ subroutine chem_surfvals_init()
    use infnan,       only: posinf, assignment(=)
    use mo_flbc,      only: flbc_inti
    use phys_control, only: use_simple_phys
+   use ppgrid,       only: pcols, begchunk, endchunk
 
    !---------------------------Local variables-----------------------------
    integer :: yr, mon, day, ncsec
@@ -326,6 +329,7 @@ subroutine chem_surfvals_init()
 
    else if (scenario_ghg == 'CHEM_LBC_FILE') then
       ! set by lower boundary conditions file
+      allocate(co2vmr_fzonal(pcols,begchunk:endchunk))
       call flbc_inti( flbc_file, flbc_list, flbc_timing, co2vmr, ch4vmr, n2ovmr, f11vmr, f12vmr )
       call chem_surfvals_set()
 
@@ -462,6 +466,17 @@ function chem_surfvals_get(name)
 
 end function chem_surfvals_get
 
+!=========================================================================================
+
+function chem_surfvals_get_co2zonal()
+
+  use ppgrid, only: pcols, begchunk, endchunk
+
+  real(r8) :: chem_surfvals_get_co2zonal(pcols,begchunk:endchunk)
+
+     chem_surfvals_get_co2zonal(:,:) = co2vmr_fzonal(:,:)
+
+end function chem_surfvals_get_co2zonal
 
 !=========================================================================================
 
@@ -512,7 +527,6 @@ subroutine chem_surfvals_set()
 
    use ppgrid,         only: begchunk, endchunk
    use mo_flbc,        only: flbc_gmean_vmr, flbc_chk
-   use scamMod,        only: single_column, scmiop_flbc_inti, use_camiop
 
 !---------------------------Local variables-----------------------------
 
@@ -528,12 +542,7 @@ subroutine chem_surfvals_set()
    elseif (scenario_ghg == 'CHEM_LBC_FILE') then
       ! set mixing ratios from cam-chem/waccm lbc file 
       call flbc_chk()
-      if (single_column .and. use_camiop) then
-         call scmiop_flbc_inti( co2vmr, ch4vmr, n2ovmr, f11vmr, f12vmr )
-      else
-         ! set by lower boundary conditions file
-         call flbc_gmean_vmr(co2vmr,ch4vmr,n2ovmr,f11vmr,f12vmr)
-      endif
+      call flbc_gmean_vmr(co2vmr,co2vmr_fzonal,ch4vmr,n2ovmr,f11vmr,f12vmr)
    endif
 
    if (masterproc .and. is_end_curr_day()) then

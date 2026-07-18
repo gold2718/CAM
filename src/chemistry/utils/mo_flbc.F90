@@ -774,11 +774,12 @@ contains
 
   end subroutine get_dels
 
-  subroutine flbc_gmean_vmr(co2vmr,ch4vmr,n2ovmr,f11vmr,f12vmr)
+  subroutine flbc_gmean_vmr(co2vmr,co2vmr_fzonal,ch4vmr,n2ovmr,f11vmr,f12vmr)
 
      implicit none
 
      real(r8), intent(inout) :: co2vmr
+     real(r8), intent(inout) :: co2vmr_fzonal(pcols,begchunk:endchunk)
      real(r8), intent(inout) :: ch4vmr
      real(r8), intent(inout) :: n2ovmr
      real(r8), intent(inout) :: f11vmr
@@ -792,7 +793,7 @@ contains
      call get_dels( dels, last, next )
 
      if (ghg_indices(co2_ndx)>0) &
-          co2vmr = global_mean_vmr(flbcs(ghg_indices(co2_ndx)), dels, last, next )
+          co2vmr = global_mean_vmr(flbcs(ghg_indices(co2_ndx)), dels, last, next, co2vmr_fzonal )
      if (ghg_indices(ch4_ndx)>0) &
           ch4vmr = global_mean_vmr(flbcs(ghg_indices(ch4_ndx)), dels, last, next )
      if (ghg_indices(n2o_ndx)>0) &
@@ -807,7 +808,7 @@ contains
 
   end subroutine flbc_gmean_vmr
 
-  function global_mean_vmr( flbcs, dels, last, next  )
+  function global_mean_vmr( flbcs, dels, last, next, co2vmr_fzonal )
     use gmean_mod,  only: gmean
     use phys_grid,  only: get_ncols_p
 
@@ -818,6 +819,7 @@ contains
     integer, intent(in) :: last
     integer, intent(in) :: next
     real(r8) :: global_mean_vmr
+    real(r8), optional, intent(out) :: co2vmr_fzonal(pcols,begchunk:endchunk)
     real(r8) :: vmr_arr(pcols,begchunk:endchunk)
 
     integer  :: lchnk, ncol !, n
@@ -831,6 +833,7 @@ contains
           vmr_arr(:ncol,lchnk) = flbcs%vmr(:ncol,lchnk,last) &
                + dels * (flbcs%vmr(:ncol,lchnk,next) - flbcs%vmr(:ncol,lchnk,last))
        enddo
+       if( present(co2vmr_fzonal) ) co2vmr_fzonal = vmr_arr
        call gmean (vmr_arr, global_mean_vmr)
     endif
 
