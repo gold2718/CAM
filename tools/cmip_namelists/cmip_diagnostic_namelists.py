@@ -8,6 +8,7 @@ Note that the data request spreadsheet must be in CSV format
 """
 
 import argparse
+import ast
 import configparser
 import contextlib
 import csv
@@ -41,7 +42,7 @@ _HIST_TAPE_MAP = {
 # Order in which frequencies are processed/sorted (unrelated to tape number)
 _HIST_FREQ_ORDER = list(_HIST_TAPE_MAP.keys())
 _HIST_FRQCODES = {'mon':'0', 'day':'-24', '6hr':'-6', '3hr':'-3', '1hr':'-1', 'subhr':'1'}
-_HIST_MFILT = {'mon':'1', 'day':'30', '6hr':'56', '3hr':'56', '1hr':'168', 'subhr':'48'}
+_HIST_MFILT = {'mon':'1', 'day':'73', '6hr':'20', '3hr':'40', '1hr':'120', 'subhr':'240'}
 _HIST_TITLES =  {'mon':'! monthly output', 'day':'! daily output',
                  '6hr':{'default':'! 6-hourly average, max, or min output',
                         'I':'! 6-hourly instantaneous output'},
@@ -52,8 +53,7 @@ _HIST_TITLES =  {'mon':'! monthly output', 'day':'! daily output',
                  'subhr':'! timestep output'}
 
 # Special CAM diagnostics hardcoded in cam_history.F90 but not in fixed list
-_CAM_FIXED_FIELDS = {'co2vmr', 'ch4vmr', 'n2ovmr', 'f11vmr', 'f12vmr',
-                     'sol_tsi', 'ndcur', 'nscur', 'nsteph', 'area'}
+_CAM_FIXED_FIELDS = {'sol_tsi', 'ndcur', 'nscur', 'nsteph', 'area'}
 
 # Relative paths
 __MYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -123,6 +123,21 @@ def is_number(text):
         val = False
     # end try
     return val
+
+def get_root_terms(expression):
+    """Parse <expression> and return all the root terms that are not numbers."""
+    tree = ast.parse(expression, mode="eval")
+    root_terms = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name):
+            root_terms.append(node.id)
+        elif isinstance(node, ast.Constant):
+            # Ignore numbers, flag other entry types
+            if not isinstance(node.value, (int, float)):
+                raise ValueError(f"Unknown constant, '{node.value}'")
+            # end if
+        # end if
+    return root_terms
 
 def quote_field(fieldname):
     """Ensure that <fieldname> has only single quotes.
@@ -362,8 +377,17 @@ def parse_spreadsheet(csvfile, model_names=["atmos", "aerosol", "atmosChem"]):
                 if row[freq_col] not in cmip_dict:
                     cmip_dict[row[freq_col]] = set()
                 # end if
-                names = [x.strip() for x in re.split(r'[+/,*()-]', row[name_col])
-                         if x.strip() and (not is_number(x.strip()))]
+#                names = [x.strip() for x in re.split(r'[+/,*()-]', row[name_col])
+#                         if x.strip() and (not is_number(x.strip()))]
+                try:
+                    if row[name_col]:
+                        names = get_root_terms(row[name_col])
+                    else:
+                        names = []
+                    # end if
+                except SyntaxError as sexp:
+                    raise ValueError(f"SyntaxError on row {rownum}: '{row[name_col]}'")
+                # end try
                 # What history processing flag should we add?
                 hist_flag = get_hist_proc_flag(row, avg_col, row[freq_col], rownum)
                 for name in names:
@@ -387,18 +411,18 @@ def split_fields_by_tape(freq, fields):
     title_entry = _HIST_TITLES[freq]
     if not isinstance(tape_entry, dict):
         return [(tape_entry, title_entry, fields)] if fields else []
-    
+
     groups = {group_key: set() for group_key in tape_entry}
     for entry in fields:
         flag = entry.split(':')[-1]
         group_key = 'I' if (flag == 'I') and ('I' in tape_entry) else 'default'
         groups[group_key].add(entry)
     tape_list = []
-    
+
     for group_key, index in sorted(tape_entry.items(), key=lambda kv: kv[1]):
         if groups[group_key]:
             tape_list.append((index, title_entry[group_key], groups[group_key]))
-    
+
     return tape_list
 
 def combine_data_requests(dict1, dict2):
