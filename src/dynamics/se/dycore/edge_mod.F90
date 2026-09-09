@@ -116,7 +116,7 @@ module edge_mod
 ! routines which including element edge data
 ! (used for FVM arrays where edge data is not shared by neighboring elements)
 ! these routines pack/unpack element data with user specified halo size
-                                  
+
   ! Wrap pointer so we can make an array of them.
   type :: wrap_ptr
     real (kind=r8), dimension(:,:), pointer :: ptr => null()
@@ -152,13 +152,13 @@ contains
     call initEdgeBuffer(par,edge,elem,nlyr,bndry_type=bndry_type, &
                          nthreads=nthreads,CardinalLength=ndepth*npoints,OrdinalLength=ndepth*ndepth)
     ! set some parameters need to support deep halos
-    edge%ndepth  = ndepth 
+    edge%ndepth  = ndepth
     edge%npoints = npoints
     edge%lb      = 1 - edge%ndepth
     edge%ub      = edge%npoints + edge%ndepth
 
   end subroutine initGhostBuffer
-   
+
 
 
   subroutine zeroEdgeBuffer(edge)
@@ -187,7 +187,7 @@ contains
     type (EdgeBuffer_t), target,   intent(out) :: edge
     type (element_t),              intent(in)  :: elem(:)
     integer,                       intent(in)  :: nlyr
-    integer,             optional, intent(in)  :: bndry_type 
+    integer,             optional, intent(in)  :: bndry_type
     integer,             optional, intent(in)  :: nthreads
     integer,             optional, intent(in)  :: CardinalLength
     integer,             optional, intent(in)  :: OrdinalLength
@@ -222,7 +222,6 @@ contains
     integer :: j,jj,il,mesgid, dst0,src0
     integer :: moveptr
     integer :: nbuf2,ilm1,iem1,lenm1
-    integer,allocatable :: putmap2(:,:),getmap2(:,:)
     integer,allocatable :: scounts(:), rcounts(:)
     integer,allocatable :: sdispls(:), rdispls(:)
     integer :: nInter, nIntra
@@ -242,7 +241,7 @@ contains
     character(len=80)                 :: errorstring
     character(len=80), parameter      :: subname='initedgeBuffer'
 
-    if(present(bndry_type)) then 
+    if(present(bndry_type)) then
       if ( MPI_VERSION >= 3 ) then
         edge%bndry_type = bndry_type
       else
@@ -253,12 +252,12 @@ contains
     endif
 
     ! Set the length of the cardinal and ordinal message lengths
-    if(present(CardinalLength)) then 
+    if(present(CardinalLength)) then
        CardinalLen = CardinalLength
     else
        CardinalLen = np
     endif
-    if(present(OrdinalLength)) then 
+    if(present(OrdinalLength)) then
        OrdinalLen = OrdinalLength
     else
        OrdinalLen = 1
@@ -290,10 +289,6 @@ contains
     edge%putmap(:,:)=-1
     edge%getmap(:,:)=-1
 
-    allocate(putmap2(max_neigh_edges,nelemd))
-    allocate(getmap2(max_neigh_edges,nelemd))
-    putmap2(:,:)=-1
-    getmap2(:,:)=-1
     do ie=1,nelemd
        do i=1,max_neigh_edges
           edge%reverse(i,ie) = elem(ie)%desc%reverse(i)
@@ -334,7 +329,7 @@ contains
     ie        = pSchedule%pIndx(j)%elemid
     len       = CalcSegmentLength(pSchedule%pIndx(j),CardinalLen,OrdinalLen,nlyr)
     edge%putmap(il,ie) = 0
-    if(nSendCycles>0) then 
+    if(nSendCycles>0) then
         edge%sdisplsFull(icycle) = edge%putmap(il,ie)
         edge%scountsFull(icycle) = len
     endif
@@ -617,34 +612,34 @@ contains
 
 !$OMP BARRIER
 !$OMP MASTER
-    if(allocated(edge%buf))         deallocate(edge%buf)
-    if(allocated(edge%receive))     deallocate(edge%receive)
-    if(associated(edge%putmap))     deallocate(edge%putmap)
-    if(associated(edge%getmap))     deallocate(edge%getmap)
-    if(associated(edge%reverse))    deallocate(edge%reverse)
-    if(associated(edge%moveLength)) deallocate(edge%moveLength)
-    if(associated(edge%movePtr))    deallocate(edge%movePtr)
+    if(allocated(edge%buf))        deallocate(edge%buf)
+    if(allocated(edge%receive))    deallocate(edge%receive)
+    if(allocated(edge%putmap))     deallocate(edge%putmap)
+    if(allocated(edge%getmap))     deallocate(edge%getmap)
+    if(allocated(edge%reverse))    deallocate(edge%reverse)
+    if(allocated(edge%moveLength)) deallocate(edge%moveLength)
+    if(allocated(edge%movePtr))    deallocate(edge%movePtr)
 
     ! All MPI communications
-    if(associated(edge%rcountsFull)) deallocate(edge%rcountsFull)
-    if(associated(edge%scountsFull)) deallocate(edge%scountsFull)
-    if(associated(edge%sdisplsFull)) deallocate(edge%sdisplsFull)
-    if(associated(edge%rdisplsFull)) deallocate(edge%rdisplsFull)
+    if(allocated(edge%rcountsFull)) deallocate(edge%rcountsFull)
+    if(allocated(edge%scountsFull)) deallocate(edge%scountsFull)
+    if(allocated(edge%sdisplsFull)) deallocate(edge%sdisplsFull)
+    if(allocated(edge%rdisplsFull)) deallocate(edge%rdisplsFull)
 
     ! Intra-node MPI Communication
     if(edge%nIntra>0) then
-      if(associated(edge%rcountsIntra)) deallocate(edge%rcountsIntra)
-      if(associated(edge%scountsIntra)) deallocate(edge%scountsIntra)
-      if(associated(edge%sdisplsIntra)) deallocate(edge%sdisplsIntra)
-      if(associated(edge%rdisplsIntra)) deallocate(edge%rdisplsIntra)
+      if(allocated(edge%rcountsIntra)) deallocate(edge%rcountsIntra)
+      if(allocated(edge%scountsIntra)) deallocate(edge%scountsIntra)
+      if(allocated(edge%sdisplsIntra)) deallocate(edge%sdisplsIntra)
+      if(allocated(edge%rdisplsIntra)) deallocate(edge%rdisplsIntra)
     endif
 
     ! Inter-node MPI Communication
     if(edge%nInter>0) then
-      if(associated(edge%rcountsInter)) deallocate(edge%rcountsInter)
-      if(associated(edge%scountsInter)) deallocate(edge%scountsInter)
-      if(associated(edge%sdisplsInter)) deallocate(edge%sdisplsInter)
-      if(associated(edge%rdisplsInter)) deallocate(edge%rdisplsInter)
+      if(allocated(edge%rcountsInter)) deallocate(edge%rcountsInter)
+      if(allocated(edge%scountsInter)) deallocate(edge%scountsInter)
+      if(allocated(edge%sdisplsInter)) deallocate(edge%sdisplsInter)
+      if(allocated(edge%rdisplsInter)) deallocate(edge%rdisplsInter)
     endif
     if(allocated(edge%rRequest)) deallocate(edge%rRequest)
     if(allocated(edge%sRequest)) deallocate(edge%sRequest)
@@ -666,8 +661,8 @@ contains
 
     edge%nbuf=0
     edge%nlyr=0
-    deallocate(edge%buf)
-    deallocate(edge%receive)
+    if(allocated(edge%buf))     deallocate(edge%buf)
+    if(allocated(edge%receive)) deallocate(edge%receive)
 
   end subroutine FreeEdgeBuffer_i8
 
@@ -1214,9 +1209,9 @@ contains
             v(1,1,1)%z=edge%receive(2*nce+isw+1)
             exit
         else
-            v(1,1,1)%x=0_r8
-            v(1,1,1)%y=0_r8
-            v(1,1,1)%z=0_r8
+            v(1,1,1)%x=0._r8
+            v(1,1,1)%y=0._r8
+            v(1,1,1)%z=0._r8
         endif
     end do
 
@@ -1230,9 +1225,9 @@ contains
             v(2,np,1)%z=edge%receive(2*nce+ise+1)
             exit
         else
-            v(2,np,1)%x=0_r8
-            v(2,np,1)%y=0_r8
-            v(2,np,1)%z=0_r8
+            v(2,np,1)%x=0._r8
+            v(2,np,1)%y=0._r8
+            v(2,np,1)%z=0._r8
         endif
     end do
 
@@ -1246,9 +1241,9 @@ contains
             v(3,np,np)%z=edge%receive(2*nce+ine+1)
             exit
         else
-            v(3,np,np)%x=0_r8
-            v(3,np,np)%y=0_r8
-            v(3,np,np)%z=0_r8
+            v(3,np,np)%x=0._r8
+            v(3,np,np)%y=0._r8
+            v(3,np,np)%z=0._r8
         endif
     end do
 
@@ -1262,9 +1257,9 @@ contains
             v(4,1,np)%z=edge%receive(2*nce+inw+1)
             exit
         else
-            v(4,1,np)%x=0_r8
-            v(4,1,np)%y=0_r8
-            v(4,1,np)%z=0_r8
+            v(4,1,np)%x=0._r8
+            v(4,1,np)%y=0._r8
+            v(4,1,np)%z=0._r8
         endif
     end do
 
@@ -1748,7 +1743,7 @@ contains
 
 
 subroutine ghostpack(edge,v,vlyr,kptr,ielem)
-  
+
   use dimensions_mod, only : max_corner_elem
   use control_mod, only : north, south, east, west, neast, nwest, seast, swest
   use edgetype_mod, only : EdgeDescriptor_t
@@ -1983,8 +1978,8 @@ subroutine ghostunpack(edge,v,vlyr,kptr,ielem)
   do l=swest,swest+max_corner_elem-1
      isw = edge%getmap(l,ielem)
      if(isw /= -1) then
-        ! note the following is the the correct meaning of reverse in this code.  
-        ! It is  best described as a transponse operation 
+        ! note the following is the the correct meaning of reverse in this code.
+        ! It is  best described as a transponse operation
         if (edge%reverse(l,ielem)) then
            do k=1,vlyr
               ktmp = nhc*(kptr+k-1)
@@ -2020,7 +2015,7 @@ subroutine ghostunpack(edge,v,vlyr,kptr,ielem)
 ! SEAST
   do l=swest+max_corner_elem,swest+2*max_corner_elem-1
      ise = edge%getmap(l,ielem)
-     if(ise /= -1) then 
+     if(ise /= -1) then
         if (edge%reverse(l,ielem)) then
            do k=1,vlyr
               ktmp = nhc*(kptr+k-1)
@@ -2056,7 +2051,7 @@ subroutine ghostunpack(edge,v,vlyr,kptr,ielem)
 ! NEAST
   do l=swest+3*max_corner_elem,swest+4*max_corner_elem-1
      ine = edge%getmap(l,ielem)
-     if(ine /= -1) then 
+     if(ine /= -1) then
         if (edge%reverse(l,ielem)) then
            do k=1,vlyr
               ktmp = nhc*(kptr+k-1)
@@ -2092,7 +2087,7 @@ subroutine ghostunpack(edge,v,vlyr,kptr,ielem)
 ! NWEST
   do l=swest+2*max_corner_elem,swest+3*max_corner_elem-1
      inw = edge%getmap(l,ielem)
-     if(inw /= -1) then 
+     if(inw /= -1) then
         if (edge%reverse(l,ielem)) then
            do k=1,vlyr
               ktmp = nhc*(kptr+k-1)

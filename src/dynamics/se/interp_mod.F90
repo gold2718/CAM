@@ -120,12 +120,12 @@ CONTAINS
             case(interp_gridtype_equal_poles)
               call cam_grid_attribute_register(trim(gridname),                &
                    'interp_outputgridtype', 'equally spaced with poles')
-              call cam_grid_attribute_register(trim(gridname), 'gw',           &
+              call cam_grid_attribute_register(trim(gridname), 'w',           &
                    'latitude weights', 'lat', w)
             case(interp_gridtype_equal_nopoles)
               call cam_grid_attribute_register(trim(gridname),                &
                    'interp_outputgridtype', 'equally spaced no poles')
-              call cam_grid_attribute_register(trim(gridname), 'w_stag',      &
+              call cam_grid_attribute_register(trim(gridname), 'gw',          &
                    'latitude weights', 'lat', w)
             case(interp_gridtype_gauss)
               call cam_grid_attribute_register(trim(gridname),                &
@@ -289,7 +289,7 @@ CONTAINS
     if(decomp_type == phys_decomp) then
 
       allocate(fld_dyn(nsize*nsize,numlev,nelemd))
-      fld_dyn = -999_R8
+      fld_dyn = -999._r8
       !!$omp parallel do num_threads(horz_num_threads) private (col_index, lchnk, icol, ie, blk_ind, k)
       do col_index = 1, columns_on_task
          call get_dyn_col_p(col_index, ie, blk_ind)
@@ -363,7 +363,7 @@ CONTAINS
     ncnt_out = sum(cam_interpolate(1:nelemd)%n_interp)
     allocate(fldout(ncnt_out,numlev))
     allocate(idof(ncnt_out*numlev))
-    fldout = -999_r8
+    fldout = -999._r8
     idof = 0
     st = 1
 
@@ -505,7 +505,7 @@ CONTAINS
     pio_subsystem => shr_pio_getiosys(atm_id)
     if(decomp_type == phys_decomp) then
       allocate(fld_dyn(nsize*nsize,2,numlev,nelemd))
-      fld_dyn = -999_R8
+      fld_dyn = -999._r8
        !!$omp parallel do num_threads(horz_num_threads) private (col_index, lchnk, icol, ie, blk_ind, k)
       do col_index = 1, columns_on_task
          call get_dyn_col_p(col_index, ie, blk_ind)
@@ -604,7 +604,7 @@ CONTAINS
     allocate(fldout(ncnt_out,numlev,2))
     allocate(idof(ncnt_out*numlev))
 
-    fldout = -999_r8
+    fldout = -999._r8
     idof = 0
     st = 1
     do ie=1,nelemd

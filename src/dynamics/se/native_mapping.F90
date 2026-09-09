@@ -224,8 +224,8 @@ subroutine create_native_mapping_files(par, elem, maptype, ncol, clat, clon, are
        end if
 
        if(unit_str .eq. 'degrees') then
-          lat = lat * pi/180_r8
-          lon = lon * pi/180_r8
+          lat = lat * pi/180._r8
+          lon = lon * pi/180._r8
        end if
 
        ierr = pio_inq_varid( ogfile, 'grid_imask', vid)
@@ -506,13 +506,13 @@ subroutine create_native_mapping_files(par, elem, maptype, ncol, clat, clon, are
 
        deallocate(grid_imask, lat,lon, h1d, col, row, dg_dims, ldof)
        do ii=1,nelemd
-          if(associated(interpdata(ii)%interp_xy))then
+          if(allocated(interpdata(ii)%interp_xy))then
              deallocate(interpdata(ii)%interp_xy)
           endif
-          if(associated(interpdata(ii)%ilat))then
+          if(allocated(interpdata(ii)%ilat))then
              deallocate(interpdata(ii)%ilat)
           endif
-          if (associated(interpdata(ii)%ilon))then
+          if (allocated(interpdata(ii)%ilon))then
              deallocate(interpdata(ii)%ilon)
           endif
        end do
