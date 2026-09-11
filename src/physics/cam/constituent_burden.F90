@@ -10,7 +10,7 @@ module constituent_burden
 
   use constituents, only: pcnst
   use cam_history_support,  only: fieldname_len
-  use co2_cycle, only: ncnst, c_i, co2_transport
+  use co2_cycle, only: c_i, co2_transport
 
   implicit none
 
@@ -36,6 +36,7 @@ subroutine constituent_burden_init
   use constituents,  only: cnst_name
 
   integer :: mind
+  integer :: ncnst
 
   do mind = 2, pcnst
     burdennam(m) = 'TM'//trim(cnst_name(mind))
@@ -43,6 +44,7 @@ subroutine constituent_burden_init
          trim(cnst_name(mind)) // ' column burden')
   end do
   if (co2_transport()) then
+     ncnst = size(c_i)
      do mind = 1, ncnst
         burdennam_inst(mind) = 'TM'//trim(cnst_name(c_i(mind)))//'_INST'
         call addfld(burdennam_inst(mind), horiz_only, 'A', 'kg/m2', &
@@ -79,7 +81,7 @@ subroutine constituent_burden_comp(state)
 
   real(r8) :: ftem(pcols)      ! temporary workspace
 
-  integer :: mind, lchnk, ncol, cind
+  integer :: mind, lchnk, ncol, cind, ncnst
 
   lchnk = state%lchnk
   ncol  = state%ncol
@@ -95,6 +97,7 @@ subroutine constituent_burden_comp(state)
   end do
   ! Compute special instantaneous values
   if (co2_transport()) then
+     ncnst = size(c_i)
      do mind = 1, ncnst
         if (.not. hist_fld_active(burdennam_inst(mind))) cycle
         cind = c_i(mind)
