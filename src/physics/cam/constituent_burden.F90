@@ -22,7 +22,6 @@ module constituent_burden
   private
 
   character(len=fieldname_len) :: burdennam(pcnst)      ! name of burden history variables
-  character(len=fieldname_len) :: burdennam_inst(ncnst) ! name of instantaneous burden history variables
 
 !=========================================================================================
 
@@ -35,26 +34,26 @@ subroutine constituent_burden_init
   use cam_history,   only: addfld, horiz_only
   use constituents,  only: cnst_name
 
-  integer :: mind
-  integer :: ncnst
+  integer                      :: mind
+  integer                      :: ncnst
+  character(len=fieldname_len) :: burdennam_inst
 
   do mind = 2, pcnst
-    burdennam(m) = 'TM'//trim(cnst_name(mind))
+    burdennam = 'TM'//trim(cnst_name(mind))
     call addfld(burdennam(mind), horiz_only, 'A', 'kg/m2', &
          trim(cnst_name(mind)) // ' column burden')
   end do
   if (co2_transport()) then
      ncnst = size(c_i)
      do mind = 1, ncnst
-        burdennam_inst(mind) = 'TM'//trim(cnst_name(c_i(mind)))//'_INST'
-        call addfld(burdennam_inst(mind), horiz_only, 'A', 'kg/m2', &
+        burdennam_inst = 'TM'//trim(cnst_name(c_i(mind)))//'_INST'
+        call addfld(burdennam_inst, horiz_only, 'A', 'kg/m2', &
              trim(cnst_name(c_i(mind))) // ' column burden for instantaneous output')
      end do
   else
-     burdennam_inst(1) = 'TMCO2_INST'
-     call addfld(burdennam_inst(1), horiz_only, 'A', 'kg/m2', &
+     burdennam_inst = 'TMCO2_INST'
+     call addfld(burdennam_inst, horiz_only, 'A', 'kg/m2', &
           'CO2 column burden for instantaneous output')
-     burdennam_inst(2:) = ''
   end if
 
 end subroutine constituent_burden_init
@@ -81,7 +80,9 @@ subroutine constituent_burden_comp(state)
 
   real(r8) :: ftem(pcols)      ! temporary workspace
 
-  integer :: mind, lchnk, ncol, cind, ncnst
+  integer                      :: mind, lchnk, ncol
+  integer                      :: cind, ncnst
+  character(len=fieldname_len) :: burdennam_inst
 
   lchnk = state%lchnk
   ncol  = state%ncol
@@ -99,16 +100,17 @@ subroutine constituent_burden_comp(state)
   if (co2_transport()) then
      ncnst = size(c_i)
      do mind = 1, ncnst
-        if (.not. hist_fld_active(burdennam_inst(mind))) cycle
+        burdennam_inst = burdennam(c_i(mind))//'_INST'
+        if (.not. hist_fld_active(burdennam_inst)) cycle
         cind = c_i(mind)
         if (cnst_type(cind) .eq. 'dry') then
            ftem(:ncol) = sum(state%q(:ncol,:,cind) * state%pdeldry(:ncol,:), dim=2) * rga
         else
            ftem(:ncol) = sum(state%q(:ncol,:,cind) * state%pdel(:ncol,:), dim=2) * rga
         end if
-        call outfld(burdennam(mind), ftem(:ncol), ncol, lchnk)
+        call outfld(burdennam_inst, ftem(:ncol), ncol, lchnk)
      end do
-  else if (hist_fld_active(burdennam_inst(1))) then
+  else if (hist_fld_active('TMCO2_INST')) then
         call cnst_get_ind('CO2', cind, abort=.false.)
         if (cind > 0) then
            if (cnst_type(cind) .eq. 'dry') then
@@ -120,7 +122,7 @@ subroutine constituent_burden_comp(state)
            ! There is no CO2 tracer, compute from co2mmr
            ftem(:ncol) = chem_surfvals_get('CO2MMR', lchnk, ncol) * sum(state%pdeldry(:ncol,:), dim=2) * rga
         end if
-        call outfld(burdennam(1), ftem(:ncol), ncol, lchnk)
+        call outfld('TMCO2_INST', ftem(:ncol), ncol, lchnk)
   end if
 
 end subroutine constituent_burden_comp
