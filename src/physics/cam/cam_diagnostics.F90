@@ -590,7 +590,7 @@ contains
     ! Diagnostics for downscaling
     call addfld('FRAC_WETDAYS', horiz_only, 'A', '1',                         &
          'Fraction of wet days per month (> 1 mm / day)')
-    call addfld('PREC_TOT_WETDAYS', horiz_only, 'A' '1',                      &
+    call addfld('PREC_TOT_WETDAYS', horiz_only, 'A', 'mm/m2',                 &
          'Monthly average of total precipitation only counting wet days',     &
          flag_xyfill=.true., fill_value=fillvalue)
 
