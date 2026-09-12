@@ -33,7 +33,7 @@ contains
 subroutine constituent_burden_init
 
    use cam_history,   only: addfld, horiz_only
-   use constituents,  only: cnst_name
+   use constituents,  only: cnst_name, cnst_get_ind
 
    integer                      :: mind
    integer                      :: ncnst
@@ -69,7 +69,7 @@ subroutine constituent_burden_comp(state)
 
   use physics_types, only: physics_state
   use shr_kind_mod,  only: r8 => shr_kind_r8
-  use constituents,  only: cnst_type, cnst_get_ind
+  use constituents,  only: cnst_type
   use ppgrid,        only: pcols
   use physconst,     only: rga
   use cam_history,   only: outfld, hist_fld_active
