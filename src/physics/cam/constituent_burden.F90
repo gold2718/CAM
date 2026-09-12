@@ -115,7 +115,7 @@ subroutine constituent_burden_comp(state)
         end if
         call outfld(burdennam_inst, ftem(:ncol), ncol, lchnk)
      end do
-  else if (hist_fld_active('TMCO2') .or. hist_fld_active('TMCO2_INST'))
+  else if (hist_fld_active('TMCO2') .or. hist_fld_active('TMCO2_INST')) then
      if (co2_cnst_ind > 0) then
         if (cnst_type(co2_cnst_ind) .eq. 'dry') then
            ftem(:ncol) = sum(state%q(:ncol,:,co2_cnst_ind) * state%pdeldry(:ncol,:), dim=2) * rga
