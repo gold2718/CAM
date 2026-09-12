@@ -21,7 +21,8 @@ module constituent_burden
 
   private
 
-  character(len=fieldname_len) :: burdennam(pcnst)      ! name of burden history variables
+  character(len=fieldname_len) :: burdennam(pcnst)  ! name of burden history variables
+  integer                      :: co2_cnst_ind = -1 ! >0 if CO2 is a constituent
 
 !=========================================================================================
 
@@ -31,30 +32,34 @@ contains
 
 subroutine constituent_burden_init
 
-  use cam_history,   only: addfld, horiz_only
-  use constituents,  only: cnst_name
+   use cam_history,   only: addfld, horiz_only
+   use constituents,  only: cnst_name
 
-  integer                      :: mind
-  integer                      :: ncnst
-  character(len=fieldname_len) :: burdennam_inst
+   integer                      :: mind
+   integer                      :: ncnst
+   character(len=fieldname_len) :: burdennam_inst
 
-  do mind = 2, pcnst
-    burdennam = 'TM'//trim(cnst_name(mind))
-    call addfld(burdennam(mind), horiz_only, 'A', 'kg/m2', &
-         trim(cnst_name(mind)) // ' column burden')
-  end do
-  if (co2_transport()) then
-     ncnst = size(c_i)
-     do mind = 1, ncnst
-        burdennam_inst = 'TM'//trim(cnst_name(c_i(mind)))//'_INST'
-        call addfld(burdennam_inst, horiz_only, 'A', 'kg/m2', &
-             trim(cnst_name(c_i(mind))) // ' column burden for instantaneous output')
-     end do
-  else
-     burdennam_inst = 'TMCO2_INST'
-     call addfld(burdennam_inst, horiz_only, 'A', 'kg/m2', &
-          'CO2 column burden for instantaneous output')
-  end if
+   do mind = 2, pcnst
+      burdennam = 'TM'//trim(cnst_name(mind))
+      call addfld(burdennam(mind), horiz_only, 'A', 'kg/m2', &
+           trim(cnst_name(mind)) // ' column burden')
+   end do
+   call cnst_get_ind('CO2', co2_cnst_ind, abort=.false.)
+   if (co2_cnst_ind < 0) then
+      call addfld('TMCO2', horiz_only, 'A', 'kg/m2', 'CO2 column burden')
+   end if
+   if (co2_transport()) then
+      ncnst = size(c_i)
+      do mind = 1, ncnst
+         burdennam_inst = 'TM'//trim(cnst_name(c_i(mind)))//'_INST'
+         call addfld(burdennam_inst, horiz_only, 'A', 'kg/m2', &
+              trim(cnst_name(c_i(mind))) // ' column burden for instantaneous output')
+      end do
+   else
+      burdennam_inst = 'TMCO2_INST'
+      call addfld(burdennam_inst, horiz_only, 'A', 'kg/m2', &
+           'CO2 column burden for instantaneous output')
+   end if
 
 end subroutine constituent_burden_init
 
@@ -110,19 +115,22 @@ subroutine constituent_burden_comp(state)
         end if
         call outfld(burdennam_inst, ftem(:ncol), ncol, lchnk)
      end do
-  else if (hist_fld_active('TMCO2_INST')) then
-        call cnst_get_ind('CO2', cind, abort=.false.)
-        if (cind > 0) then
-           if (cnst_type(cind) .eq. 'dry') then
-              ftem(:ncol) = sum(state%q(:ncol,:,cind) * state%pdeldry(:ncol,:), dim=2) * rga
-           else
-              ftem(:ncol) = sum(state%q(:ncol,:,cind) * state%pdel(:ncol,:), dim=2) * rga
-           end if
+  else if (hist_fld_active('TMCO2') .or. hist_fld_active('TMCO2_INST'))
+     if (co2_cnst_ind > 0) then
+        if (cnst_type(co2_cnst_ind) .eq. 'dry') then
+           ftem(:ncol) = sum(state%q(:ncol,:,co2_cnst_ind) * state%pdeldry(:ncol,:), dim=2) * rga
         else
-           ! There is no CO2 tracer, compute from co2mmr
-           ftem(:ncol) = chem_surfvals_get('CO2MMR', lchnk, ncol) * sum(state%pdeldry(:ncol,:), dim=2) * rga
+           ftem(:ncol) = sum(state%q(:ncol,:,co2_cnst_ind) * state%pdel(:ncol,:), dim=2) * rga
         end if
-        call outfld('TMCO2_INST', ftem(:ncol), ncol, lchnk)
+     else
+        ! There is no CO2 tracer, compute from co2mmr
+        ftem(:ncol) = chem_surfvals_get('CO2MMR', lchnk, ncol) * sum(state%pdeldry(:ncol,:), dim=2) * rga
+     end if
+     if (co2_cnst_ind < 0) then
+        ! Only output TMCO2 if it was not output in the burdennam loop above
+        call outfld('TMCO2', ftem(:ncol), ncol, lchnk)
+     end if
+     call outfld('TMCO2_INST', ftem(:ncol), ncol, lchnk)
   end if
 
 end subroutine constituent_burden_comp

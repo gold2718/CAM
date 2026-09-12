@@ -824,6 +824,4 @@ ZMVPGD                   ZMVPGU                   ZT_CLUBB
 ZZ
 ch4vmr                   co2vmr                   f11vmr
 f12vmr                   n2ovmr
-FRAC_WETDAYS             PREC_TOT_WETDAYS
-TMCO2                    TMCO2_FFF_INST           TMCO2_INST
-TMCO2_LND_INST           TMCO2_OCN_INST
+FRAC_WETDAYS             PREC_TOT_WETDAYS         TMCO2
