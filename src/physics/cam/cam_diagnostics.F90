@@ -120,7 +120,6 @@ integer :: tpert_idx=-1, qpert_idx=-1, pblh_idx=-1
 
 integer :: trefmxav_idx = -1, trefmnav_idx = -1
 integer :: precipday_idx = -1
-integer :: wetday_idx = -1
 
 contains
 
@@ -176,7 +175,6 @@ contains
     call pbuf_add_field('TREFMXAV', 'global', dtype_r8, (/pcols/), trefmxav_idx)
     call pbuf_add_field('TREFMNAV', 'global', dtype_r8, (/pcols/), trefmnav_idx)
     ! Total precip measured each day
-    call pbuf_add_field('WETDAY',   'global', dtype_r8, (/pcols/), wetday_idx)
     call pbuf_add_field('PRECIPDAY', 'global', dtype_r8, (/pcols/), precipday_idx)
   end subroutine diag_register_moist
 
@@ -744,7 +742,6 @@ contains
       call pbuf_set_field(pbuf2d, trefmxav_idx, -1.0e36_r8)
       call pbuf_set_field(pbuf2d, trefmnav_idx,  1.0e36_r8)
       call pbuf_set_field(pbuf2d, precipday_idx, 0.0_r8)
-      call pbuf_set_field(pbuf2d, wetday_idx, 0.0_r8)
     end if
 
   end subroutine diag_init_moist
@@ -1729,7 +1726,6 @@ contains
     real(r8), pointer :: prec_pcw(:)                ! total precipitation   from Hack convection
     real(r8), pointer :: snow_pcw(:)                ! snow from Hack   convection
     real(r8), pointer :: daily_precip(:)            ! Total precip in 1 day
-    real(r8), pointer :: wetday(:)                  ! Total precip > 1mm?
 
     ! Local variables:
 
@@ -1737,12 +1733,13 @@ contains
 
     real(r8) :: rtdt
 
-    real(r8):: precc(pcols)                ! convective precip rate
-    real(r8):: precl(pcols)                ! stratiform precip rate
-    real(r8):: snowc(pcols)                ! convective snow rate
-    real(r8):: snowl(pcols)                ! stratiform snow rate
-    real(r8):: prect(pcols)                ! total (conv+large scale) precip rate
-    real(r8) :: dcoef(6)                   ! for tidal component of T tend
+    real(r8) :: precc(pcols)  ! convective precip rate
+    real(r8) :: precl(pcols)  ! stratiform precip rate
+    real(r8) :: snowc(pcols)  ! convective snow rate
+    real(r8) :: snowl(pcols)  ! stratiform snow rate
+    real(r8) :: prect(pcols)  ! total (conv+large scale) precip rate
+    real(r8) :: wetday(pcols) ! Total precip > 1mm?
+    real(r8) :: dcoef(6)      ! for tidal component of T tend
 
     lchnk = state%lchnk
     ncol  = state%ncol
@@ -1853,28 +1850,19 @@ contains
       else
          nullify(daily_precip)
       end if
-      if (wetday_idx > 0) then
-         call pbuf_get_field(pbuf, wetday_idx, wetday)
-      else
-         nullify(wetday)
-      end if
-      ! Note that daily_precip can be computed without wetday but not vice versa
       if (associated(daily_precip)) then
          ! Convert to mm
          daily_precip(:ncol) = daily_precip(:ncol) + prect(:ncol)*ztodt*1.0e3_r8
          if (is_end_curr_day()) then
-            if (associated(wetday) .and. (daily_precip(i) > 1.0_r8)) then
-               do i = 1, ncol
-                  wetday(i) = wetday(i) + 1.0_r8
-               end do
-               call outfld('WETDAY_FREQUENCY', wetday(:ncol), ncol, lchnk)
-               wetday(:) = 0.0_r8
-            end if
             do i = 1, ncol
-               if (daily_precip(i) <= 1.0_r8) then
+               if (daily_precip(i) > 1.0_r8) then
+                  wetday(i) = 1.0_r8
+               else
+                  wetday(i) = 0.0_r8
                   daily_precip(i) = fillvalue
                end if
             end do
+            call outfld('WETDAY_FREQUENCY', wetday(:ncol), ncol, lchnk)
             call outfld('WETDAY_MEAN_PRECIP', daily_precip(:ncol), ncol, lchnk)
             daily_precip(:) = 0.0_r8
          end if
