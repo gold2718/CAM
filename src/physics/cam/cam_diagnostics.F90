@@ -588,9 +588,9 @@ contains
     call addfld('a2x_NHXDEP',  horiz_only, 'A',  'kgN/m2/s', 'NHx Deposition Flux')
 
     ! Diagnostics for downscaling
-    call addfld('FRAC_WETDAYS', horiz_only, 'A', '1',                         &
+    call addfld('WETDAY_FREQUENCY', horiz_only, 'A', '1',                     &
          'Fraction of wet days per month (> 1 mm / day)')
-    call addfld('PREC_TOT_WETDAYS', horiz_only, 'A', 'mm/m2',                 &
+    call addfld('WETDAY_MEAN_PRECIP', horiz_only, 'A', 'mm/m2',               &
          'Monthly average of total precipitation only counting wet days',     &
          flag_xyfill=.true., fill_value=fillvalue)
 
@@ -1848,35 +1848,36 @@ contains
       !
       ! Wet days calculations
       !
-      if (is_end_curr_day()) then
-        if (precipday_idx > 0) then
-          call pbuf_get_field(pbuf, precipday_idx, daily_precip)
-        else
-          nullify(daily_precip)
-        end if
-        if (wetday_idx > 0) then
-          call pbuf_get_field(pbuf, wetday_idx, wetday)
-        else
-          nullify(wetday)
-        end if
-        if (associated(daily_precip)) then
-          ! Convert to mm
-          daily_precip(:ncol) = daily_precip(:ncol) + prect(:ncol)*ztodt*1.0e3_r8
-          do i = 1, ncol
+      if (precipday_idx > 0) then
+         call pbuf_get_field(pbuf, precipday_idx, daily_precip)
+      else
+         nullify(daily_precip)
+      end if
+      if (wetday_idx > 0) then
+         call pbuf_get_field(pbuf, wetday_idx, wetday)
+      else
+         nullify(wetday)
+      end if
+      ! Note that daily_precip can be computed without wetday but not vice versa
+      if (associated(daily_precip)) then
+         ! Convert to mm
+         daily_precip(:ncol) = daily_precip(:ncol) + prect(:ncol)*ztodt*1.0e3_r8
+         if (is_end_curr_day()) then
             if (associated(wetday) .and. (daily_precip(i) > 1.0_r8)) then
-              wetday(i) = wetday(i) + 1.0_r8
+               do i = 1, ncol
+                  wetday(i) = wetday(i) + 1.0_r8
+               end do
+               call outfld('WETDAY_FREQUENCY', wetday(:ncol), ncol, lchnk)
+               wetday(:) = 0.0_r8
             end if
-          end do
-          call outfld('FRAC_WETDAYS', wetday(:ncol), ncol, lchnk)
-          wetday(:) = 0.0_r8
-          do i = 1, ncol
-            if (daily_precip(i) <= 1.0_r8) then
-              daily_precip(i) = fillvalue
-            end if
-          end do
-          call outfld('PREC_TOT_WETDAYS', daily_precip(:ncol), ncol, lchnk)
-          daily_precip(:) = 0.0_r8
-        end if
+            do i = 1, ncol
+               if (daily_precip(i) <= 1.0_r8) then
+                  daily_precip(i) = fillvalue
+               end if
+            end do
+            call outfld('WETDAY_MEAN_PRECIP', daily_precip(:ncol), ncol, lchnk)
+            daily_precip(:) = 0.0_r8
+         end if
       end if
 
       if (write_camiop) call outfld('Prec   ' , prect, pcols, lchnk )
