@@ -152,6 +152,7 @@ def all_chem_names(chem_name=None):
     # end if
     diag_names = all_diags_set(all_species, __CHEM_DIAG_PRE_POST)
     # Special case for CO2
+    diag_names.add('TMCO2')
     diag_names.add('TMCO2_INST')
     return diag_names
 
