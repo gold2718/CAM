@@ -765,6 +765,7 @@ contains
 !-----------------------------------------------------------------------
   subroutine advance_trcdata( flds, file, state, pbuf2d )
     use physics_types,only : physics_state
+    use shr_mem_mod,  only : shr_mem_getusage
 
     type(trfile),        intent(inout) :: file
     type(trfld),         intent(inout) :: flds(:)
@@ -773,6 +774,8 @@ contains
     type(physics_buffer_desc), pointer :: pbuf2d(:,:)
 
     real(r8) :: data_time
+    ! MEMLEAK DIAGNOSTIC: RSS around the (infrequent) data read
+    real(r8) :: mem_hw_beg, mem_beg, mem_hw_end, mem_end
 
     call t_startf('advance_trcdata')
     if ( .not.( file%fixed .and. file%initialized ) ) then
@@ -791,10 +794,15 @@ contains
     ! For stepTime need to advance if the times are equal
     ! Should not impact other runs?
        if ( file%curr_mod_time >= data_time ) then
+          call shr_mem_getusage(mem_hw_beg, mem_beg)
           call t_startf('read_next_trcdata')
           call read_next_trcdata( flds, file )
           call t_stopf('read_next_trcdata')
+          call shr_mem_getusage(mem_hw_end, mem_end)
           if(masterproc) write(iulog,'(2a)') 'READ_NEXT_TRCDATA ',flds%fldnam
+          if(masterproc) write(iulog,'(a,f12.4,a,f12.4,2a)')                   &
+               'TRCDATA_MEMCHK: rss_delta = ', mem_end-mem_beg,                &
+               ' MB  rss = ', mem_end, ' MB  file = ', trim(file%curr_filename)
        end if
 
     endif
