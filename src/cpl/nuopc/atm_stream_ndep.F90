@@ -275,6 +275,7 @@ contains
     use ppgrid           , only : begchunk, endchunk
     use time_manager     , only : get_curr_date
     use phys_grid        , only : get_ncols_p
+    use shr_mem_mod      , only : shr_mem_getusage
 
     ! input/output variables
     type(cam_out_t) , intent(inout)  :: cam_out(begchunk:endchunk)
@@ -295,6 +296,8 @@ contains
     real(r8), pointer :: dataptr1d_noy_dry(:)
     real(r8), pointer :: dataptr1d_noy_wet(:)
     character(len=*), parameter :: subName = "('stream_ndep_interp')"
+    ! MEMLEAK DIAGNOSTIC: RSS around the stream advance
+    real(r8) :: mem_hw_beg, mem_beg, mem_hw_end, mem_end
     !-----------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -305,9 +308,15 @@ contains
     ! Advance sdat stream
     call get_curr_date(year, mon, day, sec)
     mcdate = year*10000 + mon*100 + day
+    call shr_mem_getusage(mem_hw_beg, mem_beg)
     call shr_strdata_advance(sdat_ndep, ymd=mcdate, tod=sec, logunit=iulog, istr='ndepdyn', rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=__FILE__)) then
        call ESMF_Finalize(endflag=ESMF_END_ABORT)
+    end if
+    call shr_mem_getusage(mem_hw_end, mem_end)
+    if (masterproc .and. (mem_end-mem_beg) /= 0._r8) then
+       write(iulog,'(a,f12.4,a,f12.4,a)') 'NDEP_STREAM_MEMCHK: rss_delta = ',  &
+            mem_end-mem_beg, ' MB  rss = ', mem_end, ' MB'
     end if
 
     ! Get pointer for stream data that is time and spatially interpolated to model time and grid
