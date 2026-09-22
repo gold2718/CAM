@@ -157,6 +157,24 @@ module tracer_data
 
 contains
 
+!-----------------------------------------------------------------------
+! MEMLEAK DIAGNOSTIC: report RSS change since the previous probe point.
+! Local (reads /proc), not collective; only masterproc prints.
+!-----------------------------------------------------------------------
+  subroutine trc_memchk( tag )
+    use shr_mem_mod, only : shr_mem_getusage
+    character(len=*), intent(in) :: tag
+    real(r8) :: hw, rss
+    real(r8), save :: prev = -1._r8
+
+    call shr_mem_getusage( hw, rss )
+    if ( masterproc .and. prev >= 0._r8 .and. rss /= prev ) then
+       write(iulog,'(3a,f12.4,a,f12.4,a)') 'MEMCHK ', tag, ' : delta = ', &
+            rss-prev, ' MB   rss = ', rss, ' MB'
+    end if
+    prev = rss
+  end subroutine trc_memchk
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
   subroutine trcdata_init( specifier, filename, filelist, datapath, flds, file, &
@@ -213,7 +231,13 @@ contains
     integer :: err_handling
 
     ir = mallopt(-3_c_int, 131072_c_int)   ! M_MMAP_THRESHOLD
+    if (masterproc) then
+       write(iulog, '(a,i0)') 'MALLOPT M_MMAP_THRESHOLD  rc = ', ir
+    end if
     ir = mallopt(-1_c_int, 131072_c_int)   ! M_TRIM_THRESHOLD
+    if (masterproc) then
+       write(iulog, '(a,i0)') 'MALLOPT M_TRIM_THRESHOLD  rc = ', ir
+    end if
 
     call specify_fields( specifier, flds )
 
@@ -1266,12 +1290,14 @@ contains
     nflds = size(flds)
     times_found = .false.
 
+    call trc_memchk('rn.00_entry')
     do while( .not. times_found )
        call find_times( recnos, fids, file%curr_mod_time, file,file%datatimem, file%datatimep, times_found )
        if ( .not. times_found ) then
           call check_files( file, fids, recnos, times_found )
        endif
     enddo
+    call trc_memchk('rn.10_find_times')
 
     !--------------------------------------------------------------
     !       If stepTime, then no time interpolation is to be done
@@ -1391,6 +1417,7 @@ contains
 
        enddo
 
+       call trc_memchk('rn.20_after_flds')
        if ( file%has_ps ) then
           if ( file%unstructured ) then
              call read_physgrid_2d( fids(i), 'PS',  recnos(i), file%ps_in(i)%data )
@@ -1411,9 +1438,11 @@ contains
                      (/ file%ps_order(LONDIM),file%ps_order(LATDIM) /) )
              end if
           end if
+          call trc_memchk('rn.30_after_ps')
        endif
 
     enddo
+    call trc_memchk('rn.40_exit')
 
   end subroutine read_next_trcdata
 
@@ -1691,13 +1720,16 @@ contains
     type(interp_type) :: lon_wgts, lat_wgts
 
     loc_arr(:,:,:) = 0._r8
+    call trc_memchk('3d.00_entry')
     nullify(wrk3d_in)
     allocate(wrk3d(cnt(1),cnt(2),cnt(3)), stat=ierr)
     if( ierr /= 0 ) then
        call endrun('read_3d_trc: wrk3d allocation error = '//int2str(ierr))
     end if
+    call trc_memchk('3d.10_alloc_wrk3d')
 
     ierr = pio_get_var( fid, vid, strt, cnt, wrk3d )
+    call trc_memchk('3d.20_pio_get_var')
 
     if(order(1)/=1 .or. order(2)/=2 .or. order(3)/=3 .or. &
          cnt(1)/=file%nlon.or.cnt(2)/=file%nlat.or.cnt(3)/=file%nlev) then
@@ -1707,8 +1739,10 @@ contains
        end if
        wrk3d_in = reshape( wrk3d(:,:,:),(/file%nlon,file%nlat,file%nlev/), order=order )
        deallocate(wrk3d)
+       call trc_memchk('3d.30_reshape_path')
     else
        wrk3d_in => wrk3d
+       call trc_memchk('3d.31_alias_path')
     end if
 
 ! If weighting by latitude, then perform horizontal interpolation by using weight_x, weight_y
@@ -1757,6 +1791,7 @@ contains
     end do
    endif
 
+    call trc_memchk('3d.40_after_interp')
     if(allocated(wrk3d)) then
        deallocate( wrk3d, stat=astat )
     else
@@ -1765,6 +1800,7 @@ contains
     if( astat/= 0 ) then
        call endrun('read_3d_trc: failed to deallocate wrk3d array; error = '//int2str(astat))
     endif
+    call trc_memchk('3d.50_exit')
     if(dycore_is('LR')) call polar_average(file%nlev, loc_arr)
   end subroutine read_3d_trc
 
