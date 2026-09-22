@@ -87,6 +87,14 @@ subroutine cam_init(                                             &
    use cam_snapshot_common, only: cam_snapshot_deactivate
    use air_composition,  only: air_composition_init
    use phys_grid_ctem,   only: phys_grid_ctem_reg
+   use iso_c_binding,    only: c_int
+
+   interface
+     integer(c_int) function mallopt(param, val) bind(C, name="mallopt")
+       import :: c_int
+       integer(c_int), value :: param, val
+     end function mallopt
+   end interface
 
    ! Arguments
    character(len=cl), intent(in) :: caseid                ! case ID
@@ -129,7 +137,17 @@ subroutine cam_init(                                             &
 
    ! Local variables
    character(len=cs) :: filein      ! Input namelist filename
+   integer(c_int)    :: ir
    !-----------------------------------------------------------------------
+
+    ir = mallopt(-3_c_int, 131072_c_int)   ! M_MMAP_THRESHOLD
+    if (masterproc) then
+       write(iulog, '(a,i0)') 'MALLOPT M_MMAP_THRESHOLD  rc = ', ir
+    end if
+    ir = mallopt(-1_c_int, 131072_c_int)   ! M_TRIM_THRESHOLD
+    if (masterproc) then
+       write(iulog, '(a,i0)') 'MALLOPT M_TRIM_THRESHOLD  rc = ', ir
+    end if
 
    call init_pio_subsystem()
 

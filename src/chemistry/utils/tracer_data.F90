@@ -186,15 +186,6 @@ contains
     use dycore,          only : dycore_is
     use horizontal_interpolate, only : xy_interp_init
     use spmd_utils,       only: mpicom, mstrid=>masterprocid, mpi_real8, mpi_integer
-    use iso_c_binding, only: c_int
-
-    interface
-       integer(c_int) function mallopt(param, val) bind(C, name="mallopt")
-          import :: c_int
-          integer(c_int), value :: param, val
-       end function mallopt
-    end interface
-    integer(c_int) :: ir
 
     character(len=*),    intent(in)    :: specifier(:)
     character(len=*),    intent(in)    :: filename
@@ -229,15 +220,6 @@ contains
     logical :: found
     integer :: aircraft_cnt
     integer :: err_handling
-
-    ir = mallopt(-3_c_int, 131072_c_int)   ! M_MMAP_THRESHOLD
-    if (masterproc) then
-       write(iulog, '(a,i0)') 'MALLOPT M_MMAP_THRESHOLD  rc = ', ir
-    end if
-    ir = mallopt(-1_c_int, 131072_c_int)   ! M_TRIM_THRESHOLD
-    if (masterproc) then
-       write(iulog, '(a,i0)') 'MALLOPT M_TRIM_THRESHOLD  rc = ', ir
-    end if
 
     call specify_fields( specifier, flds )
 
