@@ -405,9 +405,9 @@ contains
        call endrun('dvel_inti: failed to allocate dep_rb')
     end if
 
-    if (.not.prog_modal_aero) then
-       return
-    endif
+ !   if (.not.prog_modal_aero) then !TODO: find some solution for this to make it work with several models
+ !      return
+ !   endif
 
     allocate( fraction_landuse(pcols,n_land_type, begchunk:endchunk),stat=astat )
     if( astat /= 0 ) then

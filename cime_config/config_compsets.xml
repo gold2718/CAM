@@ -135,6 +135,14 @@
     <lname>HIST_CAM70%LT%NORESM%CSO_CLM60%SP_CICE%PRES_DOCN%DOM_MOSART_DGLC%NOEVOLVE_SWAV</lname>
   </compset>
 
+  <!-- Sectional aerosol -->
+
+  <compset>
+    <alias>SecDust</alias>
+    <lname>2000_CAM70%LT%NORESM%FANCI_CLM60%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+  </compset>
+
+
   <!-- ********************************* -->
   <!-- NCAR CAM compsets                 -->
   <!-- ********************************* -->

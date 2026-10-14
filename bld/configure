@@ -57,6 +57,7 @@ OPTIONS
      -aquaplanet        Switch on aqua-planet mode.
      -build_chem_proc   Switch forces the build of the chemistry preprocessor (primarily for testing).
      -camnor            Build CAM with CAM-Nor modifications
+     -cam_aerosol_config_hash <string> Hash for the FANCI sectional aerosol bin configuration file
      -carma <name>      Build CAM with specified CARMA microphysics model
                         [ none | bc_strat | cirrus | cirrus_dust | dust | meteor_impact |
                           meteor_smoke | mixed_sulfate | pmc | pmc_sulfate | sea_salt | sulfate | tholin |
@@ -64,8 +65,10 @@ OPTIONS
                           test_tracers, test_tracers2 | trop_strat_soa1 | trop_strat_soa5 ].
                         Default: none.
     -chem <name>        Build CAM with specified prognostic chemistry package
-                        [ none | ghg_mam4 | terminator | trop_mam3 | trop_mam4 | trop_mam7 | trop_mam_oslo | trop_mozart | trop_strat_mam4_ts2 |
+                        [ none | ghg_mam4 | terminator | trop_mam3 | trop_mam4 | trop_mam7 | trop_mam_oslo | fanci | trop_mozart | trop_strat_mam4_ts2 |
+
                          trop_strat_mam4_vbs | trop_strat_mam4_vbsext | trop_strat_mam5_ts2 | trop_strat_mam5_ts4 | trop_strat_mam5_vbs | trop_strat_noaero |
+
                          trop_strat_mam5_vbsext | waccm_ma | waccm_mad | waccm_ma_sulfur | waccm_sc | waccm_sc_mam4 |
                          waccm_mad_mam4 | waccm_ma_mam4 | waccm_tsmlt_mam4 | waccm_tsmlt_mam4_vbsext | waccm_mad_mam5 |
                          waccm_ma_mam5 | waccm_tsmlt_mam5 | waccm_tsmlt_mam5_vbsext | waccm_ma_noaero | geoschem_mam4 ].
@@ -234,6 +237,7 @@ GetOptions(
     "cache=s"                   => \$opts{'cache'},
     "cachedir=s"                => \$opts{'cachedir'},
     "carma=s"                   => \$opts{'carma'},
+    "cam_aerosol_config_hash=s" => \$opts{'cam_aerosol_config_hash'},
     "cam_bld=s"                 => \$opts{'cam_bld'},
     "cam_exe=s"                 => \$opts{'cam_exe'},
     "cam_exedir=s"              => \$opts{'cam_exedir'},
@@ -632,6 +636,11 @@ if (defined $opts{'chem'}) {
 
 }
 
+# Add hash for FANCI sectional aerosol configuration file hash
+if (defined $opts{'cam_aerosol_config_hash'}) {
+    $cfg_ref->set('CAM_AEROSOL_CONFIG_HASH', $opts{'cam_aerosol_config_hash'});
+}
+
 # Add to the config object.
 $cfg_ref->set('chem', $chem_pkg);
 
@@ -975,7 +984,7 @@ if ($phys_pkg =~ m/cam4/) {
 elsif ($phys_pkg =~ m/cam5|cam6/) {
     $rad_pkg = 'rrtmg';
 }
-elsif ($chem_pkg =~ '_oslo') {
+elsif ($chem_pkg =~ '_oslo' or $chem_pkg =~ '_fanci') {
     $rad_pkg = 'rrtmg';
 }
 elsif ($phys_pkg =~ m/cam7/) {
@@ -1310,7 +1319,7 @@ if ($chem_pkg =~ '_mam3') {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_5MODE ';
 } elsif ($chem_pkg =~ '_mam7') {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_7MODE ';
-} elsif ($chem_pkg =~ '_oslo') {
+} elsif (($chem_pkg =~ '_oslo') and not ($chem_pkg =~ '_fanci')) {
     # Add MODAL_AERO_4MODE so that modal_aero_coag.F90 will compile
     $chem_cppdefs = ' -DOSLO_AERO -DMODAL_AERO_4MODE';
 }
@@ -1977,6 +1986,11 @@ sub write_filepath
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src\n";
         print $fh "$camsrcdir/src/chemistry/oslo_aero/src_cam\n";
     }
+    # take camnor files from oslo_aero
+    if (($chem eq 'fanci') or ($chem =~/_fanci/)) {
+        print $fh "$camsrcdir/src/chemistry/FANCI/src\n";
+        print $fh "$camsrcdir/src/chemistry/FANCI/src_cam\n";
+    }
 
     # CAM-Nor-physics has precedence over everything except SourceMods and oslo-aero
     # Only active in NF or NB compsets
@@ -2046,8 +2060,8 @@ sub write_filepath
         print $fh "$camsrcdir/src/chemistry/carma_aero\n";
     } elsif ($chem =~ /_mam/) {
         print $fh "$camsrcdir/src/chemistry/modal_aero\n";
-    } else {
-	print $fh "$camsrcdir/src/chemistry/bulk_aero\n";
+    } elsif (($chem ne 'fanci') and ($chem !~ /_fanci/)) {
+	    print $fh "$camsrcdir/src/chemistry/bulk_aero\n";
     }
     print $fh "$camsrcdir/src/chemistry/aerosol\n";
 

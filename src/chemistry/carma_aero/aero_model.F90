@@ -43,6 +43,10 @@ module aero_model
   public :: aero_model_surfarea    ! tropospheric aerosol wet surface area for chemistry
   public :: aero_model_strat_surfarea   ! stub
 
+  ! name of the aerosol scheme
+  public :: aero_modelname
+  character(len=*), parameter :: aero_modelname = 'carma'
+
    ! Misc private data
   character(len=32), allocatable :: fieldname(:)    ! names for interstitial output fields
   character(len=32), allocatable :: fieldname_cw(:)    ! names for cloud_borne output fields

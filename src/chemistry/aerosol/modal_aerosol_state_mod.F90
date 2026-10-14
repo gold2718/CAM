@@ -7,6 +7,7 @@ module modal_aerosol_state_mod
   use physics_buffer, only: physics_buffer_desc, pbuf_get_field, pbuf_get_index
   use physics_types, only: physics_state
   use aerosol_properties_mod, only: aerosol_properties, aero_name_len
+  use modal_aerosol_properties_mod, only: modal_aerosol_properties
   use physconst,  only: rhoh2o
 
   implicit none
@@ -16,7 +17,7 @@ module modal_aerosol_state_mod
   public :: modal_aerosol_state
 
   type, extends(aerosol_state) :: modal_aerosol_state
-     private
+    ! private
      type(physics_state), pointer :: state => null()
      type(physics_buffer_desc), pointer :: pbuf(:) => null()
    contains
@@ -63,7 +64,6 @@ contains
     type(physics_buffer_desc), pointer :: pbuf(:)
 
     type(modal_aerosol_state), pointer :: newobj
-
     integer :: ierr
 
     allocate(newobj,stat=ierr)
@@ -443,14 +443,14 @@ contains
   ! returns aerosol wet diameter and aerosol water concentration for a given
   ! radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  subroutine water_uptake(self, aero_props, list_idx, bin_idx, ncol, nlev, dgnumwet, qaerwat)
+  subroutine water_uptake(self, aero_props, list_ndx, bin_ndx, ncol, nlev, dgnumwet, qaerwat)
     use modal_aero_wateruptake, only: modal_aero_wateruptake_dr
     use modal_aero_calcsize,    only: modal_aero_calcsize_diag
 
     class(modal_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
-    integer, intent(in) :: list_idx             ! rad climate/diags list number
-    integer, intent(in) :: bin_idx              ! bin number
+    integer, intent(in) :: list_ndx             ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx              ! bin number
     integer, intent(in) :: ncol                 ! number of columns
     integer, intent(in) :: nlev                 ! number of levels
     real(r8),intent(out) :: dgnumwet(ncol,nlev) ! aerosol wet diameter (m)
@@ -470,13 +470,13 @@ contains
 
     nmodes = aero_props%nbins()
 
-    if (list_idx == 0) then
+    if (list_ndx == 0) then
        ! water uptake and wet radius for the climate list has already been calculated
        call pbuf_get_field(self%pbuf, pbuf_get_index('DGNUMWET'), dgnumwet_m)
        call pbuf_get_field(self%pbuf, pbuf_get_index('QAERWAT'),  qaerwat_m)
 
-       dgnumwet(:ncol,:nlev) = dgnumwet_m(:ncol,:nlev,bin_idx)
-       qaerwat (:ncol,:nlev) =  qaerwat_m(:ncol,:nlev,bin_idx)
+       dgnumwet(:ncol,:nlev) = dgnumwet_m(:ncol,:nlev,bin_ndx)
+       qaerwat (:ncol,:nlev) =  qaerwat_m(:ncol,:nlev,bin_ndx)
 
     else
        ! If doing a diagnostic calculation then need to calculate the wet radius
@@ -491,14 +491,14 @@ contains
           qaerwat = -huge(1._r8)
           return
        end if
-       call modal_aero_calcsize_diag(self%state, self%pbuf, list_idx, dgnumdry_m, hygro_m, &
+       call modal_aero_calcsize_diag(self%state, self%pbuf, list_ndx, dgnumdry_m, hygro_m, &
                                      dryvol_m, dryrad_m, drymass_m, so4dryvol_m, naer_m)
-       call modal_aero_wateruptake_dr(self%state, self%pbuf, list_idx, dgnumdry_m, dgnumwet_m, &
+       call modal_aero_wateruptake_dr(self%state, self%pbuf, list_ndx, dgnumdry_m, dgnumwet_m, &
                                       qaerwat_m, wetdens_m,  hygro_m, dryvol_m, dryrad_m, &
                                       drymass_m, so4dryvol_m, naer_m)
 
-       dgnumwet(:ncol,:nlev) = dgnumwet_m(:ncol,:nlev,bin_idx)
-       qaerwat (:ncol,:nlev) =  qaerwat_m(:ncol,:nlev,bin_idx)
+       dgnumwet(:ncol,:nlev) = dgnumwet_m(:ncol,:nlev,bin_ndx)
+       qaerwat (:ncol,:nlev) =  qaerwat_m(:ncol,:nlev,bin_ndx)
 
        deallocate(dgnumdry_m)
        deallocate(dgnumwet_m)
@@ -518,13 +518,13 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol dry volume (m3/kg) for given radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  function dry_volume(self, aero_props, list_idx, bin_idx, ncol, nlev) result(vol)
+  function dry_volume(self, aero_props, list_ndx, bin_ndx, ncol, nlev) result(vol)
 
     class(modal_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
 
-    integer, intent(in) :: list_idx  ! rad climate/diags list number
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: list_ndx  ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -537,9 +537,9 @@ contains
 
     vol(:,:) = 0._r8
 
-    do ispec = 1, aero_props%nspecies(list_idx,bin_idx)
-       call self%get_ambient_mmr(list_idx, ispec, bin_idx, mmr)
-       call aero_props%get(bin_idx, ispec, list_ndx=list_idx, density=specdens)
+    do ispec = 1, aero_props%nspecies(list_ndx,bin_ndx)
+       call self%get_ambient_mmr(list_ndx, ispec, bin_ndx, mmr)
+       call aero_props%get(bin_ndx, ispec, list_ndx=list_ndx, density=specdens)
        vol(:ncol,:) = vol(:ncol,:) + mmr(:ncol,:)/specdens
     end do
 
@@ -548,13 +548,13 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol wet volume (m3/kg) for given radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  function wet_volume(self, aero_props, list_idx, bin_idx, ncol, nlev) result(vol)
+  function wet_volume(self, aero_props, list_ndx, bin_ndx, ncol, nlev) result(vol)
 
     class(modal_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
 
-    integer, intent(in) :: list_idx  ! rad climate/diags list number
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: list_ndx  ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -563,8 +563,8 @@ contains
     real(r8) :: dryvol(ncol,nlev)
     real(r8) :: watervol(ncol,nlev)
 
-    dryvol = self%dry_volume(aero_props, list_idx, bin_idx, ncol, nlev)
-    watervol = self%water_volume(aero_props, list_idx, bin_idx, ncol, nlev)
+    dryvol = self%dry_volume(aero_props, list_ndx, bin_ndx, ncol, nlev)
+    watervol = self%water_volume(aero_props, list_ndx, bin_ndx, ncol, nlev)
 
     vol = watervol + dryvol
 
@@ -573,13 +573,13 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol water volume (m3/kg) for given radiation diagnostic list number and bin number
   !------------------------------------------------------------------------------
-  function water_volume(self, aero_props, list_idx, bin_idx, ncol, nlev) result(vol)
+  function water_volume(self, aero_props, list_ndx, bin_ndx, ncol, nlev) result(vol)
 
     class(modal_aerosol_state), intent(in) :: self
     class(aerosol_properties), intent(in) :: aero_props
 
-    integer, intent(in) :: list_idx  ! rad climate/diags list number
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: list_ndx  ! rad climate/diags list number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -588,7 +588,7 @@ contains
     real(r8) :: dgnumwet(ncol,nlev)
     real(r8) :: qaerwat(ncol,nlev)
 
-    call self%water_uptake(aero_props, list_idx, bin_idx, ncol, nlev, dgnumwet, qaerwat)
+    call self%water_uptake(aero_props, list_ndx, bin_ndx, ncol, nlev, dgnumwet, qaerwat)
 
     vol(:ncol,:nlev) = qaerwat(:ncol,:nlev)*rh2odens
     where (vol<0._r8)
@@ -600,9 +600,9 @@ contains
   !------------------------------------------------------------------------------
   ! aerosol wet diameter
   !------------------------------------------------------------------------------
-  function wet_diameter(self, bin_idx, ncol, nlev) result(diam)
+  function wet_diameter(self, bin_ndx, ncol, nlev) result(diam)
     class(modal_aerosol_state), intent(in) :: self
-    integer, intent(in) :: bin_idx   ! bin number
+    integer, intent(in) :: bin_ndx   ! bin number
     integer, intent(in) :: ncol      ! number of columns
     integer, intent(in) :: nlev      ! number of levels
 
@@ -612,7 +612,7 @@ contains
 
     call pbuf_get_field(self%pbuf, pbuf_get_index('DGNUMWET'), dgnumwet)
 
-    diam(:ncol,:nlev) = dgnumwet(:ncol,:nlev,bin_idx)
+    diam(:ncol,:nlev) = dgnumwet(:ncol,:nlev,bin_ndx)
 
   end function wet_diameter
 

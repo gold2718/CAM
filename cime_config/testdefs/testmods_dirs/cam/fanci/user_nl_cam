@@ -1,0 +1,7 @@
+mfilt=1,1,1,1,1,1
+ndens=1,1,1,1,1,1
+nhtfrq=9,9,9,9,9,9
+write_nstep0=.true.
+inithist='ENDOFRUN'
+interpolate_output = .true., .true., .true., .true., .true., .true.
+interpolate_type = 1, 1, 1, 1, 1, 1

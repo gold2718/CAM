@@ -1,0 +1,1364 @@
+!================================================================================================
+! This is the 'sec_dust' chemistry module.
+! It was copied from the 'none' chemistry module.
+! Most of the routines return without doing anything.
+!================================================================================================
+
+module chemistry
+  use shr_kind_mod,         only: r8 => shr_kind_r8, shr_kind_cl
+  use ppgrid,               only: begchunk, endchunk, pcols, pver
+  use physconst,            only: gravit
+  use constituents,         only: pcnst, cnst_fixed_ubc
+  use chem_mods,            only: gas_pcnst
+  use cam_history,          only: fieldname_len
+  use tracer_data,          only: MAXTRCRS
+  use physics_types,        only: physics_state, physics_ptend, physics_ptend_init
+  use shr_megan_mod,        only: shr_megan_mechcomps, shr_megan_mechcomps_n
+  use srf_field_check,      only: active_Fall_flxvoc
+  use gcr_ionization,       only: gcr_ionization_readnl, gcr_ionization_init, gcr_ionization_adv
+  use epp_ionization,       only: epp_ionization_readnl, epp_ionization_adv
+  use mee_ionization,       only: mee_ion_readnl
+  use mo_apex,              only: mo_apex_readnl
+  use ref_pres,             only: ptop_ref
+  use phys_control,         only: waccmx_is   ! WACCM-X switch query function
+  use phys_control,         only: use_hemco   ! HEMCO switch logical
+  use mo_gas_phase_chemdr,  only: map2chm, initialize_map2chm
+  use spmd_utils,           only: masterproc
+  use cam_logfile,          only: iulog
+  use mo_chm_diags,         only: chem_has_ndep_flx => chm_prod_ndep_flx
+
+  implicit none
+  private
+  save
+
+  !---------------------------------------------------------------------------------
+  ! Public interfaces
+  !---------------------------------------------------------------------------------
+
+  public :: chem_is                        ! identify which chemistry is being used
+  public :: chem_register                  ! register consituents
+  public :: chem_readnl                    ! read chem namelist
+  public :: chem_is_active                 ! returns true if this package is active (ghg_chem=.true.)
+  public :: chem_implements_cnst           ! returns true if consituent is implemented by this package
+  public :: chem_init_cnst                 ! initialize mixing ratios if not read from initial file
+  public :: chem_init                      ! initialize (history) variables
+  public :: chem_timestep_init             ! time interpolate chemical loss frequencies
+  public :: chem_timestep_tend             ! interface to tendency computation
+  public :: chem_final
+  public :: chem_write_restart
+  public :: chem_read_restart
+  public :: chem_init_restart
+  public :: chem_emissions
+  public :: chem_has_ndep_flx
+
+  integer, public :: imozart = -1       ! index of 1st constituent
+
+  !---------------------------------------------------------------------------------
+  ! Namelist variables
+  !---------------------------------------------------------------------------------
+  ! control
+
+  integer :: chem_freq = 1 ! time steps
+
+  ! ghg
+
+  character(len=shr_kind_cl) :: bndtvg = ' ' ! pathname for greenhouse gas loss rate
+  character(len=shr_kind_cl) :: h2orates = ' ' ! pathname for greenhouse gas (lyman-alpha H2O loss)
+
+  ! photolysis
+
+  character(len=shr_kind_cl) :: rsf_file = 'rsf_file'
+  character(len=shr_kind_cl) :: exo_coldens_file = ''
+  character(len=shr_kind_cl) :: xs_coef_file = 'xs_coef_file'
+  character(len=shr_kind_cl) :: xs_short_file = 'xs_short_file'
+  character(len=shr_kind_cl) :: xs_long_file = 'xs_long_file'
+  character(len=shr_kind_cl) :: electron_file = 'electron_file'
+  character(len=shr_kind_cl) :: euvac_file = 'NONE'
+  real(r8)                   :: photo_max_zen=-huge(1._r8)
+
+  ! solar / geomag data
+
+  character(len=shr_kind_cl) :: photon_file = 'photon_file'
+
+  ! dry dep
+
+  character(len=shr_kind_cl) :: depvel_lnd_file = 'depvel_lnd_file'
+
+  ! emis
+  integer, parameter :: max_num_emis_files = max(100,2*pcnst)
+  character(len=shr_kind_cl) :: airpl_emis_file = '' ! airplane emissions
+  character(len=shr_kind_cl) :: srf_emis_specifier(max_num_emis_files) = ''
+  character(len=shr_kind_cl) :: ext_frc_specifier(max_num_emis_files) = ''
+
+  character(len=24)  :: srf_emis_type = 'CYCLICAL' ! 'CYCLICAL' | 'SERIAL' |  'INTERP_MISSING_MONTHS'
+  integer            :: srf_emis_cycle_yr  = 0
+  integer            :: srf_emis_fixed_ymd = 0
+  integer            :: srf_emis_fixed_tod = 0
+
+  character(len=24)  :: ext_frc_type = 'CYCLICAL' ! 'CYCLICAL' | 'SERIAL' |  'INTERP_MISSING_MONTHS'
+  integer            :: ext_frc_cycle_yr  = 0
+  integer            :: ext_frc_fixed_ymd = 0
+  integer            :: ext_frc_fixed_tod = 0
+
+  ! fixed stratosphere
+
+  character(len=shr_kind_cl) :: fstrat_file = 'fstrat_file'
+  character(len=16)  :: fstrat_list(pcnst)  = ''
+
+  !---------------------------------------------------------------------------------
+  ! dummy values for specific heats at constant pressure
+  !---------------------------------------------------------------------------------
+  real(r8), parameter   :: cptmp = 666._r8
+
+  character(len=fieldname_len) :: srcnam(gas_pcnst) ! names of source/sink tendencies
+
+
+  integer :: ixcldliq                ! index of liquid cloud water
+  integer :: ndx_cld
+  integer :: ndx_cmfdqr
+  integer :: ndx_nevapr
+  integer :: ndx_prain
+  integer :: ndx_cldtop
+  integer :: h2o_ndx
+  integer :: ixndrop             ! cloud droplet number index
+  integer :: ndx_pblh
+  integer :: ndx_fsds
+
+  logical :: ghg_chem = .false.      ! .true. => use ghg chem package
+  logical :: chem_step = .true.
+  logical :: is_active = .false.
+
+  character(len=32) :: chem_name = 'NONE'
+  logical :: chem_rad_passive = .false.
+
+  ! for MEGAN emissions
+  integer, allocatable :: megan_indices_map(:)
+  real(r8),allocatable :: megan_wght_factors(:)
+
+  logical :: chem_use_chemtrop = .false.
+
+  integer :: srf_ozone_pbf_ndx = -1
+  logical :: srf_emis_diag(pcnst) = .false.
+
+!================================================================================================
+contains
+!================================================================================================
+
+  logical function chem_is (name)
+   use phys_control,     only : cam_chempkg_is
+
+   character(len=*), intent(in) :: name
+   chem_is = cam_chempkg_is(name)
+
+  end function chem_is
+
+!================================================================================================
+
+  subroutine chem_register
+
+!-----------------------------------------------------------------------
+!
+! Purpose: register advected constituents for parameterized greenhouse gas chemistry
+!
+!-----------------------------------------------------------------------
+    use mo_sim_dat,          only: set_sim_dat
+    use chem_mods,           only: adv_mass
+    use mo_tracname,         only: solsym
+    use mo_chem_utls,        only: get_spc_ndx, get_inv_ndx
+    use short_lived_species, only: slvd_index, short_lived_map=>map, register_short_lived_species
+    use cfc11star,           only: register_cfc11star
+    use mo_photo,            only: photo_register
+    use mo_aurora,           only: aurora_register
+    use aero_model,          only: aero_model_register
+    use constituents,        only: cnst_add, cnst_name
+    use physics_buffer,      only: pbuf_add_field, dtype_r8
+    use upper_bc,            only: ubc_fixed_conc
+
+    implicit none
+
+!-----------------------------------------------------------------------
+! Local variables - check how and where these are initialized!!
+!-----------------------------------------------------------------------
+    integer               :: m, n            ! Tracer index
+    real(r8)              :: qmin            ! min value
+    logical               :: ic_from_cam2                        ! wrk variable for initial cond input
+    logical               :: has_fixed_ubc                       ! wrk variable for upper bndy cond
+    logical               :: has_fixed_ubflx                     ! wrk variable for upper bndy flux
+    real(r8), parameter   :: cptmp = 666._r8 ! specific heat at cnst prs (from mozart/chemistry.F90)
+    logical               :: cam_outfld
+
+    integer               :: ch4_ndx, n2o_ndx, o3_ndx, o3_inv_ndx, ndx
+    integer               :: cfc11_ndx, cfc12_ndx, o2_1s_ndx, o2_1d_ndx, o2_ndx
+    integer               :: n_ndx, no_ndx, h_ndx, h2_ndx, o_ndx, e_ndx, np_ndx
+    integer               :: op_ndx, o1d_ndx, n2d_ndx, nop_ndx, n2p_ndx, o2p_ndx
+    integer               :: hf_ndx, f_ndx
+
+    character(len=128)    :: lng_name        ! variable long name
+    character(len=128)    :: mixtype
+    character(len=128)    :: molectype
+    integer               :: islvd
+    integer               :: new_chm_map(pcnst)
+
+    character(len=*), parameter :: subname = 'chem_register'
+!-----------------------------------------------------------------------
+! Set the simulation chemistry variables
+!-----------------------------------------------------------------------
+! - currently no chemistry - only aerosol
+    call set_sim_dat ! get arrays/vars from mo_sim_dat
+
+    new_chm_map(:) = 0
+
+    o3_ndx    = get_spc_ndx('O3')
+    o3_inv_ndx= get_inv_ndx('O3')
+    ch4_ndx   = get_spc_ndx('CH4')
+    n2o_ndx   = get_spc_ndx('N2O')
+
+    cfc11_ndx = get_spc_ndx('CFC11')
+    cfc12_ndx = get_spc_ndx('CFC12')
+    o2_1s_ndx = get_spc_ndx('O2_1S')
+    o2_1d_ndx = get_spc_ndx('O2_1D')
+    o2_ndx    = get_spc_ndx('O2')
+    n_ndx     = get_spc_ndx('N')
+    no_ndx    = get_spc_ndx('NO')
+    h_ndx     = get_spc_ndx('H')
+    h2_ndx    = get_spc_ndx('H2')
+    o_ndx     = get_spc_ndx('O')
+    e_ndx     = get_spc_ndx('e')
+    np_ndx    = get_spc_ndx('Np')
+    op_ndx    = get_spc_ndx('Op')
+    o1d_ndx   = get_spc_ndx('O1D')
+    n2d_ndx   = get_spc_ndx('N2D')
+    n2p_ndx   = get_spc_ndx('N2p')
+    nop_ndx   = get_spc_ndx('NOp')
+    h2o_ndx   = get_spc_ndx('H2O')
+    o2p_ndx   = get_spc_ndx('O2p')
+
+    f_ndx     = get_spc_ndx('F')
+    hf_ndx    = get_spc_ndx('HF')
+
+    if (o3_ndx>0 .or. o3_inv_ndx>0) then
+        call pbuf_add_field('SRFOZONE','global',dtype_r8,(/pcols/),srf_ozone_pbf_ndx)
+    endif
+!--------------------------------------------------------------
+! Set names of diffused variable tendencies and declare them as history variables
+!-----------------------------------------------------------------------
+    do m = 1, gas_pcnst !
+    ! setting of these variables is for registration of transported species
+        ic_from_cam2  = .true.
+        has_fixed_ubc = ubc_fixed_conc(solsym(m))
+        has_fixed_ubflx = .false.
+        lng_name      = trim( solsym(m) )
+        molectype = 'minor'
+
+        qmin = 1.e-36_r8
+
+        if ( m == o3_ndx ) then
+            qmin = 1.e-12_r8
+        else if ( m == ch4_ndx ) then
+            qmin = 1.e-12_r8
+        else if ( m == n2o_ndx ) then
+            qmin = 1.e-15_r8
+        else if( m == cfc11_ndx .or. m == cfc12_ndx ) then
+            qmin = 1.e-20_r8
+        else if( m == o2_1s_ndx .or. m == o2_1d_ndx ) then
+            ic_from_cam2 = .false.
+            if( m == o2_1d_ndx ) then
+                lng_name = 'O2(1-delta)'
+            else
+                lng_name = 'O2(1-sigma)'
+            end if
+        else if ( m==o2_ndx .or. m==o_ndx .or. m==h_ndx ) then
+            if ( waccmx_is('ionosphere') .or. waccmx_is('neutral') ) then
+                if ( m == h_ndx ) has_fixed_ubflx = .true. ! fixed flux value for H at UB
+                if ( m == o2_ndx .or. m == o_ndx ) molectype = 'major'
+            endif
+        else if( m == e_ndx ) then
+            lng_name = 'electron concentration'
+        else if( m == np_ndx ) then
+            lng_name = 'N+'
+        else if( m == op_ndx ) then
+            lng_name = 'O+'
+        else if( m == o1d_ndx ) then
+            lng_name = 'O(1D)'
+        else if( m == n2d_ndx ) then
+            lng_name = 'N(2D)'
+        else if( m == o2p_ndx ) then
+            lng_name = 'O2+'
+        else if( m == n2p_ndx ) then
+            lng_name = 'N2+'
+        else if( m == nop_ndx ) then
+            lng_name = 'NO+'
+        else if( m == h2o_ndx ) then
+            new_chm_map(1) = m
+            cycle
+        endif
+
+        cam_outfld=.false.
+        is_active = .true.
+        mixtype = 'dry'
+
+        islvd = slvd_index(solsym(m))
+
+        if ( islvd > 0 ) then
+            short_lived_map(islvd) = m
+        else
+            call cnst_add( solsym(m), adv_mass(m), cptmp, qmin, n, readiv=ic_from_cam2, cam_outfld=cam_outfld, &
+                         mixtype=mixtype, molectype=molectype, fixed_ubc=has_fixed_ubc, fixed_ubflx=has_fixed_ubflx, &
+                         longname=trim(lng_name) )
+
+            if( imozart == -1 ) then
+                imozart = n
+            end if
+            new_chm_map(n) = m
+        endif
+
+    end do
+
+    call initialize_map2chm(new_chm_map)
+
+    call register_short_lived_species()
+    call register_cfc11star()
+
+    if ( waccmx_is('ionosphere') ) then
+       call photo_register()
+       call aurora_register()
+    endif
+
+   ! for prescribed aerosols
+    call aero_model_register()
+  end subroutine chem_register
+
+!================================================================================================
+
+  subroutine chem_readnl(nlfile)
+
+    ! Read chem namelist group.
+    use mpi,               only: mpi_integer, mpi_real8, mpi_character, mpi_logical, MPI_SUCCESS
+    use spmd_utils,        only: mstrid=>masterprocid, mpicom
+    use cam_abortutils,    only: endrun
+    use namelist_utils,    only: find_group_name
+
+    use tracer_cnst,       only: tracer_cnst_defaultopts, tracer_cnst_setopts
+    use tracer_srcs,       only: tracer_srcs_defaultopts, tracer_srcs_setopts
+    use aero_model,       only: aero_model_readnl
+    use gas_wetdep_opts,   only: gas_wetdep_readnl
+    use mo_drydep,         only: drydep_srf_file
+    use mo_sulf,           only: sulf_readnl
+    use species_sums_diags,only: species_sums_readnl
+    use ocean_emis,        only: ocean_emis_readnl
+
+    ! args
+    character(len=*), intent(in) :: nlfile
+
+    ! local vars
+    integer :: unitn, ierr
+
+    ! trop_mozart prescribed constituent concentratons
+    character(len=shr_kind_cl)  :: tracer_cnst_file                ! prescribed data file
+    character(len=shr_kind_cl)  :: tracer_cnst_filelist            ! list of prescribed data files (series of files)
+    character(len=shr_kind_cl)  :: tracer_cnst_datapath            ! absolute path of prescribed data files
+    character(len=24)           :: tracer_cnst_type                ! 'INTERP_MISSING_MONTHS' | 'CYCLICAL' | 'SERIAL' (default)
+    character(len=shr_kind_cl)  :: tracer_cnst_specifier(MAXTRCRS) ! string array where each
+    logical                     :: tracer_cnst_rmfile              ! remove data file from local disk (default .false.)
+    integer                     :: tracer_cnst_cycle_yr
+    integer                     :: tracer_cnst_fixed_ymd
+    integer                     :: tracer_cnst_fixed_tod
+
+    ! trop_mozart prescribed constituent sourrces/sinks
+    character(len=shr_kind_cl)  :: tracer_srcs_file                ! prescribed data file
+    character(len=shr_kind_cl)  :: tracer_srcs_filelist            ! list of prescribed data files (series of files)
+    character(len=shr_kind_cl)  :: tracer_srcs_datapath            ! absolute path of prescribed data files
+    character(len=24)           :: tracer_srcs_type                ! 'INTERP_MISSING_MONTHS' | 'CYCLICAL' | 'SERIAL' (default)
+    character(len=shr_kind_cl)  :: tracer_srcs_specifier(MAXTRCRS) ! string array where each
+    logical                     :: tracer_srcs_rmfile              ! remove data file from local disk (default .false.)
+    integer                     :: tracer_srcs_cycle_yr
+    integer                     :: tracer_srcs_fixed_ymd
+    integer                     :: tracer_srcs_fixed_tod
+
+    character(len=*), parameter :: subname = 'chem_readnl'
+
+
+
+    namelist /chem_inparm/ chem_freq, airpl_emis_file, &
+        euvac_file, photon_file, electron_file, &
+        xs_coef_file, xs_short_file, &
+        exo_coldens_file, &
+        xs_long_file, rsf_file, photo_max_zen, &
+        depvel_lnd_file, drydep_srf_file, &
+        srf_emis_type, srf_emis_cycle_yr, srf_emis_fixed_ymd, srf_emis_fixed_tod, srf_emis_specifier,  &
+        fstrat_file, fstrat_list, &
+        ext_frc_specifier, ext_frc_type, ext_frc_cycle_yr, ext_frc_fixed_ymd, ext_frc_fixed_tod
+
+    namelist /chem_inparm/ chem_rad_passive
+
+    ! ghg chem
+
+    namelist /chem_inparm/ bndtvg, h2orates, ghg_chem
+
+    ! prescribed chem tracers
+
+    namelist /chem_inparm/ &
+        tracer_cnst_file, tracer_cnst_filelist, tracer_cnst_datapath, &
+        tracer_cnst_type, tracer_cnst_specifier, &
+        tracer_srcs_file, tracer_srcs_filelist, tracer_srcs_datapath, &
+        tracer_srcs_type, tracer_srcs_specifier, &
+        tracer_cnst_rmfile, tracer_cnst_cycle_yr, tracer_cnst_fixed_ymd, tracer_cnst_fixed_tod, &
+        tracer_srcs_rmfile, tracer_srcs_cycle_yr, tracer_srcs_fixed_ymd, tracer_srcs_fixed_tod
+
+    ! tropopause level control
+    namelist /chem_inparm/ chem_use_chemtrop
+
+    ! get the default settings
+
+    call tracer_cnst_defaultopts( &
+        tracer_cnst_file_out      = tracer_cnst_file,      &
+        tracer_cnst_filelist_out  = tracer_cnst_filelist,  &
+        tracer_cnst_datapath_out  = tracer_cnst_datapath,  &
+        tracer_cnst_type_out      = tracer_cnst_type,      &
+        tracer_cnst_specifier_out = tracer_cnst_specifier, &
+        tracer_cnst_rmfile_out    = tracer_cnst_rmfile,    &
+        tracer_cnst_cycle_yr_out  = tracer_cnst_cycle_yr,  &
+        tracer_cnst_fixed_ymd_out = tracer_cnst_fixed_ymd, &
+        tracer_cnst_fixed_tod_out = tracer_cnst_fixed_tod  )
+    call tracer_srcs_defaultopts( &
+        tracer_srcs_file_out      = tracer_srcs_file,      &
+        tracer_srcs_filelist_out  = tracer_srcs_filelist,  &
+        tracer_srcs_datapath_out  = tracer_srcs_datapath,  &
+        tracer_srcs_type_out      = tracer_srcs_type,      &
+        tracer_srcs_specifier_out = tracer_srcs_specifier, &
+        tracer_srcs_rmfile_out    = tracer_srcs_rmfile,    &
+        tracer_srcs_cycle_yr_out  = tracer_srcs_cycle_yr,  &
+        tracer_srcs_fixed_ymd_out = tracer_srcs_fixed_ymd, &
+        tracer_srcs_fixed_tod_out = tracer_srcs_fixed_tod  )
+
+    drydep_srf_file = ' '
+
+    if (masterproc) then
+        open(newunit=unitn, file=trim(nlfile), status='old' )
+        call find_group_name(unitn, 'chem_inparm', status=ierr)
+        if (ierr == 0) then
+            read(unitn, chem_inparm, iostat=ierr)
+            if (ierr /= 0) then
+                call endrun('chem_readnl: ERROR reading namelist')
+            end if
+        end if
+        close(unitn)
+    end if
+
+    ! Broadcast namelist variables
+
+    ! control
+    call MPI_Bcast (chem_freq,             1,                                      mpi_integer,   mstrid, mpicom, ierr)
+
+    if ( ierr /= MPI_SUCCESS ) then
+        call endrun(subname//": Error  broadcasting 'chem_freq'")
+    end if
+    call MPI_Bcast (chem_rad_passive,      1,                                      mpi_logical,   mstrid, mpicom, ierr)
+
+    ! ghg
+
+    call MPI_Bcast (ghg_chem,              1,                                      mpi_logical,   mstrid, mpicom, ierr)
+    call MPI_Bcast (bndtvg,                len(bndtvg),                            mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (h2orates,              len(h2orates),                          mpi_character, mstrid, mpicom, ierr)
+
+    ! photolysis
+
+    call MPI_Bcast (rsf_file,              len(rsf_file),                          mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (exo_coldens_file,      len(exo_coldens_file),                  mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (xs_coef_file,          len(xs_coef_file),                      mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (xs_short_file,         len(xs_short_file),                     mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (xs_long_file,          len(xs_long_file),                      mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (photo_max_zen,         1,                                      mpi_real8,     mstrid, mpicom, ierr)
+    call MPI_Bcast (electron_file,         len(electron_file),                     mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (euvac_file,            len(euvac_file),                        mpi_character, mstrid, mpicom, ierr)
+
+    ! solar / geomag data
+
+    call MPI_Bcast (photon_file,           len(photon_file),                       mpi_character, mstrid, mpicom, ierr)
+
+    ! dry dep
+
+    call MPI_Bcast (depvel_lnd_file,       len(depvel_lnd_file),                   mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (drydep_srf_file,       len(drydep_srf_file),                   mpi_character, mstrid, mpicom, ierr)
+
+    ! emis
+
+    call MPI_Bcast (airpl_emis_file,       len(airpl_emis_file),                   mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (srf_emis_specifier,    len(srf_emis_specifier(1))*pcnst,       mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (srf_emis_type,         len(srf_emis_type),                     mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (srf_emis_cycle_yr,     1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (srf_emis_fixed_ymd,    1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (srf_emis_fixed_tod,    1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (ext_frc_specifier,     len(ext_frc_specifier(1))*pcnst,        mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (ext_frc_type,          len(ext_frc_type),                      mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (ext_frc_cycle_yr,      1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (ext_frc_fixed_ymd,     1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (ext_frc_fixed_tod,     1,                                      mpi_integer,   mstrid, mpicom, ierr)
+
+
+    ! fixed stratosphere
+
+    call MPI_Bcast (fstrat_file,           len(fstrat_file),                       mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (fstrat_list,           len(fstrat_list(1))*pcnst,              mpi_character, mstrid, mpicom, ierr)
+
+    ! prescribed chemical tracers
+
+    call MPI_Bcast (tracer_cnst_specifier, len(tracer_cnst_specifier(1))*MAXTRCRS, mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_file,      len(tracer_cnst_file),                  mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_filelist,  len(tracer_cnst_filelist),              mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_datapath,  len(tracer_cnst_datapath),              mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_type,      len(tracer_cnst_type),                  mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_rmfile,    1,                                      mpi_logical,   mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_cycle_yr,  1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_fixed_ymd, 1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_cnst_fixed_tod, 1,                                      mpi_integer,   mstrid, mpicom, ierr)
+
+    call MPI_Bcast (tracer_srcs_specifier, len(tracer_srcs_specifier(1))*MAXTRCRS, mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_file,      len(tracer_srcs_file),                  mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_filelist,  len(tracer_srcs_filelist),              mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_datapath,  len(tracer_srcs_datapath),              mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_type,      len(tracer_srcs_type),                  mpi_character, mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_rmfile,    1,                                      mpi_logical,   mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_cycle_yr,  1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_fixed_ymd, 1,                                      mpi_integer,   mstrid, mpicom, ierr)
+    call MPI_Bcast (tracer_srcs_fixed_tod, 1,                                      mpi_integer,   mstrid, mpicom, ierr)
+
+    call MPI_Bcast (chem_use_chemtrop,     1,                                      mpi_logical,   mstrid, mpicom, ierr)
+
+
+    ! set the options
+
+    call tracer_cnst_setopts( &
+        tracer_cnst_file_in      = tracer_cnst_file,      &
+        tracer_cnst_filelist_in  = tracer_cnst_filelist,  &
+        tracer_cnst_datapath_in  = tracer_cnst_datapath,  &
+        tracer_cnst_type_in      = tracer_cnst_type,      &
+        tracer_cnst_specifier_in = tracer_cnst_specifier, &
+        tracer_cnst_rmfile_in    = tracer_cnst_rmfile,    &
+        tracer_cnst_cycle_yr_in  = tracer_cnst_cycle_yr,  &
+        tracer_cnst_fixed_ymd_in = tracer_cnst_fixed_ymd, &
+        tracer_cnst_fixed_tod_in = tracer_cnst_fixed_tod )
+    call tracer_srcs_setopts( &
+        tracer_srcs_file_in      = tracer_srcs_file,      &
+        tracer_srcs_filelist_in  = tracer_srcs_filelist,  &
+        tracer_srcs_datapath_in  = tracer_srcs_datapath,  &
+        tracer_srcs_type_in      = tracer_srcs_type,      &
+        tracer_srcs_specifier_in = tracer_srcs_specifier, &
+        tracer_srcs_rmfile_in    = tracer_srcs_rmfile,    &
+        tracer_srcs_cycle_yr_in  = tracer_srcs_cycle_yr,  &
+        tracer_srcs_fixed_ymd_in = tracer_srcs_fixed_ymd, &
+        tracer_srcs_fixed_tod_in = tracer_srcs_fixed_tod )
+
+    call aero_model_readnl(nlfile) ! read dms nl
+
+    call gas_wetdep_readnl(nlfile)
+    call gcr_ionization_readnl(nlfile)
+    call epp_ionization_readnl(nlfile)
+    call mee_ion_readnl(nlfile)
+    call mo_apex_readnl(nlfile)
+    call sulf_readnl(nlfile)
+    call species_sums_readnl(nlfile)
+    call ocean_emis_readnl(nlfile) ! TODO: DMS emissions, add to build-namelist and aero_model as well
+
+  end subroutine chem_readnl
+
+!================================================================================================
+
+  function chem_is_active()
+    !-----------------------------------------------------------------------
+    logical :: chem_is_active
+    !-----------------------------------------------------------------------
+    chem_is_active = is_active
+  end function chem_is_active
+
+!================================================================================================
+
+  function chem_implements_cnst(name)
+    !-----------------------------------------------------------------------
+    !
+    ! Purpose: return true if specified constituent is implemented by this package
+    !
+    ! Author: B. Eaton
+    !
+    !-----------------------------------------------------------------------
+
+    use chem_mods,  only: inv_lst, nfs
+    use mo_tracname, only: solsym
+
+    implicit none
+    !-----------------------------Arguments---------------------------------
+
+    character(len=*), intent(in) :: name   ! constituent name
+    logical :: chem_implements_cnst        ! return value
+    integer :: m
+
+    chem_implements_cnst = .false.
+    do m = 1,gas_pcnst
+        if( trim(name) /= 'H2O' ) then
+            if( trim(name) == solsym(m) ) then
+                chem_implements_cnst = .true.
+                exit
+            end if
+        end if
+    end do
+    do m = 1,nfs
+        if( trim(name) /= 'H2O' ) then
+            if( trim(name) == inv_lst(m) ) then
+                chem_implements_cnst = .true.
+                exit
+            end if
+        endif
+    enddo
+
+  end function chem_implements_cnst
+
+!===============================================================================
+
+  subroutine chem_init(phys_state, pbuf2d)
+    !-----------------------------------------------------------------------
+    !
+    ! Purpose: initialize parameterized greenhouse gas chemistry
+    !          (declare history variables)
+    !
+    !-----------------------------------------------------------------------
+    use physics_buffer,      only: physics_buffer_desc, pbuf_get_index, pbuf_set_field
+    use time_manager,        only: is_first_step
+    use constituents,        only: cnst_get_ind
+    use cam_history,         only: addfld, add_default, horiz_only, fieldname_len
+    use mo_chemini,          only: chemini
+    use mo_ghg_chem,         only: ghg_chem_init
+    use mo_tracname,         only: solsym
+    use cfc11star,           only: init_cfc11star
+    use phys_control,        only: phys_getopts
+    use chem_mods,           only: adv_mass
+    use infnan,              only: nan, assignment(=)
+    use mo_chem_utls,        only: get_spc_ndx
+    use cam_abortutils,      only: endrun
+    use mo_setsox,           only: sox_inti
+    use constituents,        only: sflxnam
+    use fire_emissions,      only: fire_emissions_init
+    use short_lived_species, only: short_lived_species_initic
+    use ocean_emis,          only: ocean_emis_init, ocean_emis_species
+    use mo_srf_emissions,    only: has_emis
+    use aero_model,          only: aero_model_init
+
+    ! args
+    type(physics_state), intent(in):: phys_state(begchunk:endchunk)
+    type(physics_buffer_desc), pointer :: pbuf2d(:,:), pbuf(:)
+
+!-----------------------------------------------------------------------
+! Local variables
+!-----------------------------------------------------------------------
+    integer :: m                                ! tracer indicies
+    character(len=fieldname_len) :: spc_name
+    integer :: n, ii, ierr
+    logical :: history_aerosol
+    logical :: history_chemistry
+    logical :: history_cesm_forcing
+
+    character(len=2)  :: unit_basename  ! Units 'kg' or '1'
+    logical :: history_budget                 ! output tendencies and state variables for CAM
+                                              ! temperature, water vapor, cloud ice and cloud
+                                              ! liquid budgets.
+    integer :: history_budget_histfile_num    ! output history file number for budget fields
+
+    character(len=*), parameter :: prefix = 'chem_init: '
+
+    call phys_getopts( cam_chempkg_out=chem_name, &
+                       history_aerosol_out=history_aerosol , &
+                       history_chemistry_out=history_chemistry , &
+                       history_budget_out = history_budget , &
+                       history_budget_histfile_num_out = history_budget_histfile_num, &
+                       history_cesm_forcing_out = history_cesm_forcing )
+
+    ! aqueous chem initialization
+    call sox_inti()
+
+   ! for prescribed aerosols
+    call aero_model_init(pbuf2d, phys_state)
+
+!-----------------------------------------------------------------------
+! Get liq and ice cloud water indicies
+!-----------------------------------------------------------------------
+    call cnst_get_ind( 'CLDLIQ', ixcldliq )
+    call cnst_get_ind( 'NUMLIQ', ixndrop, abort=.false.  )
+
+!-----------------------------------------------------------------------
+! get pbuf indicies
+!-----------------------------------------------------------------------
+    ndx_cld    = pbuf_get_index('CLD')
+    ndx_cmfdqr = pbuf_get_index('RPRDTOT')
+    ndx_nevapr = pbuf_get_index('NEVAPR')
+    ndx_prain  = pbuf_get_index('PRAIN')
+    ndx_cldtop = pbuf_get_index('CLDTOP')
+    ndx_pblh   = pbuf_get_index('pblh')
+    ndx_fsds   = pbuf_get_index('FSDS')
+
+    call addfld( 'HEIGHT',     (/ 'ilev' /),'A','m',       'geopotential height above surface at interfaces (m)' )
+    call addfld( 'CT_H2O_GHG', (/ 'lev' /), 'A','kg/kg/s', 'ghg-chem h2o source/sink' )
+
+!-----------------------------------------------------------------------
+! Initialize chemistry modules
+!-----------------------------------------------------------------------
+    call chemini &
+       ( euvac_file &
+       , photon_file &
+       , electron_file &
+       , airpl_emis_file &
+       , depvel_lnd_file &
+       , xs_coef_file &
+       , xs_short_file &
+       , xs_long_file &
+       , photo_max_zen &
+       , rsf_file &
+       , fstrat_file &
+       , fstrat_list &
+       , srf_emis_specifier &
+       , srf_emis_type &
+       , srf_emis_cycle_yr &
+       , srf_emis_fixed_ymd &
+       , srf_emis_fixed_tod &
+       , ext_frc_specifier &
+       , ext_frc_type &
+       , ext_frc_cycle_yr &
+       , ext_frc_fixed_ymd &
+       , ext_frc_fixed_tod &
+       , exo_coldens_file &
+       , use_hemco &
+       , pbuf2d &
+       )
+
+    if ( ghg_chem ) then
+       call ghg_chem_init(phys_state, bndtvg, h2orates)
+    endif
+
+    call init_cfc11star(pbuf2d)
+
+    ! MEGAN emissions initialize
+    if (shr_megan_mechcomps_n>0) then
+
+        allocate( megan_indices_map(shr_megan_mechcomps_n), stat=ierr)
+        if( ierr /= 0 ) then
+            call endrun(prefix//'failed to allocate megan_indices_map')
+        end if
+        allocate( megan_wght_factors(shr_megan_mechcomps_n), stat=ierr)
+        if( ierr /= 0 ) then
+            call endrun(prefix//'failed to allocate megan_indices_map')
+        end if
+        megan_wght_factors(:) = nan
+
+        do n=1,shr_megan_mechcomps_n
+            call cnst_get_ind (shr_megan_mechcomps(n)%name,  megan_indices_map(n), abort=.false.)
+            ii = get_spc_ndx(shr_megan_mechcomps(n)%name)
+            if (ii>0) then
+                megan_wght_factors(n) = adv_mass(ii)*1.e-3_r8 ! kg/moles (to convert moles/m2/sec to kg/m2/sec)
+            else
+                call endrun( 'gas_phase_chemdr_inti: MEGAN compound not in chemistry mechanism : '&
+                //trim(shr_megan_mechcomps(n)%name))
+            endif
+
+            ! MEGAN  history fields
+            call addfld( 'MEG_'//trim(shr_megan_mechcomps(n)%name),horiz_only,'A','kg/m2/sec',&
+                trim(shr_megan_mechcomps(n)%name)//' MEGAN emissions flux')
+            if (history_chemistry) then
+                call add_default('MEG_'//trim(shr_megan_mechcomps(n)%name), 1, ' ')
+            endif
+
+            srf_emis_diag(megan_indices_map(n)) = .true.
+        enddo
+    endif
+
+    ! Galatic Cosmic Rays ...
+    call gcr_ionization_init()
+
+    ! Fire emissions ...
+    call fire_emissions_init()
+
+    call short_lived_species_initic()
+
+    call ocean_emis_init()
+    !-----------------------------------------------------------------------
+    ! Set names of chemistry variable tendencies and declare them as history variables
+    !-----------------------------------------------------------------------
+    do m = 1,gas_pcnst
+        spc_name = solsym(m)
+        srcnam(m) = 'CT_' // spc_name ! chem tendancy (source/sink)
+
+        call addfld( srcnam(m), (/ 'lev' /), 'A', 'kg/kg/s', trim(spc_name)//' source/sink' )
+        call cnst_get_ind(solsym(m), n, abort=.false.)
+
+        if ( n>0 ) then
+            !if (has_emis(m) .or. ocean_emis_species(solsym(m)) .or. srf_emis_diag(n)) then
+                srf_emis_diag(n) = .true.
+
+                if (sflxnam(n)(3:5) == 'num') then  ! name is in the form of "SF****"
+                    unit_basename = ' 1'
+                else
+                    unit_basename = 'kg'
+                endif
+
+                call addfld (sflxnam(n),horiz_only, 'A', unit_basename//'/m2/s',trim(solsym(m))//' surface flux')
+                if ( history_aerosol .or. history_chemistry ) then
+                    call add_default( sflxnam(n), 1, ' ' )
+                endif
+
+                if ( history_cesm_forcing ) then
+                    if ( spc_name == 'NO' .or. spc_name == 'NH3' ) then
+                        call add_default( sflxnam(n), 1, ' ' )
+                    endif
+                endif
+            !endif
+        endif
+    end do
+
+    ! Add chemical tendency of water vapor to water budget output
+    if ( history_budget ) then
+        call add_default ('CT_H2O'  , history_budget_histfile_num, ' ')
+    endif
+
+    ! initialize srf ozone to zero
+    if (is_first_step() .and. srf_ozone_pbf_ndx>0) then
+        call pbuf_set_field(pbuf2d, srf_ozone_pbf_ndx, 0._r8)
+    end if
+
+    ! TODO:
+    ! contains
+    ! pure logical function aero_has_emis
+  end subroutine chem_init
+
+!===============================================================================
+  subroutine chem_emissions( state, cam_in, pbuf )
+    use physics_buffer,   only: physics_buffer_desc
+    use aero_model,       only: aero_model_emissions
+    use camsrfexch,       only: cam_in_t
+    use constituents,     only: sflxnam
+    use cam_history,      only: outfld
+    use mo_srf_emissions, only: set_srf_emissions
+    use hco_cc_emissions, only: hco_set_srf_emissions
+    use fire_emissions,   only: fire_emissions_srf
+    use ocean_emis,       only: ocean_emis_getflux
+
+    ! Arguments:
+
+    type(physics_state),       intent(in)    :: state   ! Physics state variables
+    type(cam_in_t),            intent(inout) :: cam_in  ! import state
+    type(physics_buffer_desc), pointer       :: pbuf(:) ! Physics buffer in chunk, for HEMCO
+
+    ! local vars
+
+    integer :: lchnk, ncol
+    integer :: i, m,n
+
+    real(r8) :: sflx(pcols,gas_pcnst)
+    real(r8) :: megflx(pcols)
+
+    lchnk = state%lchnk
+    ncol = state%ncol
+
+    ! initialize chemistry constituent surface fluxes to zero
+    do m = 2,pcnst
+        n = map2chm(m)
+        if (n>0) cam_in%cflx(:,m) = 0._r8
+    enddo
+
+    ! aerosol emissions ...
+    call aero_model_emissions( state, cam_in ) ! TODO: currently dms emissions copied from oslo_aero
+
+   ! MEGAN emissions ...
+
+    if ( active_Fall_flxvoc .and. shr_megan_mechcomps_n>0 ) then
+
+       ! set MEGAN fluxes
+        do n = 1,shr_megan_mechcomps_n
+            do i =1,ncol
+                megflx(i) = -cam_in%meganflx(i,n) * megan_wght_factors(n)
+                cam_in%cflx(i,megan_indices_map(n)) = cam_in%cflx(i,megan_indices_map(n)) + megflx(i)
+            enddo
+
+            ! output MEGAN emis fluxes to history
+            call outfld('MEG_'//trim(shr_megan_mechcomps(n)%name), megflx(:ncol), ncol, lchnk)
+        enddo
+
+    endif
+
+    if ( use_hemco ) then
+        ! prescribed emissions from HEMCO ...
+
+        !-----------------------------------------------------------------------
+        !        ... Set surface emissions using HEMCO compatibility API
+        !-----------------------------------------------------------------------
+        call hco_set_srf_emissions( lchnk, ncol, sflx(:,:), pbuf )
+    else
+        ! prescribed emissions from file ...
+
+        !-----------------------------------------------------------------------
+        !        ... Set surface emissions
+        !-----------------------------------------------------------------------
+        call set_srf_emissions( lchnk, ncol, sflx(:,:) )
+    endif
+
+    do m = 1,pcnst
+        n = map2chm(m)
+        if ( n /= h2o_ndx .and. n > 0 ) then
+            cam_in%cflx(:ncol,m) = cam_in%cflx(:ncol,m) + sflx(:ncol,n)
+            if (srf_emis_diag(m)) then
+                call outfld( sflxnam(m), cam_in%cflx(:ncol,m), ncol,lchnk )
+            endif
+        endif
+    enddo
+
+    ! fire surface emissions if not elevated forcing
+    call fire_emissions_srf( lchnk, ncol, cam_in%fireflx, cam_in%cflx )
+
+    ! air-sea exchange of trace gases
+    call ocean_emis_getflux(lchnk, ncol, state, cam_in%u10, cam_in%sst, cam_in%ocnfrac, cam_in%icefrac, cam_in%cflx)
+
+  end subroutine chem_emissions
+
+!===============================================================================
+
+  subroutine chem_init_cnst(name, latvals, lonvals, mask, q)
+!-----------------------------------------------------------------------
+!
+! Purpose:
+! Specify initial mass mixing ratios
+!
+!-----------------------------------------------------------------------
+
+    use chem_mods,     only: inv_lst
+
+    use physconst,     only: mwdry, mwch4, mwn2o, mwf11, mwf12
+    use chem_surfvals, only: chem_surfvals_get
+
+    implicit none
+
+!-----------------------------------------------------------------------
+! Dummy arguments
+!-----------------------------------------------------------------------
+
+    character(len=*), intent(in)  :: name       ! constituent name
+    real(r8),         intent(in)  :: latvals(:) ! lat in degrees (ncol)
+    real(r8),         intent(in)  :: lonvals(:) ! lon in degrees (ncol)
+    logical,          intent(in)  :: mask(:)    ! Only initialize where .true.
+    real(r8),         intent(out) :: q(:,:)     ! kg tracer/kg dry air (gcol, plev
+
+!-----------------------------------------------------------------------
+! Local variables
+!-----------------------------------------------------------------------
+
+    real(r8) :: rmwn2o != mwn2o/mwdry ! ratio of mol weight n2o   to dry air
+    real(r8) :: rmwch4 != mwch4/mwdry ! ratio of mol weight ch4   to dry air
+    real(r8) :: rmwf11 != mwf11/mwdry ! ratio of mol weight cfc11 to dry air
+    real(r8) :: rmwf12 != mwf12/mwdry ! ratio of mol weight cfc12 to dry air
+    integer  :: ilev, nlev
+
+!-----------------------------------------------------------------------
+! initialize local variables
+!-----------------------------------------------------------------------
+
+    rmwn2o = mwn2o/mwdry
+    rmwch4 = mwch4/mwdry
+    rmwf11 = mwf11/mwdry
+    rmwf12 = mwf12/mwdry
+
+
+!-----------------------------------------------------------------------
+! Get initial mixing ratios
+!-----------------------------------------------------------------------
+    nlev = size(q, 2)
+    if ( any( inv_lst .eq. name ) ) then
+        do ilev = 1, nlev
+            where(mask)
+                q(:,ilev) = 0.0_r8
+            end where
+        end do
+    else
+        do ilev = 1, nlev
+            where(mask)
+                q(:,ilev) = 1.e-38_r8
+            end where
+        end do
+    endif
+
+    if ( ghg_chem ) then
+        do ilev = 1, nlev
+            select case (name)
+            case ('N2O')
+                where(mask)
+                    q(:,ilev) = rmwn2o * chem_surfvals_get('N2OVMR')
+                end where
+            case ('CH4')
+                where(mask)
+                    q(:,ilev) = rmwch4 * chem_surfvals_get('CH4VMR')
+                end where
+            case ('CFC11')
+                where(mask)
+                    q(:,ilev) = rmwf11 * chem_surfvals_get('F11VMR')
+                end where
+            case ('CFC12')
+                where(mask)
+                    q(:,ilev) = rmwf12 * chem_surfvals_get('F12VMR')
+                end where
+            case ('CO2')
+                where(mask)
+                    q(:,ilev) = chem_surfvals_get('CO2MMR')
+                end where
+            end select
+        end do
+    end if
+
+  end subroutine chem_init_cnst
+!===============================================================================
+
+  subroutine chem_timestep_init(phys_state, pbuf2d)
+
+    use time_manager,      only: get_nstep
+    use time_manager,      only: get_curr_calday
+    use mo_srf_emissions,  only: set_srf_emissions_time
+    use mo_sulf,           only: set_sulf_time
+    use mo_extfrc,         only: extfrc_timestep_init
+    use mo_flbc,           only: flbc_chk
+    use tracer_cnst,       only: tracer_cnst_adv
+    use tracer_srcs,       only: tracer_srcs_adv
+    use mo_ghg_chem,       only: ghg_chem_timestep_init
+
+    use mo_aurora,         only: aurora_timestep_init
+    use mo_photo,          only: photo_timestep_init
+
+    use cfc11star,         only: update_cfc11star
+    use physics_buffer,    only: physics_buffer_desc
+    use ocean_emis,        only: ocean_emis_advance
+    use mee_fluxes,        only: mee_fluxes_adv
+
+    implicit none
+
+    type(physics_state), intent(inout) :: phys_state(begchunk:endchunk)
+    type(physics_buffer_desc), pointer :: pbuf2d(:,:)
+
+    !-----------------------------------------------------------------------
+    ! Local variables
+    !-----------------------------------------------------------------------
+    real(r8) :: calday
+    integer  :: nstep
+
+    nstep = get_nstep()
+    chem_step = mod( nstep, chem_freq ) == 0
+
+    if ( .not. chem_step ) return
+    !-----------------------------------------------------------------------
+    ! get current calendar day of year
+    !-----------------------------------------------------------------------
+    calday = get_curr_calday( )
+
+    !-----------------------------------------------------------------------
+    ! Set emissions timing factors
+    !-----------------------------------------------------------------------
+    call set_srf_emissions_time( pbuf2d, phys_state )
+
+    !-----------------------------------------------------------------------
+    ! Set external forcings timing factors
+    !-----------------------------------------------------------------------
+    call extfrc_timestep_init( pbuf2d, phys_state )
+
+    !-----------------------------------------------------------------------
+    ! Set sulf timing factors
+    !-----------------------------------------------------------------------
+    call set_sulf_time( pbuf2d, phys_state  )
+    !-----------------------------------------------------------------------
+    ! Set fixed lower boundary timing factors
+    !-----------------------------------------------------------------------
+    call flbc_chk
+
+    !-----------------------------------------------------------------------
+    ! Set fixed offline tracers
+    !-----------------------------------------------------------------------
+    call tracer_cnst_adv(pbuf2d, phys_state)
+
+    !-----------------------------------------------------------------------
+    ! Set fixed offline tracer sources
+    !-----------------------------------------------------------------------
+    call tracer_srcs_adv(pbuf2d, phys_state)
+
+    if ( ghg_chem ) then
+        call ghg_chem_timestep_init(phys_state)
+    endif
+
+    !-----------------------------------------------------------------------
+    ! Set up aurora
+    !-----------------------------------------------------------------------
+    call aurora_timestep_init
+
+    !-----------------------------------------------------------------------------
+    !   ... setup the time interpolation for mo_photo
+    !-----------------------------------------------------------------------------
+    call photo_timestep_init( calday )
+
+    call update_cfc11star( pbuf2d, phys_state )
+
+    ! Galatic Cosmic Rays ...
+    call gcr_ionization_adv( pbuf2d, phys_state )
+    call epp_ionization_adv()
+
+    ! medium energy electron flux data ...
+    call mee_fluxes_adv()
+
+    call ocean_emis_advance( pbuf2d, phys_state )
+
+  end subroutine chem_timestep_init
+
+!===============================================================================
+
+  subroutine chem_timestep_tend( state, ptend, cam_in, cam_out, dt, pbuf, fh2o)
+
+!-----------------------------------------------------------------------
+!
+! Purpose:
+! Interface to parameterized greenhouse gas chemisty (source/sink).
+!
+! Method:
+! <Describe the algorithm(s) used in the routine.>
+! <Also include any applicable external references.>
+!
+! Author: B.A. Boville
+!
+!-----------------------------------------------------------------------
+
+    use physics_buffer,      only : physics_buffer_desc, pbuf_get_field, pbuf_old_tim_idx
+    use cam_history,         only : outfld
+    use time_manager,        only : get_curr_calday
+    use mo_gas_phase_chemdr, only : gas_phase_chemdr
+    use camsrfexch,          only : cam_in_t, cam_out_t
+    use perf_mod,            only : t_startf, t_stopf
+    use tropopause,          only : tropopause_findChemTrop, tropopause_find_cam
+    use mo_drydep,           only : drydep_update
+    use mo_neu_wetdep,       only : neu_wetdep_tend
+    !use aerodep_flx,         only : aerodep_flx_prescribed ! TODO: circular dependency!
+    use short_lived_species, only : short_lived_species_writeic
+
+    implicit none
+
+
+!-----------------------------------------------------------------------
+! Dummy arguments
+!-----------------------------------------------------------------------
+    real(r8),            intent(in)    :: dt              ! time step
+    type(physics_state), intent(in)    :: state           ! Physics state variables
+    type(physics_ptend), intent(out)   :: ptend           ! indivdual parameterization tendencies
+    type(cam_in_t),      intent(inout) :: cam_in
+    type(cam_out_t),     intent(inout) :: cam_out
+    real(r8),            intent(out)   :: fh2o(pcols)     ! h2o flux to balance source from chemistry
+
+
+    type(physics_buffer_desc), pointer :: pbuf(:)
+
+!-----------------------------------------------------------------------
+! Local variables
+!-----------------------------------------------------------------------
+    integer  :: i, k, m, n                         ! indicies
+    integer  :: lchnk                              ! chunk identifier
+    integer  :: ncol                               ! number of atmospheric columns
+    real(r8) :: calday                             ! current calendar day of year
+    real(r8) :: cldw(pcols,pver)                   ! cloud water (kg/kg)
+    real(r8) :: chem_dt              ! time step
+    real(r8) :: drydepflx(pcols,pcnst)             ! dry deposition fluxes (kg/m2/s)
+    real(r8) :: wetdepflx(pcols,pcnst)             ! wet deposition fluxes (kg/m2/s)
+    integer  :: tropLev(pcols), tropLevChem(pcols)
+    real(r8) :: ncldwtr(pcols,pver)                ! droplet number concentration (#/kg)
+    real(r8), pointer :: fsds(:)     ! longwave down at sfc
+    real(r8), pointer :: pblh(:)
+    real(r8), pointer :: prain(:,:)
+    real(r8), pointer :: cldfr(:,:)
+    real(r8), pointer :: cmfdqr(:,:)
+    real(r8), pointer :: nevapr(:,:)
+    real(r8), pointer :: cldtop(:)
+    real(r8) :: nhx_nitrogen_flx(pcols)
+    real(r8) :: noy_nitrogen_flx(pcols)
+
+    integer :: tim_ndx
+
+    logical :: lq(pcnst)
+
+    if ( .not. chem_step ) return
+
+    chem_dt = chem_freq*dt
+
+    lchnk = state%lchnk
+    ncol  = state%ncol
+
+    call short_lived_species_writeic( lchnk, pbuf )
+
+    lq(:) = .false.
+    do n = 1,pcnst
+       m = map2chm(n)
+       if( m > 0 ) then
+          lq(n) = .true.
+       end if
+    end do
+    if ( ghg_chem ) lq(1) = .true.
+
+    call physics_ptend_init(ptend, state%psetcols, 'chemistry', lq=lq)
+
+    call drydep_update( state, cam_in )
+
+!-----------------------------------------------------------------------
+! get current calendar day of year
+!-----------------------------------------------------------------------
+    calday = get_curr_calday()
+
+!-----------------------------------------------------------------------
+! get tropopause level
+!-----------------------------------------------------------------------
+    !REMOVECAM - no longer need this when CAM is retired and pcols no longer exists
+    tropLev(:) = 0
+    tropLevChem(:) = 0
+    !REMOVECAM_END
+    if (.not.chem_use_chemtrop) then
+       call tropopause_find_cam(state,tropLev)
+       tropLevChem=tropLev
+    else
+       call tropopause_find_cam(state,tropLev)
+       call tropopause_findChemTrop(state, tropLevChem)
+    endif
+
+    tim_ndx = pbuf_old_tim_idx()
+    call pbuf_get_field(pbuf, ndx_fsds,       fsds)
+    call pbuf_get_field(pbuf, ndx_pblh,       pblh)
+    call pbuf_get_field(pbuf, ndx_prain,      prain,  start=(/1,1/), kount=(/ncol,pver/))
+    call pbuf_get_field(pbuf, ndx_cld,        cldfr,  start=(/1,1,tim_ndx/), kount=(/ncol,pver,1/) )
+    call pbuf_get_field(pbuf, ndx_cmfdqr,     cmfdqr, start=(/1,1/),         kount=(/ncol,pver/))
+    call pbuf_get_field(pbuf, ndx_nevapr,     nevapr, start=(/1,1/),         kount=(/ncol,pver/))
+    call pbuf_get_field(pbuf, ndx_cldtop,     cldtop )
+
+!-----------------------------------------------------------------------
+! call Neu wet dep scheme
+!-----------------------------------------------------------------------
+    call neu_wetdep_tend(lchnk,ncol,state%q,state%pmid,state%pdel,state%zi,state%t,dt, &
+         prain, nevapr, cldfr, cmfdqr, ptend%q, wetdepflx)
+
+!-----------------------------------------------------------------------
+! compute tendencies and surface fluxes
+!-----------------------------------------------------------------------
+    call t_startf( 'chemdr' )
+    do k = 1,pver
+       cldw(:ncol,k) = state%q(:ncol,k,ixcldliq)
+       if (ixndrop>0) &
+            ncldwtr(:ncol,k) = state%q(:ncol,k,ixndrop)
+    end do
+
+    call gas_phase_chemdr(state, lchnk, ncol, imozart, state%q, &
+                          state%phis, state%zm, state%zi, calday, &
+                          state%t, state%pmid, state%pdel, state%pint, state%rpdel, state%rpdeldry, &
+                          cldw, tropLev, tropLevChem, ncldwtr, state%u, state%v, chem_dt, state%ps, &
+                          fsds, cam_in%ts, cam_in%asdir, cam_in%ocnfrac, cam_in%icefrac, &
+                          cam_out%precc, cam_out%precl, cam_in%snowhland, ghg_chem, state%latmapback, &
+                          drydepflx, wetdepflx, cam_in%cflx, cam_in%fireflx, cam_in%fireztop, &
+                          nhx_nitrogen_flx, noy_nitrogen_flx, use_hemco, ptend%q, pbuf )
+    if (associated(cam_out%nhx_nitrogen_flx)) then
+       cam_out%nhx_nitrogen_flx(:ncol) = nhx_nitrogen_flx(:ncol)
+    endif
+    if (associated(cam_out%noy_nitrogen_flx)) then
+       cam_out%noy_nitrogen_flx(:ncol) = noy_nitrogen_flx(:ncol)
+    endif
+
+    call t_stopf( 'chemdr' )
+
+!-----------------------------------------------------------------------
+! set flags for tracer tendencies (water and gas phase constituents)
+! record tendencies on history files
+!-----------------------------------------------------------------------
+    do n = 1,pcnst
+       m = map2chm(n)
+       if( m > 0 ) then
+          call outfld( srcnam(m), ptend%q(:,:,n), pcols, lchnk )
+       end if
+! TODO: aero dep flux stuff
+    end do
+    if ( ghg_chem ) then
+       ptend%lq(1) = .true.
+       call outfld( 'CT_H2O_GHG', ptend%q(:,:,1), pcols, lchnk )
+    endif
+
+    call outfld( 'HEIGHT', state%zi(:ncol,:),  ncol, lchnk )
+
+
+!-----------------------------------------------------------------------
+!  turn off water vapor tendency if radiatively passive
+!-----------------------------------------------------------------------
+    if (chem_rad_passive) then
+       ptend%lq(1) = .false.
+       ptend%q(:ncol,:,1) = 0._r8
+    endif
+
+!-----------------------------------------------------------------------
+! Compute water vapor flux required to make conservation check
+!-----------------------------------------------------------------------
+    fh2o(:ncol) = 0._r8
+    do k = 1,pver
+       fh2o(:ncol) = fh2o(:ncol) + ptend%q(:ncol,k,1)*state%pdel(:ncol,k)/gravit
+    end do
+
+  end subroutine chem_timestep_tend
+!-------------------------------------------------------------------
+!-------------------------------------------------------------------
+  subroutine chem_final()
+    use mee_ionization, only: mee_ion_final
+    use rate_diags, only: rate_diags_final
+    use species_sums_diags, only: species_sums_final
+    use short_lived_species, only: short_lived_species_final
+
+    call mee_ion_final()
+    call rate_diags_final()
+    call species_sums_final()
+    call short_lived_species_final()
+
+  end subroutine chem_final
+!-------------------------------------------------------------------
+!-------------------------------------------------------------------
+
+  subroutine chem_init_restart( File )
+    use pio, only : file_desc_t
+    use tracer_cnst,      only: init_tracer_cnst_restart
+    use tracer_srcs,      only: init_tracer_srcs_restart
+    implicit none
+    type(file_desc_t),intent(inout) :: File     ! pio File pointer
+
+    !
+    ! data for offline tracers
+    !
+    call init_tracer_cnst_restart(File)
+    call init_tracer_srcs_restart(File)
+  end subroutine chem_init_restart
+!-------------------------------------------------------------------
+!-------------------------------------------------------------------
+  subroutine chem_write_restart( File )
+    use tracer_cnst, only: write_tracer_cnst_restart
+    use tracer_srcs, only: write_tracer_srcs_restart
+    use pio, only : file_desc_t
+    implicit none
+    type(file_desc_t) :: File
+
+    !
+    ! data for offline tracers
+    !
+    call write_tracer_cnst_restart(File)
+    call write_tracer_srcs_restart(File)
+  end subroutine chem_write_restart
+
+!-------------------------------------------------------------------
+!-------------------------------------------------------------------
+  subroutine chem_read_restart( File )
+    use tracer_cnst, only: read_tracer_cnst_restart
+    use tracer_srcs, only: read_tracer_srcs_restart
+
+    use pio, only : file_desc_t
+    implicit none
+    type(file_desc_t) :: File
+
+    !
+    ! data for offline tracers
+    !
+    call read_tracer_cnst_restart(File)
+    call read_tracer_srcs_restart(File)
+  end subroutine chem_read_restart
+
+end module chemistry

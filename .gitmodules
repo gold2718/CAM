@@ -75,6 +75,13 @@
     fxrequired = AlwaysRequired
     fxDONOTUSEurl = https://github.com/CFMIP/COSPv2.0
 
+[submodule "FANCI"]
+    path = src/chemistry/FANCI
+    url = https://github.com/NorESMhub/FANCI
+    fxtag = 6dc58549bfd5adfad7c7f431679dd0aa92f0e68e
+    fxrequired = AlwaysRequired
+    fxDONOTUSEurl = https://github.com/NorESMhub/FANCI
+
 [submodule "hemco"]
     path = src/hemco
     url = https://github.com/ESCOMP/HEMCO_CESM.git
@@ -238,3 +245,4 @@
     fxtag = mosart1.1.12_noresm_v3
     fxrequired = ToplevelRequired
     fxDONOTUSEurl = https://github.com/NorESMhub/MOSART
+
