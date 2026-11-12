@@ -8,6 +8,7 @@ module aerosol_state_mod
   private
 
   public :: aerosol_state
+  public :: aerosol_tend
   public :: ptr2d_t
 
   !> aerosol_state defines the interface to the time-varying aerosol state
@@ -61,6 +62,13 @@ module aerosol_state_mod
      procedure :: convcld_actfrac
      procedure :: sol_factb_interstitial
  end type aerosol_state
+
+ ! Aerosol tendency
+ type :: aerosol_tend
+ contains
+    procedure :: reset => aero_tend_reset
+    procedure :: add_tendency => aero_tend_add_tendency
+ end type aerosol_tend
 
   ! for state fields
   type ptr2d_t
@@ -972,5 +980,25 @@ contains
 
   end function sol_factb_interstitial
 
+  !!!!!!!!!!!!!!!!!!!!!
+  !!!  Aerosol tendency
+  !!!!!!!!!!!!!!!!!!!!!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Reset all tendencies to zero
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  subroutine aero_tend_reset(self)
+     class(aerosol_tend), intent(inout) :: self
+     ! Default implementation has no internal tendency quantities
+  end subroutine aero_tend_reset
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Add tendencies in <tend2> to the tendencies in <self>
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  subroutine aero_tend_add_tendency(self, tend2)
+     class(aerosol_tend), intent(inout) :: self
+     class(aerosol_tend), intent(in)    :: tend2
+     ! Default implementation has no internal tendency quantities
+  end subroutine aero_tend_add_tendency
 
 end module aerosol_state_mod
