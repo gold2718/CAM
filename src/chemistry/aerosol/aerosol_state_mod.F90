@@ -61,6 +61,7 @@ module aerosol_state_mod
      procedure(aero_wet_diam), deferred :: wet_diameter
      procedure :: convcld_actfrac
      procedure :: sol_factb_interstitial
+     procedure :: update_state
  end type aerosol_state
 
  ! Aerosol tendency
@@ -979,6 +980,16 @@ contains
     end where
 
   end function sol_factb_interstitial
+
+  !------------------------------------------------------------------------------
+  ! update internal aerosol state from aerosol tendency
+  !------------------------------------------------------------------------------
+  subroutine update_state(self, aero_tend)
+    class(aerosol_state), intent(inout) :: self
+    class(aerosol_tend), intent(in) :: aero_tend
+    ! Base class has no internal state to update
+    ! Not deferred so that models which do not have any internal state do not need to implement this.
+  end subroutine update_state
 
   !!!!!!!!!!!!!!!!!!!!!
   !!!  Aerosol tendency
